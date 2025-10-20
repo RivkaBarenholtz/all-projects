@@ -1,0 +1,16 @@
+{
+  "name": "scrape-lambda",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@sparticuz/chromium": "^138.0.2",
+    "playwright-core": "^1.55.1"
+  }
+}

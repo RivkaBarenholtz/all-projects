@@ -1,0 +1,166 @@
+
+body {
+  font-family: 'Roboto', sans-serif;
+  line-height: 1.6;
+  display: flex;
+  padding: 20px;
+  font-size: 16px;
+  flex-wrap: wrap;
+  width: 100%;
+
+  margin: 0 auto;
+  place-items: center;
+  min-width: 320px;
+  
+}
+
+
+.ifields {
+  height: 44px;
+  border-radius: 5px;
+  width: 100%;
+  max-width: 100%;
+  border:1px solid #ccc;
+  background-color: #ffffff;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+
+
+.filters-header{
+  padding: 1rem 2rem;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #ddd;
+  align-items: center;
+  display: flex;
+  gap:10px; 
+  align-items: flex-end;
+}
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #636af489;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+.search-button 
+{
+  background-color: rgb(45, 90, 252);
+  color:white
+}
+
+
+.form-group {
+  margin-bottom: 1.25rem;
+  position: relative;
+}
+
+
+.form-group input[type="text"], .form-group input[type="number"], .form-group input[type="email"], .form-group input[type="tel"], .form-group select, .form-group textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--input-border-color);
+  border-radius: 6px;
+  font-size: 1em;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.grid table 
+{
+  border-collapse: collapse;
+}
+
+.grid thead 
+{
+  background-color: #ddd;
+}
+
+.grid  td, .grid th
+{
+  white-space :noWrap;
+  padding : 4px 12px
+}
+
+.form-label {
+margin-right: 1rem;
+font-weight: 500;
+color: var(--text);
+white-space: nowrap; /* prevents label text from breaking lines */
+}
+
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+  background-color: #ccc;
+  border-radius: 34px;
+  transition: 0.4s;
+  cursor: pointer;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: #4caf50;
+}
+
+input:checked + .slider::before {
+  transform: translateX(18px);
+}
+
+.switch-label {
+  font-size: 14px;
+  user-select: none;
+}
+.subgrid 
+{margin-left: 50px;}
