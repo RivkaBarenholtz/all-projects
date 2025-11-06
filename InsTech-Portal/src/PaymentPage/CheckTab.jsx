@@ -91,7 +91,7 @@ export const CheckTab = (
             });
             const responseBody = await response.json();
             if (responseBody.xStatus == "Approved" ) {
-               if(!isPortal) navigate("/thank-you");
+               if(!isPortal) navigate(`/thank-you?amount=${amount}`);
                else onFinish(); 
                 
             }

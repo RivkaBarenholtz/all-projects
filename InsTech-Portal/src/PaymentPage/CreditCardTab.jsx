@@ -165,7 +165,7 @@ export const CreditCardTab = (
             const responseBody = await response.json();
             if (responseBody.xStatus == "Approved") {
 
-               if(!isPortal) navigate("/thank-you")
+               if(!isPortal) navigate(`/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`)
                 else onFinish();
             }
             else {
@@ -270,7 +270,7 @@ export const CreditCardTab = (
                             IndicatorSeparator: () => null  // This removes the vertical line separator
                         }}
                     />
-                    {expYear == '' && submitPressed ? <div class="toast show" id="toast-for-expYear">Expiration year required.</div> : ''}
+                    {expYear == '' && submitPressed ? <div className="toast show" id="toast-for-expYear">Expiration year required.</div> : ''}
 
                 </div>
                 <div className="form-group form-col">

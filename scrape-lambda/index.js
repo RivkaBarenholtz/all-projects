@@ -1,25 +1,19 @@
+import { chromium } from "playwright";
 
-
-exports.handler = async (event) => {
+export async function handler(event) {
 
   let browser;
+ 
 
-  if (process.env.LAMBDA_TASK_ROOT) {
+  if (event.isLocalTest) {
       // Running inside Lambda / Docker
-      const chromium = require("@sparticuz/chromium");
-      const { chromium: playwrightChromium } = require("playwright-core");
-
-      browser = await playwrightChromium.launch({
-              args: [...chromium.args, "--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-setuid-sandbox"],
-              executablePath: await chromium.executablePath(),
-              headless: chromium.headless,
-              ignoreHTTPSErrors: true,
-              timeout: 0
+     browser= await chromium.launch({
+          headless: false, 
+		  slowMo: 500
+           // slow motion for debugging
       });
   } else {
       // Running locally on Windows / Mac / Linux
-      const { chromium } = require("playwright"); // full Playwright with Windows binary
-
       browser = await chromium.launch({
           
            // slow motion for debugging
@@ -128,7 +122,7 @@ exports.handler = async (event) => {
 await descriptionInput.waitFor({ state: 'visible', timeout: 5000 });
 
 // Fill in the value
-await descriptionInput.fill(event.description);
+await descriptionInput.fill(event.detailDescription);
         
 
 const currencyInput = await  page.locator('div.currency-edit input[type="text"]');

@@ -39,7 +39,7 @@ export const MultiSelectDropdown = (
     <FilterObject label={label} >
         <div className="dropdown-container" ref={dropdownRef}>
         <button 
-            className="filter-input" 
+            className="btn btn-secondary" 
             type="button" 
             onClick={()=>setShowDropdown(!showDropdown)}
         >

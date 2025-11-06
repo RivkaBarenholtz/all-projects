@@ -8,8 +8,10 @@ import { faLock } from '@fortawesome/free-solid-svg-icons';
 import Select from "react-select";
 import PaymentTabs from './PaymentTabs';
 import { CreditCardTab } from './CreditCardTab';
+import { WireTab } from './WireTab.jsx';
 import { CheckTab } from './CheckTab.jsx';
 import Loader from './Loader.jsx';
+
 
 
 export default function PaymentForm({isPortal , onSuccess}) {
@@ -53,6 +55,9 @@ export default function PaymentForm({isPortal , onSuccess}) {
   const [amntDisplayValue, setAmntDisplayValue] = useState(FormatCurrency(amount));
   const [state, setState] = useState('');
   const [activeTab, setActiveTab] = useState("Credit Card");
+
+  const [refNum , setRefNum ] = useState("");
+    
 
 
   const setEverythingFocused = () => {
@@ -201,6 +206,24 @@ export default function PaymentForm({isPortal , onSuccess}) {
         isPortal={isPortal}
         onFinish={onSuccess}
       />,
+    ...(vendor.BankInfo && {"Wire Funds":
+      <WireTab
+        refNum={refNum}
+        bankInfo={vendor.BankInfo}
+        accountId={accountCode}
+        amount={amount}
+        billingAddress={billingAddress}
+        city={city}
+        state={state}
+        email={email}
+        notes={notes}
+        phone={phone}
+        csrCode={csrCode}
+        csrEmail={csrEmail}
+        name={cardholderName}
+        validateAmount={ ()=>{setAmountFocused(true);}}
+        zip={zip}
+        invoiceNumber={invoiceID}/>})
   }:{};
 
 
@@ -321,6 +344,22 @@ export default function PaymentForm({isPortal , onSuccess}) {
   // setIfieldStyle('card-number', style);
   // setIfieldStyle('cvv', style);
 
+  useEffect (()=> 
+    {
+        const GetRefNum = async()=>
+        {
+            const response = await fetch(`${BaseUrl()}/pay/get-ref-num`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+                });
+            const refNumObj = await response.json();
+            setRefNum(refNumObj.refNum)
+        }
+        GetRefNum();
+    }
+    , []
+    )
+
   useEffect(
     () => {
       if (vendor && invoice && invoice.label > 0 ) {
@@ -415,7 +454,7 @@ export default function PaymentForm({isPortal , onSuccess}) {
         <div className='logo-container'>
           {
             !isPortal && 
-            <img  src={isTabletOrMobile ? vendor.MobileLogoUrl : vendor.LogoUrl}></img>
+            <img style={{maxHeight:"100%"}}  src={isTabletOrMobile ? vendor.MobileLogoUrl : vendor.LogoUrl}></img>
           }
 
         </div>

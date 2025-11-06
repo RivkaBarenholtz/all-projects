@@ -1,4 +1,6 @@
-export const fetchWithAuth = async (url, options = {}) => {
+import { refreshSession } from "./AuthContext";
+
+export const fetchWithAuth = async (url, options = {}, isText = false ) => {
   const token = localStorage.getItem('idToken');
   const userEmail = SafeParseJson(localStorage.getItem('User')).email;
   const vendor = localStorage.getItem("currentVendor");
@@ -11,7 +13,7 @@ export const fetchWithAuth = async (url, options = {}) => {
       "Content-Type": "application/json",
     };
 
-    const response = await fetch(`${BaseUrl()}/portal/${url}`, {
+    const response = await fetch(`${BaseUrl()}/portal-v1/${url}`, {
                 method: 'POST',
                 body: JSON.stringify(options),
                 headers: headers
@@ -34,6 +36,13 @@ export const fetchWithAuth = async (url, options = {}) => {
     }
   }
 
+    if (!response.ok) {
+      const errorText = await response.text(); // optional: get response body
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+
+    if (isText)
+      return await response.text();
     // Return parsed response
     return await response.json()
   };
@@ -46,6 +55,24 @@ export const fetchWithAuth = async (url, options = {}) => {
     return null;
   }
 }
+
+export const Sort = ( data,  field, ascending = true) =>{
+      return data.slice().sort((a, b) => {
+         const valA = a[field];
+         const valB = b[field];
+
+         if (valA === undefined) return 1;
+         if (valB === undefined) return -1;
+
+         if (typeof valA === "string" && typeof valB === "string") {
+            return ascending
+            ? valA.localeCompare(valB)
+            : valB.localeCompare(valA);
+         }
+
+         return ascending ? valA - valB : valB - valA;
+      });
+      }
 
 
   export const FormatCurrency=(amt)=>
@@ -60,7 +87,11 @@ export const fetchWithAuth = async (url, options = {}) => {
     }
 
 
-  const handleUnauthorized = () => {
+  export const handleUnauthorized = () => {
+     
     localStorage.removeItem("idToken");
-    window.location.href = "/login";
+    import.meta.env.MODE === 'development'?
+    window.location.href = "/login":
+    window.location.href = "/app/login"
+    ;
   };

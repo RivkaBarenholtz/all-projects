@@ -20,6 +20,42 @@
   font-weight: 700;
 }
 
+
+.logo-header{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.logo-container {
+  width: 100%;
+  text-align: center;
+  background-color: #E9E9EB;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 0;
+  border: 1px solid #e1e1e1;
+  height: 150px;
+}
+
+
+.logo {
+  position: relative;
+  z-index: 2;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo i {
+  font-size: 1.75rem;
+}
+
 .nav-menu {
   list-style: none;
   padding: 0 1rem;
@@ -71,12 +107,23 @@ body {
 
 }
 
+.main-content-no-auth{
+      margin: 0 auto;
+    max-width: 1000px;
+}
+
 .main-content {
   flex: 1;
   margin-left: 280px;
   padding: 2rem;
 }
-
+.avatar {
+  width: 50px;             /* your desired size */
+  height: 50px;
+  border-radius: 50%;      /* makes it a circle */
+  object-fit: cover;       /* ensures the image fills the circle */
+  border: 2px solid #ddd;  /* optional border */
+}
 .header {
   display: flex;
   justify-content: between;
@@ -109,6 +156,9 @@ body {
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  position: sticky;
+  top:0 ;
+  z-index: 3;
 }
 
 .table th a:hover {
@@ -131,9 +181,13 @@ body {
 }
 
 .table-scroller {
-  overflow-y: hidden;
-  overflow-x: scroll;
+ 
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height:800px
 }
+
+
 
 .table-header {
   display: flex;
@@ -141,6 +195,7 @@ body {
   align-items: center;
   padding: 1.5rem;
   border-bottom: 1px solid #e2e8f0;
+  
 }
 
 .table-title {
@@ -152,7 +207,11 @@ body {
   display: flex;
   gap: 0.5rem;
 }
-
+.view-more
+{
+  color:blue;
+  text-decoration: underline;
+}
 .btn {
   padding: 0.75rem 1.5rem;
   border: none;
@@ -367,6 +426,8 @@ body {
 }
 
 .dropdown-list li {
+  display: flex;
+  align-items: center;
   padding: 8px;
 }
 
@@ -386,9 +447,11 @@ body {
 .payment-left-panel, .payment-right-panel {
   padding: 35px 30px;
 }
+
+
 .payment-right-panel {
   flex: 1;
-  background-color: #f5f7f9;
+  background-color: #fcfcfc;
   text-align: center;
 }
 .payment-total-section {
@@ -597,7 +660,7 @@ body {
 }
 .modal-overlay.dark
 {
-  background: rgba(0, 0, 0, 0.85);
+  background:rgb(1 45 82 / 85%);
 }
 /* Modal container */
 .modal {
@@ -671,6 +734,7 @@ body {
     font-family: 'Monaco', 'Menlo', monospace;
     font-size: 0.875rem;
     color: #64748b;
+    text-decoration: underline;
 }
 
 .amount {
@@ -774,7 +838,15 @@ body {
   inset: 0;
   background-color: rgba(0, 0, 0, 0.3);
 }
-
+.tdr-tabs
+{
+  display: flex
+;
+    justify-content: space-between;
+    background: #e4e5e6;
+    color: gray;
+    padding: 5px 25px;
+}
 /* Side drawer */
 .trd-drawer {
   margin-left: auto;
@@ -896,6 +968,15 @@ body {
   text-decoration: underline;
   cursor: pointer;
 }
+.trd-tabs
+{
+  display: flex;
+  justify-content: space-between;
+  background: #e4e5e6;
+  color: gray;
+  /* padding: 5px 25px; */
+  align-items: stretch;
+}
 .trd-transaction-id 
 {
     font-family: 'Monaco', 'Menlo', monospace;
@@ -904,7 +985,20 @@ body {
     vertical-align: top;
     margin-bottom: 16px;
 }
+.active-tab 
+{
+  background: white;
+  top: 2px;
 
+  border-radius: 10px 10px 0 0;
+  border-top: 2px solid #3665b7;
+
+}
+
+.tab{
+      width: 50%;
+    padding: 5px 10px;
+}
 .transaction-action
 {
   border-radius: 16px;
@@ -997,4 +1091,194 @@ body {
   pointer-events: none;
   font-size: 16px;
   color: #555;
+}
+
+
+
+.wire-section h3 {
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+  color: #1a1a1a;
+}
+
+.wire-section p {
+  font-size: 0.95rem;
+  margin: 0.25rem 0 1rem;
+  color: #444;
+ 
+}
+.wire-box {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  background: #f9fafb;
+  margin-bottom: 1.5rem;
+  font-size: 14px;
+}
+.wire-box p{
+      display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+}
+.wire-box p>strong
+{
+  text-align: right;
+}
+
+.ref {
+  color: #0d6efd;
+  font-weight: bold;
+}
+
+.alert {
+  background: #fff8e1;
+  border-left: 4px solid #ffc107;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #5a4d00;
+}
+
+.alert.red {
+  background: #f9cdc5;
+  border-left: 4px solid #ef3452;
+}
+
+.wire-form label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+.wire-form input {
+  display: block;
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-top: 0.25rem;
+  font-size: 0.95rem;
+}
+
+.wire-form button {
+  margin-top: 1.5rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.2s ease;
+}
+
+.wire-form button:hover {
+  background-color: #0056b3;
+}
+
+.form-label-bold 
+{
+  font-weight: bold;
+}
+
+.id-label
+{
+    font-size: 0.575rem;
+    color: #6b7280;
+}
+
+.custom-date
+{
+  position: absolute;
+  z-index: 45;
+  background: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+}
+
+
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 360px;
+  margin: 10px auto;
+  font-family: Arial, sans-serif;
+}
+
+.payment-method-div {
+     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* border: 1px solid #ddd; */
+    border-radius: 6px;
+    padding: 10px 15px;
+    background-color: #fafafa;
+}
+
+.icon {
+  width: 50px;
+  display: flex;
+  justify-content: center;
+}
+
+.details {
+  flex: 1;
+  padding-left: 10px;
+}
+
+.card-type {
+  font-weight: bold;
+}
+
+.masked-number {
+  color: #333;
+}
+
+.exp-date {
+  font-size: 0.85em;
+  color: #666;
+}
+
+.default-toggle {
+  margin-left: 15px;
+  display: flex;
+}
+.default-toggle label{
+  display: inline-flex;
+    font-size: x-small;
+    padding: 6px;
+    border-radius: 14px;
+    background: #bfd8f9;
+}
+.delete-btn {
+  color: #d9534f;
+  text-decoration: underline;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.dashboard-element
+{
+  background: white;
+  /* padding: 20px 30px; */
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 8px;
+  min-width: 200px;
+}
+
+.dashboard-panel
+{
+  flex: 1 1 0%;
+  display: flex;
+  align-items: center;
+  height: 200px;
+  flex-direction: column;
+  justify-content: center;
 }

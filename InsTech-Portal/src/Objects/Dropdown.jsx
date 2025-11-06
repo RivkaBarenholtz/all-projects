@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 
-export const Dropdown =({classes, buttonContent, children, buttonClasses, show})=>{
+export const Dropdown =({classes, buttonContent, children, buttonClasses, show, unclick})=>{
     const dropdownRef = useRef(null);
     const [showDropdown, setShowDropdown] = useState(false);
         useEffect(() => {
@@ -9,6 +9,7 @@ export const Dropdown =({classes, buttonContent, children, buttonClasses, show})
                 function handleClickOutside(event) {
                     if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                         setShowDropdown(false);
+                        if(unclick) unclick();
                     }
                 }
                 document.addEventListener("mousedown", handleClickOutside);
@@ -20,7 +21,7 @@ export const Dropdown =({classes, buttonContent, children, buttonClasses, show})
             className={buttonClasses} 
             type="button" 
             onClick={()=>setShowDropdown(!showDropdown)}
-        > {buttonContent}
+        > {buttonContent}▼
         </button>
 
         { showDropdown && (<div className= {`dropdown-list ${classes}`} ref={dropdownRef}>

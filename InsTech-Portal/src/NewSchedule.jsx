@@ -7,7 +7,8 @@ import { CustomerInfo } from "./Objects/CustomerInfo";
 import { SchedulingInfo } from "./Objects/SchedulingInfo";
 import { fetchWithAuth } from "./Utilities";
 
-export default function NewSchedule ({CloseNewSchedule})
+
+export default function NewSchedule ({CloseNewSchedule, OnSuccess})
 {
     //ScheduleInfo
     const [formData, setFormData] = useState({
@@ -87,8 +88,8 @@ export default function NewSchedule ({CloseNewSchedule})
     {
         setSubmitPressed(true);
         if( firstName == '' || lastName == '' || company == '' || Number(formData.amount) <= 0 || Number(formData.frequencyNum) <= 0 ) return ; 
-        if( isCheck && (accountName == '' || accountNumber=='' || routingNumber == '' )   ) return ;
-        if (!isCheck && (expMonth =='' || expYear == '' || cardToken=='' )) return; 
+        if( formData.isCheck && (accountName == '' || accountNumber=='' || routingNumber == '' )   ) return ;
+        if (!formData.isCheck && (expMonth =='' || expYear == '' || cardToken=='' )) return; 
         const NewCustomer = {
             CustomerNumber: customerNumber , 
             CustomerNotes: note, 
@@ -135,23 +136,50 @@ export default function NewSchedule ({CloseNewSchedule})
             }
         }
 
-        var CcInfo = {
+        let CcInfo = {
             xCardNum: cardToken, 
             xCvv: cvvToken, 
             xExp: `${expMonth.value}${expYear.value}`
         }
+        let resp ; 
         if (activeTab== "Credit Card")
         {
             NewSchedule = {...NewSchedule,
                 ...CcInfo
             }
 
-           const resp= await fetchWithAuth("create-new-schedule-cc", NewSchedule)
+           resp= await fetchWithAuth("create-new-schedule-cc", NewSchedule)
            
         }
-        var CheckInfo = {
-            
+        else 
+        {
+            let CheckInfo = {
+                xAccount : accountNumber,
+                xRouting : routingNumber, 
+                xName : accountName
+            }
+
+            NewSchedule = {
+                ...NewSchedule, 
+                ...CheckInfo
+            }
+         resp= await fetchWithAuth("create-new-schedule-check", NewSchedule)
+        
         }
+
+         
+
+        if (resp.Error != "") {
+            // Show error message if backend provided 
+            const message = data.message || `Request failed: ${response.Error}`;
+            //showError(message);
+            console.error("Error:", message);
+            return;
+        }
+
+        OnSuccess();
+
+
        
     }
 

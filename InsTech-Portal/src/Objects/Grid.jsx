@@ -15,7 +15,8 @@ export const Grid = (
     setActivePage, 
     Sort, 
     SetHeaderList, 
-    rowClick
+    rowClick, 
+    footerObjects 
   }) => {
   const [expandedRows, setExpandedRows] = useState([]);
   const [startPage, setStartPage ]= useState(1);
@@ -74,7 +75,7 @@ export const Grid = (
             {(edit || deleteFn || addFn) && <th>Actions</th>}
           </tr>
         </thead>
-        <tbody>
+        <tbody className='table-scroller-vertical'>
           {JsonObjectList.map((item) => (
             <React.Fragment key={item.id || item.UniqueKey}>
               <tr onClick={(rowClick?()=>{rowClick(item)} : ()=>{})}>
@@ -134,9 +135,10 @@ export const Grid = (
       </table>
       </div>
       <div className="pagination">
-        <div className="pagination-info">
-            Showing {(activePage-1) * itemsPerPage +1}-{Math.min((activePage-1) * itemsPerPage + itemsPerPage, numberOfItems)} of {numberOfItems} transactions
-        </div>
+        {itemsPerPage && numberOfItems && activePage && <div className="pagination-info">
+             Showing {(activePage-1) * itemsPerPage +1}-{Math.min((activePage-1) * itemsPerPage + itemsPerPage, numberOfItems)} of {numberOfItems} transactions
+        </div>}
+         {footerObjects}
         <div className="pagination-controls">
 
             {startPage > 1 && (
@@ -166,6 +168,7 @@ export const Grid = (
             )}       
             
         </div>
+       
     </div>
     </div>
   );

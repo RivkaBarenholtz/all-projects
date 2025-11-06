@@ -1,38 +1,77 @@
-import React, {useState} from 'react';
-import { Link } from 'react-router-dom'; // If using react-router for navigation
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
 
 const Navbar = () => {
-  const [selectedLink, setSelectedLink]= useState("Dashboard");
-  
-  return (
-    <div >
-       
-        <nav className='sidebar' style={styles.nav}>
+  const location = useLocation();
 
-           <div className="logo-nav">
-                <h1>InsureTech</h1>
-            </div>
-            <ul className='nav-menu'>
-              <li className={`nav-item`}  onFocus={()=>{setSelectedLink("Dashboard")}}>
-                  <Link className={`nav-link ${selectedLink=='Dashboard'?'active':''}`} to="/dashboard" style={styles.link}>Dashboard</Link>
-              </li>
-              <li  className='nav-item'  onFocus={()=>{setSelectedLink("Transactions")}}>
-                <Link className={`nav-link ${selectedLink=='Transactions'?'active':''}`} to="/dashboard" style={styles.link}>Transactions</Link>
-              </li>
-              <li  className={`nav-item`} onFocus={()=>{setSelectedLink("Reports")}}>
-                <Link className={`nav-link ${selectedLink=='Reports'?'active':''}`} to="/ReconciliationReport" style={styles.link}>Reports</Link>
-              </li>
-              <li  className={`nav-item`} onFocus={()=>{setSelectedLink("Schedules")}}>
-                <Link className={`nav-link ${selectedLink=='Schedules'?'active':''}`} to="/Schedules" style={styles.link}>Schedules</Link>
-              </li>
-              <li className={`nav-item`}  onFocus={()=>{setSelectedLink("Settings")}}>
-                <Link className={`nav-link ${selectedLink=='Settings'?'active':''} `} to="/settings" style={styles.link}>Settings</Link>
-              </li>
-            </ul>
-            
-            
-        </nav>
-  </div>
+  // Get the current path and normalize it
+  const currentPath = location.pathname.toLowerCase();
+
+  const getActiveClass = (path) => {
+    if (currentPath === "/" && path === "/dashboard") return "active";
+    return currentPath === path.toLowerCase() ? "active" : "";
+  };
+
+  return (
+    <div>
+      <nav className="sidebar" style={styles.nav}>
+        <div className="logo-nav">
+          <h1>InsureTech</h1>
+        </div>
+
+        <ul className="nav-menu">
+          <li className="nav-item">
+            <Link
+              className={`nav-link ${getActiveClass("/dashboard")}`}
+              to="/dashboard"
+              style={styles.link}
+            >
+              Dashboard
+            </Link>
+          </li>
+
+          <li className="nav-item">
+            <Link
+              className={`nav-link ${getActiveClass("/transactions")}`}
+              to="/transactions"
+              style={styles.link}
+            >
+              Transactions
+            </Link>
+          </li>
+
+          <li className="nav-item">
+            <Link
+              className={`nav-link ${getActiveClass("/customers")}`}
+              to="/customers"
+              style={styles.link}
+            >
+              Customers
+            </Link>
+          </li>
+
+          <li className="nav-item">
+            <Link
+              className={`nav-link ${getActiveClass("/schedules")}`}
+              to="/schedules"
+              style={styles.link}
+            >
+              Schedules
+            </Link>
+          </li>
+
+          <li className="nav-item">
+            <Link
+              className={`nav-link ${getActiveClass("/settings")}`}
+              to="/settings"
+              style={styles.link}
+            >
+              Settings
+            </Link>
+          </li>
+        </ul>
+      </nav>
+    </div>
   );
 };
 
@@ -49,3 +88,6 @@ const styles = {
   };
   
 export default Navbar;
+
+
+

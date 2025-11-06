@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import {  useState } from "react";
 import { Dropdown } from "./Dropdown";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, X, RotateCcw } from "lucide-react";
 import { ConfirmationModal } from "./ConfimationModal";
 import { FormatCurrency, fetchWithAuth } from "../Utilities";
+
 import { useAsync } from "react-select/async";
 
 export const TransactionActionDropdown =({transaction, closeDropdown})=> 
@@ -129,10 +130,10 @@ export const TransactionActionDropdown =({transaction, closeDropdown})=>
 
        <ul>
             <li onClick={()=>{setShowVoidConfirm(true)}}>
-                Void
+               <X style={{marginRight:"10px"}}/>  Void
             </li>
             <li onClick={()=>{setShowRefundConfirm(true)}}>
-                Refund
+               <RotateCcw style={{marginRight:"10px"}}/> Refund
             </li>
             
         </ul>

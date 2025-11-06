@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { fetchWithAuth , SafeParseJson} from "./Utilities";
+import { fetchWithAuth , SafeParseJson, handleUnauthorized} from "./Utilities";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -77,16 +77,16 @@ export default function Header() {
       }}
     >
       <div style={{ position: "relative" }} ref={menuRef}>
+     
         <button
           onClick={toggleMenu}
-          style={{
-            padding: "8px 12px",
-            borderRadius: "4px",
-            border: "1px solid #ccc",
-            background: "#fff",
-            cursor: "pointer",
-          }}
+          className="btn btn-secondary"
         >
+             <img 
+                src="https://www.gravatar.com/avatar/?d=mp" 
+                alt="Anonymous profile" 
+                className="avatar"
+              />
           {user?.name}
         </button>
 
@@ -107,8 +107,7 @@ export default function Header() {
             }}
           >
             {availableVendors.map((vendor) => (
-              <div key={vendor.Id} style={{ padding: "4px 0" }}>
-                <strong>{vendor.CardknoxAccountCode}</strong> 
+              <div key={vendor.Id} style={{ padding: "4px 0", borderBottom:"2px solid lightblue", display:"flex" }}>
                 <input
                     type="radio"
                     name="choice"
@@ -117,9 +116,16 @@ export default function Header() {
                     onChange={(e) => setSelected(e.target.value)}
                     
                 />
+                <span style={{paddingLeft:"5px", whiteSpace:"nowrap"}}>{vendor.CardknoxAccountCode}</span> 
+                
           
               </div>
             ))}
+
+            <div style={{display:"flex" , justifyContent: "center", paddingTop: "8px"}}> 
+              
+              <button className="btn btn-primary" onClick={handleUnauthorized}> Log Out</button>
+            </div>
           </div>
         )}
       </div>
