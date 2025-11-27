@@ -21,7 +21,7 @@ export const Dropdown =({classes, buttonContent, children, buttonClasses, show, 
             className={buttonClasses} 
             type="button" 
             onClick={()=>setShowDropdown(!showDropdown)}
-        > {buttonContent}▼
+        > {buttonContent}
         </button>
 
         { showDropdown && (<div className= {`dropdown-list ${classes}`} ref={dropdownRef}>

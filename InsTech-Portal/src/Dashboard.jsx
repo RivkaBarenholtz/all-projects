@@ -98,6 +98,8 @@ const Dashboard = ({ dateRange }) => {
       IncludeError: false,
       RefNum: "",
       Statuses: [21, 22],
+      PaymentMethods:["ALL"],
+      AccountId:""
     };
 
     const response = await fetchWithAuth("transaction-report", filters);

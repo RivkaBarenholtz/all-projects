@@ -5,7 +5,9 @@ export const MultiSelectDropdown = (
   { 
       options,
       setOptions, 
-      label
+      label, 
+      showClose, 
+      close
   }) => {
    
   const [showDropdown, setShowDropdown] = useState(false);
@@ -36,7 +38,7 @@ export const MultiSelectDropdown = (
 
   
     return (
-    <FilterObject label={label} >
+    <FilterObject label={label} showClose={showClose} close={close}>
         <div className="dropdown-container" ref={dropdownRef}>
         <button 
             className="btn btn-secondary" 
@@ -47,8 +49,8 @@ export const MultiSelectDropdown = (
             options && options.length > 0
             ? `${options.filter((a) => a.isSelected).length === options.length 
                 ? "All" 
-                : options.filter((a) => a.isSelected).length} Statuses`
-            : "0 Statuses"
+                : options.filter((a) => a.isSelected).length} ${label}`
+            : `0 ${label}`
             }
             
           <svg 

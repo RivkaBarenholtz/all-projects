@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FormatCurrency } from "../Utilities";
 import { X, MoreVertical  } from "lucide-react";
 import { TransactionActionDropdown } from "./TransactionActionDropdown";
-export default function TransactionDetail({ transaction, onClose }) {
+export default function TransactionDetail({ transaction, onClose , getTransactions}) {
   return (
     <AnimatePresence>
       {transaction && (
@@ -30,7 +30,7 @@ export default function TransactionDetail({ transaction, onClose }) {
               <div >
                 <div className="dropdown-container">
                     
-                    <TransactionActionDropdown transaction={transaction} />
+                    <TransactionActionDropdown getTransactions={()=>{getTransactions(); onClose();  }} transaction={transaction} />
                 </div>
                 <button onClick={onClose} type='button' className="trd-btn close">
                     <X/>

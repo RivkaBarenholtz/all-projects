@@ -77,12 +77,12 @@
 }
 
 .nav-link.active {
-  background: #3665b7;
+  background: #148dc2;
   color: white;
 }
 
 .nav-link:hover {
-  background: #3665b7;
+  background: #148dc2;
   color: white;
 }
 
@@ -233,7 +233,7 @@ body {
 }
 
 .btn-primary {
-  background: #3665b7;
+  background: #148dc2;
   color: white;
 }
 
@@ -274,7 +274,7 @@ body {
   border-radius: 8px;
   padding: 1.5rem;
   text-align: left;
-   border-left: 4px solid #3665b7;
+   border-left: 4px solid #148dc2;
 }
 
 .summary-label {
@@ -325,6 +325,8 @@ body {
   font-size: 0.875rem;
   font-weight: 600;
   color: #475569;
+  display: flex;
+    justify-content: space-between;
 }
 
 .filter-input {
@@ -1115,13 +1117,13 @@ body {
   margin-bottom: 1.5rem;
   font-size: 14px;
 }
-.wire-box p{
+.wire-box div{
       display: flex;
     justify-content: space-between;
     align-items: center;
     padding-bottom: 10px;
 }
-.wire-box p>strong
+.wire-box div>strong
 {
   text-align: right;
 }

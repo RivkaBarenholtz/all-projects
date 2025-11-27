@@ -1,23 +1,13 @@
 import { useState, useEffect, useRef } from "react";
-import { fetchWithAuth , SafeParseJson, handleUnauthorized} from "./Utilities";
+import { fetchWithAuth, SafeParseJson, handleUnauthorized } from "./Utilities";
+import  "./Styles/header.css"
 
 export default function Header() {
   const [open, setOpen] = useState(false);
-  const [user , setUser ]= useState({})
-  const [availableVendors , setAvailableVendors ]= useState([]);
-  const [selectedVendor, setSelectedVendor ] = useState();
+  const [user, setUser] = useState({});
+  const [availableVendors, setAvailableVendors] = useState([]);
+  const [selectedVendor, setSelectedVendor] = useState();
   const menuRef = useRef(null);
-
-//   // Example user data
-//   const user = {
-//     name: "Rivka",
-//     account: "Premium Account",
-//     attributes: {
-//       email: "rivka@example.com",
-//       role: "Admin",
-//       memberSince: "2024-01-15",
-//     },
-//   };
 
   const toggleMenu = () => setOpen(!open);
 
@@ -34,98 +24,116 @@ export default function Header() {
     };
   }, []);
 
-
-  useEffect (()=> {
-        const userJsonString = localStorage.getItem("User");
-        const userItem = userJsonString? SafeParseJson(userJsonString): null;
-        if (userItem) {
-            setUser(userItem);
-        }
-  }, [])
-  useEffect(()=> {
-
-    async function getVendors (){
-    const vendors = await fetchWithAuth('get-available-vendors',{})
-    setAvailableVendors(vendors);
-        if(!localStorage.getItem("currentVendor"))
-        {
-            setSelected(vendors[0].Id)
-        }
-        else 
-        {
-            setSelectedVendor(localStorage.getItem("currentVendor"));
-        }
+  useEffect(() => {
+    const userJsonString = localStorage.getItem("User");
+    const userItem = userJsonString ? SafeParseJson(userJsonString) : null;
+    if (userItem) {
+      setUser(userItem);
     }
-    getVendors(); 
-  }, [])
+  }, []);
 
-  const setSelected = (vendorid)=> {
-    setSelectedVendor (vendorid);
-    localStorage.setItem("currentVendor", vendorid) ;
+  useEffect(() => {
+    async function getVendors() {
+      const vendors = await fetchWithAuth("get-available-vendors", {});
+      setAvailableVendors(vendors);
+      if (!localStorage.getItem("currentVendor")) {
+        setSelected(vendors[0].Id);
+      } else {
+        setSelectedVendor(localStorage.getItem("currentVendor"));
+      }
+    }
+    getVendors();
+  }, []);
+
+  const setSelected = (vendorid) => {
+    setSelectedVendor(vendorid);
+    localStorage.setItem("currentVendor", vendorid);
     window.location.reload(false);
-  }
+  };
+
+  const currentVendor = availableVendors.find((x) => x.Id == selectedVendor);
 
   return (
-    <header
-      style={{
-        display: "flex",
-        justifyContent: "flex-end",
-        alignItems: "center",
-        padding: "12px 24px",
-        borderBottom: "1px solid #ddd",
-        background: "#f9f9f9",
-      }}
-    >
-      <div style={{ position: "relative" }} ref={menuRef}>
-     
-        <button
-          onClick={toggleMenu}
-          className="btn btn-secondary"
-        >
-             <img 
-                src="https://www.gravatar.com/avatar/?d=mp" 
-                alt="Anonymous profile" 
-                className="avatar"
-              />
-          {user?.name}
-        </button>
+    <header className="app-header">
+      <div className="user-account-container" ref={menuRef}>
+        <div className="user-account-selector"      onClick={toggleMenu}>
+          <img
+            src="https://www.gravatar.com/avatar/?d=mp"
+            alt={user?.name || "User"}
+            className="avatar"
+          />
+          <div className="user-info">
+            <button
+              className={`account-selector ${open ? "open" : ""}`}
+         
+            >
+              <span className="account-name">
+                {currentVendor?.CardknoxAccountCode || "Select Account"}
+              </span>
+             
+              <svg
+                className="dropdown-icon"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M4 6l4 4 4-4"
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="2"
+                />
+              </svg>
+            </button>
+            <div className="user-name">{user?.name || "User"}</div>
+          </div>
+        </div>
 
         {open && (
-          <div
-            style={{
-              position: "absolute",
-              top: "100%",
-              right: 0,
-              background: "#fff",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-              padding: "8px",
-              marginTop: "4px",
-              minWidth: "200px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-              zIndex: 1000,
-            }}
-          >
-            {availableVendors.map((vendor) => (
-              <div key={vendor.Id} style={{ padding: "4px 0", borderBottom:"2px solid lightblue", display:"flex" }}>
-                <input
-                    type="radio"
-                    name="choice"
-                    value={vendor.Id}
-                    checked={selectedVendor == vendor.Id}
-                    onChange={(e) => setSelected(e.target.value)}
-                    
-                />
-                <span style={{paddingLeft:"5px", whiteSpace:"nowrap"}}>{vendor.CardknoxAccountCode}</span> 
-                
-          
-              </div>
-            ))}
+          <div className="account-dropdown">
+            <div className="dropdown-header">Switch Account</div>
 
-            <div style={{display:"flex" , justifyContent: "center", paddingTop: "8px"}}> 
-              
-              <button className="btn btn-primary" onClick={handleUnauthorized}> Log Out</button>
+            <div className="dropdown-accounts">
+              {availableVendors.map((vendor) => (
+                <div
+                  key={vendor.Id}
+                  className={`account-item ${
+                    selectedVendor == vendor.Id ? "active" : ""
+                  }`}
+                  onClick={() => setSelected(vendor.Id)}
+                >
+                  <div className="account-item-info">
+                    <div className="account-item-name">
+                      {vendor.CardknoxAccountCode}
+                    </div>
+                    <div className="account-item-id">#{vendor.Id}</div>
+                  </div>
+                  {selectedVendor == vendor.Id && (
+                    <div className="account-item-check">✓</div>
+                  )}
+                </div>
+              ))}
             </div>
+
+            <div className="dropdown-divider"></div>
+
+            <button className="dropdown-action logout-btn" onClick={handleUnauthorized}>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                style={{ marginRight: "8px" }}
+              >
+                <path
+                  d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M11 11l3-3-3-3M14 8H6"
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+              Log Out
+            </button>
           </div>
         )}
       </div>

@@ -44,8 +44,10 @@ export default function PaymentForm({isPortal , onSuccess}) {
   const [notes, setNotes] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [invoiceID, setInvoiceID] = useState(invoiceIDparam);
-  const [amountIsEditable, setAmountIsEditable] = useState(invoiceAmount == 0);
+  const [invoiceID, setInvoiceID] = useState(invoiceIDparam??0);
+  const [amountIsEditable, setAmountIsEditable] = useState(true);
+
+
 
   const [focusedField, setFocusedField] = useState('')
   const [accountFocused, setAccountFocused] = useState(false);
@@ -270,6 +272,7 @@ export default function PaymentForm({isPortal , onSuccess}) {
     const fetchData = async () => {
       if(invoiceID)
       {
+        
         const invoiceIdList = invoiceID.split(',');
 
         const hasNaN = invoiceIdList.some(item => Number.isNaN(item));
@@ -280,7 +283,7 @@ export default function PaymentForm({isPortal , onSuccess}) {
       
             const response = await fetch(`${BaseUrl()}/pay/get-invoice`, {
               method: 'POST',
-              body: JSON.stringify({ LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: epicClientNumber }),
+              body: JSON.stringify({ LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(epicClientNumber)?null:epicClientNumber }),
               headers: { 'Content-Type': 'application/json' }
             });
 
@@ -318,7 +321,7 @@ export default function PaymentForm({isPortal , onSuccess}) {
       try {
         const response = await fetch(`${BaseUrl()}/pay/get-surcharge`, {
           method: 'POST',
-          body: JSON.stringify({ ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID) ? -1 : invoiceID }),
+          body: JSON.stringify({ ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID)|| invoiceID=="" ? -1 : invoiceID }),
           headers: { 'Content-Type': 'application/json' }
         });
 
@@ -362,7 +365,7 @@ export default function PaymentForm({isPortal , onSuccess}) {
 
   useEffect(
     () => {
-      if (vendor && invoice && invoice.label > 0 ) {
+      if (vendor && invoice  ) {
         if (invoice.length == 1)
           setAmountIsEditable(invoice[0].IsEditable);
         else

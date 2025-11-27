@@ -9,7 +9,7 @@ export const SingleSelectDropdown = ({ options, selectedOption, onChange , label
     return <FilterObject label={label} style={style}>
 
 
-        <Dropdown show={show} buttonClasses={'btn btn-secondary'} classes={'multi'} buttonContent={ <div>{selectedOption.label}</div>} >
+        <Dropdown show={show} buttonClasses={'btn btn-secondary'} classes={'multi'} buttonContent={ <div>{selectedOption?.label?? label}▼</div>} >
 
        
             <> {

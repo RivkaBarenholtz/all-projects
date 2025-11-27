@@ -51,6 +51,10 @@ function App() {
           path="/thank-you" 
           element ={<ThankYouPage />}
         />
+         <Route 
+          path="/login" 
+          element ={<Login setIsAuthenticated={setIsAuthenticated} />}
+        />
         <Route
           path="/dashboard"
           element={

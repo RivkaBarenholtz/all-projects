@@ -16,7 +16,7 @@ const Navbar = () => {
     <div>
       <nav className="sidebar" style={styles.nav}>
         <div className="logo-nav">
-          <h1>InsureTech</h1>
+          <h1><img src="https://www.instech360.com/InsureTech360.svg" style={{ height: "100px"}}></img></h1>
         </div>
 
         <ul className="nav-menu">
@@ -60,7 +60,7 @@ const Navbar = () => {
             </Link>
           </li>
 
-          <li className="nav-item">
+          {/* <li className="nav-item">
             <Link
               className={`nav-link ${getActiveClass("/settings")}`}
               to="/settings"
@@ -68,7 +68,7 @@ const Navbar = () => {
             >
               Settings
             </Link>
-          </li>
+          </li> */}
         </ul>
       </nav>
     </div>

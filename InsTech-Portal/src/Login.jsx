@@ -18,7 +18,7 @@ const userPool = new CognitoUserPool(poolData);
 
 export default function Login( {setIsAuthenticated} ) {
 
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -93,6 +93,7 @@ export default function Login( {setIsAuthenticated} ) {
     });
   };
 
+  const navigate= useNavigate(); 
   const handleNewPasswordSubmit = (e) => {
     e.preventDefault();
     if (!cognitoUser) {

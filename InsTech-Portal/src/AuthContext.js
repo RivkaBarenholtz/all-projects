@@ -14,8 +14,7 @@ export const refreshSession = () => {
     const cognitoUser = userPool.getCurrentUser();
 
     if (!cognitoUser) {
-      reject("No user found");
-      return;
+      redirectToLogin(); 
     }
 
     cognitoUser.getSession((err, session) => {
@@ -85,6 +84,6 @@ export  const refreshAccessToken = async () => {
 };
 const redirectToLogin = () => {
   localStorage.removeItem("idToken");
-  window.location.href = "/login"; 
+  window.location.href =process.env.NODE_ENV === 'development' ? '/login' : '/app/login'; 
 };
   
