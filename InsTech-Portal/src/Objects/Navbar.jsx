@@ -1,17 +1,32 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { getUserInfo } from "../Services/api";
+
 
 const Navbar = () => {
+  const [user, setUser]= useState({});
   const location = useLocation();
 
   // Get the current path and normalize it
   const currentPath = location.pathname.toLowerCase();
 
   const getActiveClass = (path) => {
-    if (currentPath === "/" && path === "/dashboard") return "active";
+    if (currentPath === "/" && path === "/transactions") return "active";
     return currentPath === path.toLowerCase() ? "active" : "";
   };
 
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const userInfo = await getUserInfo();
+        setUser(userInfo);
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+      }
+    }
+    fetchUser();
+  }, []);
+  
   return (
     <div>
       <nav className="sidebar" style={styles.nav}>
@@ -20,15 +35,7 @@ const Navbar = () => {
         </div>
 
         <ul className="nav-menu">
-          <li className="nav-item">
-            <Link
-              className={`nav-link ${getActiveClass("/dashboard")}`}
-              to="/dashboard"
-              style={styles.link}
-            >
-              Dashboard
-            </Link>
-          </li>
+          
 
           <li className="nav-item">
             <Link
@@ -60,7 +67,17 @@ const Navbar = () => {
             </Link>
           </li>
 
-          {/* <li className="nav-item">
+          <li className="nav-item">
+            <Link
+              className={`nav-link ${getActiveClass("/dashboard")}`}
+              to="/dashboard"
+              style={styles.link}
+            >
+              Dashboard
+            </Link>
+          </li>
+
+          {user.Role == "admin" && <li className="nav-item">
             <Link
               className={`nav-link ${getActiveClass("/settings")}`}
               to="/settings"
@@ -68,7 +85,7 @@ const Navbar = () => {
             >
               Settings
             </Link>
-          </li> */}
+          </li>}
         </ul>
       </nav>
     </div>

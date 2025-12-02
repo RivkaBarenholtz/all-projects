@@ -3,7 +3,7 @@ import PaymentTabs from "./PaymentTabs"
 import { useState, useEffect } from "react"
 import { CreditCardInfo, OptionType } from "./CreditcardInfo"
 import { CheckingInfo } from "./CheckingInfo"
-import { listPaymentMethods, createTransaction } from "../utils/api"
+import { ApiService, createTransaction } from "../utils/api"
 import { Dropdown } from "./UI/Dropdown"
 import { SingleValue, } from "react-select"
 import { PaymentSuccess } from "./PaymentSuccess"
@@ -44,11 +44,13 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ subdom
     const [saveMethod, setSaveMethod] = useState(false);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
 
+    const service = new ApiService(subdomain);
+
 
 
     useEffect(() => {
         async function getPaymentMethods(accountCode: string) {
-            const methods = await listPaymentMethods(accountCode, subdomain);
+            const methods = await service.listPaymentMethods(accountCode, subdomain);
             setPaymentMethod(methods);
             if (methods.length > 0) {
                 setSelectedMethod(methods[0])

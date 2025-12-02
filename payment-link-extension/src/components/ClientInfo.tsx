@@ -80,9 +80,9 @@ export const ClientInfo: React.FC<ClientInfoProps> = ({
             onClick={handleCollectPayment}
             data-tooltip="Collect payment"
           >
-            <i className="fas fa-link"></i>
+            <i className="fa-solid fa-file-invoice-dollar"></i>
           </button>
-          Create payment
+          Take Payment
         </div>
       </div>
     </div>

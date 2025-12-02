@@ -1,79 +1,56 @@
 import { Client, Invoice, SurchargeItem } from '../types';
+import { ApiService as Service } from '../services/apiService';
 
 export class ApiService {
   private subdomain: string;
+  private onUnauthorized?: () => void;
 
-  constructor(subdomain: string) {
+  constructor(subdomain: string, onUnauthorized?: () => void) {
     this.subdomain = subdomain;
+    this.onUnauthorized = onUnauthorized;
   }
+
+  protected svc = new Service( this.onUnauthorized );
 
   async getClientFromEpic(clientId: string): Promise<Client> {
-    const url = `https://${this.subdomain}.instechpay.co/pay/get-client-from-epic?ClientID=${clientId}`;
-    const response = await fetch(url);
+    const url = `https://${this.subdomain}.instechpay.co/portal-v1/get-client-from-epic?ClientID=${clientId}`;
+    return  await this.svc.get(url);
     
-    if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
-    }
-    
-    return await response.json();
+   
   }
   async getClientFromEpicWithLookup(lookupCode: string): Promise<Client> {
-    const url = `https://${this.subdomain}.instechpay.co/pay/get-client-from-epic?LookupCode=${lookupCode}`;
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
-    }
-    
-    return await response.json();
+    const url = `https://${this.subdomain}.instechpay.co/portal-v1/get-client-from-epic?LookupCode=${lookupCode}`;
+    return await this.svc.get(url);
   }
 
   async getOpenInvoices(accountId: string| null, lookupCode: string): Promise<Invoice[]> {
-    const url = `https://${this.subdomain}.instechpay.co/pay/get-open-invoices`;
+    const url = `https://${this.subdomain}.instechpay.co/portal-v1/get-open-invoices`;
     const body = {
       AccountId: accountId??-1,
       LookupCode: lookupCode
     };
 
-    const response = await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers: { 'Content-Type': 'application/json' }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
-    }
-
-    return await response.json();
+    return await this.svc.post<Invoice[]>(url, body);
   }
 
   async getSurcharge(clientLookupCode: string): Promise<{ surcharge: number; vendorSurcharge: number }> {
-    const url = `https://${this.subdomain}.instechpay.co/pay/get-surcharge`;
-    const response = await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify({ ClientLookupCode: clientLookupCode }),
-      headers: { 'Content-Type': 'application/json' }
-    });
+    const url = `https://${this.subdomain}.instechpay.co/portal-v1/get-surcharge`;
+    const body= { ClientLookupCode: clientLookupCode };
 
-    if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
-    }
+    return await this.svc.post<{ surcharge: number; vendorSurcharge: number }>(url, body);
 
-    return await response.json();
   }
+   async  listPaymentMethods(AccountCode: string, subdomain : string): Promise<any[]> {
+    const requestBody = {
+       AccountCode: AccountCode
+    };
+
+   return await this.svc.post(`https://${subdomain}.instechpay.co/portal-v1/list-payment-methods`, requestBody);
+}
 
   async saveSurcharge(items: SurchargeItem[]): Promise<string> {
-    const url = `https://${this.subdomain}.instechpay.co/pay/save-surcharge`;
-    const response = await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(items),
-      headers: { 'Content-Type': 'application/json' }
-    });
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+    const url = `https://${this.subdomain}.instechpay.co/portal-v1/save-surcharge`;
+    await this.svc.post(url, { items });
 
     return 'Success';
   }
@@ -119,25 +96,7 @@ export function getAccountLookupCode(): string {
 }
 
 
-export async function listPaymentMethods(AccountCode: string, subdomain : string) {
-    const requestBody = {
-       AccountCode: AccountCode
-    };
 
-    const response = await fetch(`https://${subdomain}.instechpay.co/pay/list-payment-methods`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-    });
-
-    if (!response.ok) {
-        throw new Error("Failed to list payment methods");
-    }
-
-    return response.json();
-}
 
 
 

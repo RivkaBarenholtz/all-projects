@@ -41,6 +41,22 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
     onShowCopied();
   };
 
+    const handleCollectPayment = () => {
+
+      const totalBalance = invoices.reduce((sum, item) => {
+      return selectedInvoices.has(item.AppliedEpicInvoiceNumber) ? sum + item.Balance : sum;
+    }, 0);
+     chrome.runtime.sendMessage({
+      action: "OPEN_PAYMENT_WINDOW",
+      invoiceId: Array.from(selectedInvoices).join(','),
+      amount: totalBalance,
+      customerLookup: client?.LookupCode || "",
+      accountId: accountId,
+      clientName : client?.ClientName || "",
+      subdomain: subdomain
+    });
+  }
+
   const handleEmailMultiple = () => {
     if (!client || selectedInvoices.size === 0) return;
 
@@ -116,6 +132,13 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
           <i className="fas fa-link"></i>
         </button>
         Copy payment link for selected invoices
+      </div>
+
+      <div style={{ margin: '12px', display: 'flex' }}>
+        <button className="btn btn-icon link-btn" onClick={handleCollectPayment}>
+          <i className="fa-solid fa-file-invoice-dollar"></i>
+        </button>
+        Take payment for selected invoices
       </div>
 
       <div style={{ margin: '12px', display: 'flex' }}>

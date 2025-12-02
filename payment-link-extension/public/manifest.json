@@ -16,7 +16,8 @@
     "webRequestBlocking",
     "scripting",
     "activeTab",
-    "windows"
+    "windows",
+    "storage"
   ],
 "content_scripts": [
     {

@@ -4,6 +4,9 @@ import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
+   css: {
+    postcss: './postcss.config.js', // Add this if it's missing
+  },
   build: {
     outDir: 'dist',
     emptyOutDir: false, // Don't empty - we'll handle cleaning in build.js

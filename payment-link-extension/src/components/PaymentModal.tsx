@@ -9,10 +9,10 @@ import { CollectPaymentModal } from './CollectPaymentModal';
 
 interface PaymentModalProps {
   subdomain: string;
-  //setLookupCode :(lookup:string)=>void
+  setIsAuthenticated :(auth:boolean)=>void
 }
 
-export const PaymentModal: React.FC<PaymentModalProps> = ({  subdomain }) => {
+export const PaymentModal: React.FC<PaymentModalProps> = ({  subdomain, setIsAuthenticated }) => {
   const [client, setClient] = useState<Client | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [surcharge, setSurcharge] = useState<number>(0);
@@ -27,7 +27,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({  subdomain }) => {
     isReverting: boolean;
   }>({ title: '', isReverting: false });
 
-  const apiService = new ApiService(subdomain);
+  const apiService = new ApiService(subdomain, ()=> { setIsAuthenticated(false); });
   const accountId = getCurrentAccountID();
   const lookupCode = getAccountLookupCode();
 

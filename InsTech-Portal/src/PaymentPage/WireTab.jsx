@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom";
 import { BaseUrl } from "../Utilities";
 import { CopyIcon } from "../FilterObjects/CopyIcon";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export const WireTab =({
     bankInfo,  
@@ -24,7 +25,7 @@ export const WireTab =({
     const [confNumber , setConfNumber] =  useState("");
     //const [accountName , setAccountName] =  useState("");
     //const [date , setDate] =  useState("");
-
+    const [captchaToken, setCaptchaToken] = useState('');
     const [submitPressed , setSubmitPressed ] = useState(false); 
     const [showSubmit, setShowSubmit ]= useState(true);
 
@@ -34,7 +35,7 @@ export const WireTab =({
         setShowSubmit(false);
         setSubmitPressed(true);
         validateAmount();
-        if(confNumber == "" || amount <=0 )
+        if(confNumber == "" || amount <=0  || captchaToken == null || captchaToken == '' || captchaToken=="")
            {  
             setShowSubmit(true);
             return;
@@ -56,7 +57,9 @@ export const WireTab =({
             Phone:phone, 
             Email: email,
             CsrCode:csrCode, 
-            CsrEmail: csrEmail
+            CsrEmail: csrEmail,
+            CaptchaToken: captchaToken,
+            isDevelopment: import.meta.env.DEV
         }
 
         await fetch(`${BaseUrl()}/pay/submit-wire`, {
@@ -134,6 +137,15 @@ export const WireTab =({
                 />
                 {submitPressed && confNumber==""?<div className="toast show" id="toast-for-account-holder">Confirmation number required. If you don't have one enter ''-''</div>:''} 
             
+            </div>
+
+            <div style={{ padding: "25px" }} >
+                <ReCAPTCHA
+                    sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                    onChange={(token) => setCaptchaToken(token)}
+                />
+                {(captchaToken == '' || captchaToken == null) && submitPressed ? <div className="toast show" id="toast-for-recap">Recaptcha check required.</div> : ''}
+
             </div>
 {/* 
             <div className="form-group">

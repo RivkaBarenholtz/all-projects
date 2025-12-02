@@ -1,50 +1,82 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PaymentModal } from "./PaymentModal";
+import { Login } from "./Login";
+import { cognitoService } from "../services/cognitoService";
 
 interface MainPageProps {
     onClose: () => void;
-    subdomain: string
+    subdomain: string;
 }
 
 export const MainPage: React.FC<MainPageProps> = ({ onClose, subdomain }) => {
-    // const [activeTab, setActiveTab] = useState("payment")
-    // const [lookupCode, setLookupCode] = useState("")
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
 
-    return <div className="modal-overlay">
-        <div className="body-class">
-            <div className="header">
-                <div className="logo">
-                    <img src="https://www.instech360.com/InsureTech360.svg" style={{ height: '100px' }} alt="Logo" />
+    useEffect(() => {
+        checkAuth();
+    }, []);
+
+    const checkAuth = async () => {
+        const authenticated = await cognitoService.isAuthenticated();
+        setIsAuthenticated(authenticated);
+        setLoading(false);
+    };
+
+    const handleSignOut = async () => {
+        console.log("Sign out button clicked");
+        await cognitoService.signOut();
+        setIsAuthenticated(false);
+    };
+
+    if (loading) {
+        return (
+            <div className="modal-overlay">
+                <div className="body-class">
+                    <div className="flex items-center justify-center min-h-[400px]">
+                        <div className="text-lg">Loading...</div>
+                    </div>
                 </div>
-                <button onClick={onClose} className="cancel-out">
-                    <i className="fas fa-times"></i>
-                </button>
-
-                
             </div>
-{/* 
-            <div className="tabs">
-                    <button
-                        className={`tab ${activeTab === 'payment' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('payment')}
-                    >
-                        Payment Link
-                    </button>
-                    <button
-                        className={`tab ${activeTab === 'collect' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('collect')}
-                    >
-                        Collect Payment
-                    </button>
-                </div> */}
+        );
+    }
 
-                {/* Tab Content */}
-                {/* <div className="tab-content">
-                    {activeTab === 'payment' && <PaymentModal subdomain={subdomain} setLookupCode={setLookupCode} />}
-                    {activeTab === 'collect' && <CollectPaymentModal subdomain={subdomain} lookupCode={lookupCode} />}
-                </div> */}
+    return (
+        <div className="modal-overlay">
+            <div className="body-class">
+                <div className="header">
+                    <div className="logo">
+                        <img src="https://www.instech360.com/InsureTech360.svg" style={{ height: '100px' }} alt="Logo" />
+                    </div>
+                    <div className="flex gap-2 items-center">
+                        {isAuthenticated && (
+                            <button
+                                className="cancel-out"
+                                onClick={handleSignOut}
+                                style={{
+                                    fontSize: "14px",
+                                    right: "40px",
+                                    width: "100px",
+                                    textDecoration: "underline"
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#d1d5db'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
+                            >
+                                Sign Out
+                            </button>
+                        )}
+                        <button onClick={onClose} className="cancel-out">
+                            <i className="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
 
-                 <PaymentModal subdomain={subdomain}  />
+                {/* Show Login or PaymentModal based on auth status */}
+                {isAuthenticated ? (
+                    <PaymentModal subdomain={subdomain}  setIsAuthenticated={setIsAuthenticated}/>
+                ) : (
+                    <Login onLoginSuccess={checkAuth} />
+                )}
+            </div>
         </div>
-    </div>
-}
+    );
+};

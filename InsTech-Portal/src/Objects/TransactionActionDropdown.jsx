@@ -285,11 +285,11 @@ export const TransactionActionDropdown =({transaction, getTransactions })=>
                 </li>
             }
 
-            {
+            {/* {
                !transaction.xCommand.includes('Wire') &&  <li onClick={()=>{setShowNewTransaction(true)}}>
                <Plus style={{marginRight:"10px"}}/> New Transaction
             </li>
-             }
+             } */}
         </ul>
    </Dropdown>
 }
