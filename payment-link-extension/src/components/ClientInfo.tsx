@@ -9,6 +9,7 @@ interface ClientInfoProps {
   client: Client | null;
   subdomain: string;
   accountId: string | null;
+  surcharge?: number;
   onShowCopied: () => void;
 }
 
@@ -16,6 +17,7 @@ export const ClientInfo: React.FC<ClientInfoProps> = ({
   client,
   subdomain,
   accountId,
+  surcharge, 
   onShowCopied
 }) => {
   const [amount, setAmount] = useState<string>('');
@@ -39,7 +41,8 @@ export const ClientInfo: React.FC<ClientInfoProps> = ({
       customerLookup: client?.LookupCode || "",
       accountId: accountId,
       clientName : client?.ClientName || "",
-      subdomain: subdomain
+      subdomain: subdomain,
+      surcharge: surcharge
     });
   }
 
@@ -61,6 +64,7 @@ export const ClientInfo: React.FC<ClientInfoProps> = ({
             type="number"
             step="10"
             value={amount}
+            style={{textAlign: 'left'}}
             onChange={(e) => setAmount(e.target.value)}
           />
         </div>

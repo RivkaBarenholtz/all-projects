@@ -56,6 +56,11 @@ export const fetchWithAuth = async (url, options = {}, isText = false ) => {
   }
 }
 
+   export const  isValidEmail=(email)=> {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    }
+
 export const Sort = ( data,  field, ascending = true) =>{
       return data.slice().sort((a, b) => {
          const valA = a[field];

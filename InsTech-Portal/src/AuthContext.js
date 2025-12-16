@@ -79,7 +79,7 @@ export  const refreshAccessToken = async () => {
     }
   } 
   catch (error) {
-    redirectToLogin();
+    console.error("Error refreshing access token:", error);
   }
 };
 const redirectToLogin = () => {

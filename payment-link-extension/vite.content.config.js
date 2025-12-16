@@ -4,6 +4,12 @@ import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
+   resolve: {
+    dedupe: [
+      "@fortawesome/fontawesome-svg-core",
+      "@fortawesome/react-fontawesome",
+    ],
+  },
    css: {
     postcss: './postcss.config.js', // Add this if it's missing
   },

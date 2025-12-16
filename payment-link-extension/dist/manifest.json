@@ -13,7 +13,6 @@
  
   "permissions": [
     "webRequest",
-    "webRequestBlocking",
     "scripting",
     "activeTab",
     "windows",

@@ -8,6 +8,7 @@ const App: React.FC = () => {
     const lookupCode = params.get('customerid') || '';
     const clientName = params.get('clientName') || '';
     const amount = params.get('amount') || '';
+    const surcharge = Number(params.get('surcharge') || '0');
   useEffect(() => {
     
   }, []);
@@ -16,7 +17,8 @@ const App: React.FC = () => {
     subdomain={subdomain} 
     lookupCode={lookupCode} 
     clientName={clientName} 
-    amount={Number(amount)} />;
+    amount={Number(amount)}
+    surchargePercent={ surcharge} />;
 };
 
 export default App;

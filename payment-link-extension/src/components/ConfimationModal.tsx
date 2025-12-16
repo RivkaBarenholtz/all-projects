@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react';
 interface ConfirmationModalProps {
   onClose: () => void;
   onConfirm: () => void;
-  children: ReactNode;
+  children?: ReactNode;
   confirmButtonText?: string;
 }
 

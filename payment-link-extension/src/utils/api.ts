@@ -45,7 +45,7 @@ export class ApiService {
        AccountCode: AccountCode
     };
 
-   return await this.svc.post(`https://${subdomain}.instechpay.co/portal-v1/list-payment-methods`, requestBody);
+   return await this.svc.post(`https://${subdomain}.instechpay.co/portal-v1/list-payment-methods-ext`, requestBody);
 }
 
   async saveSurcharge(items: SurchargeItem[]): Promise<string> {
@@ -59,6 +59,23 @@ export class ApiService {
     const url = `https://ins-dev.instechpay.co/pay/get-subdomain?subdomain=${epicSubdomain}&accountid=${accountLookupCode}`;
     const response = await fetch(url);
     return await response.text();
+  }
+
+  async deletePaymentMethod(token: string): Promise<string> {
+    const url = `https://${this.subdomain}.instechpay.co/portal-v1/delete-payment-method-ext`;
+    const body = {
+      Token: token
+    };
+    return await this.svc.post(url, body);
+  }
+
+  async setDefaultPaymentMethod(token: string, accountCode:string): Promise<string> {
+    const url = `https://${this.subdomain}.instechpay.co/portal-v1/make-method-default`;
+    const body = {
+      Token: token,
+      AccountId: accountCode
+    };
+    return await this.svc.post(url, body);
   }
 }
 

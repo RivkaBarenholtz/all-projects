@@ -7,6 +7,10 @@ import { ApiService, createTransaction } from "../utils/api"
 import { Dropdown } from "./UI/Dropdown"
 import { SingleValue, } from "react-select"
 import { PaymentSuccess } from "./PaymentSuccess"
+import { ConfirmationModal } from "./ConfimationModal"
+import { Trash } from 'lucide-react';
+
+
 
 interface CollectPaymentModalProps {
     subdomain: string;
@@ -27,11 +31,13 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ subdom
     const [ccValid, setCcValid] = useState(true)
     const [cvvValid, setCvvValid] = useState(true)
 
+    const [deleteMethod, setDeleteMethod] = useState<any | null>(null);
+
     const [paymentMethod, setPaymentMethod] = useState<any>(null);
     const [selectedMethod, setSelectedMethod] = useState<any>({});
 
     const [paymentAmount, setPaymentAmount] = useState<number>(amount);
-    const [transferFee, setTransferFee] = useState<number>(surchargePercent ?? 3.5);
+    const [transferFee, setTransferFee] = useState<number>(surchargePercent? surchargePercent * 100 : 3.5);
 
 
     const [accountName, setAccountName] = useState("")
@@ -43,20 +49,22 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ subdom
 
     const [saveMethod, setSaveMethod] = useState(false);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
+    const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+
 
     const service = new ApiService(subdomain);
 
+    async function getPaymentMethods(accountCode: string) {
+        const methods = await service.listPaymentMethods(accountCode, subdomain);
+        setPaymentMethod(methods);
+        if (methods.length > 0) {
+            setSelectedMethod(methods[0])
+        }
+        else setSelectedMethod({ value: "new", MaskedAccountNumber: " + New" })
+    }
 
 
     useEffect(() => {
-        async function getPaymentMethods(accountCode: string) {
-            const methods = await service.listPaymentMethods(accountCode, subdomain);
-            setPaymentMethod(methods);
-            if (methods.length > 0) {
-                setSelectedMethod(methods[0])
-            }
-            else setSelectedMethod({ value: "new", MaskedAccountNumber: " + New" })
-        }
 
 
 
@@ -65,6 +73,14 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ subdom
 
 
     }, [])
+
+    useEffect(() => {
+        if (paymentMethod && paymentMethod.length > 0) {
+            let method = paymentMethod.find((m: any) => m.IsDefault);
+            setSelectedMethod(method);
+        }
+        else setSelectedMethod({ value: "new", MaskedAccountNumber: " + New" })
+    }, [paymentMethod]);
 
     const SubmitPayment = async () => {
         setSubmitPressed(true);
@@ -82,7 +98,7 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ subdom
     }
 
     const isCheck: () => boolean = () => {
-        return ((activeTab == "eCheck" && selectedMethod.value == "new") || selectedMethod.CardType == "ACH")
+        return ((activeTab == "eCheck" && selectedMethod?.value == "new") || selectedMethod?.CardType == "ACH")
     }
 
     const getPaymentInfo = () => {
@@ -99,6 +115,7 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ subdom
                 }
             }
             else if (activeTab === "eCheck") {
+
                 return {
                     AccountName: accountName,
                     AccountNumber: accountNumber,
@@ -202,11 +219,22 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ subdom
             />
     }
 
+    const confirmDelete = () => {
+
+        if( !deleteMethod.isDefault )service.deletePaymentMethod(deleteMethod.Token || "");
+        else (alert ("Cannot delete default payment method"));
+        // Implement deletion logic here
+        setShowConfirmDelete(false);
+        getPaymentMethods(lookupCode);
+    }
     return <>
         {paymentSuccess && <PaymentSuccess amount={paymentAmount + (paymentAmount * (transferFee / 100))} />}
+        {showConfirmDelete && <ConfirmationModal onClose={() => { setShowConfirmDelete(false); setDeleteMethod(null) }} onConfirm={confirmDelete} confirmButtonText="Delete">
+            <h3> Are you sure you want to delete {selectedMethod.MaskedAccountNumber}?</h3>
+        </ConfirmationModal>}
         <div className="header">
             <div className="logo">
-                <img src="https://www.instech360.com/InsureTech360.svg" style={{ height: '100px' }} alt="Logo" />
+                <img src="https://insure-tech-vendor-data.s3.us-east-1.amazonaws.com/logos/InsTechLogo.png" style={{ height: '100px' }} alt="Logo" />
             </div>
 
         </div>
@@ -225,13 +253,13 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ subdom
 
 
         <div style={{ display: isCheck() ? "flex" : "block", gap: "25px", padding: "10px" }}>
-            <div style={{ display: "flex",  gap: "25px" }}>
+            <div style={{ display: "flex", gap: "25px" }}>
                 <div className="form-group">
                     <label> Amount </label>
                     <input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(Number(e.target.value))} />
                 </div>
 
-                {!((activeTab == "eCheck" && selectedMethod.value == "new") || selectedMethod.CardType == "ACH") && <>
+                {!((activeTab == "eCheck" && selectedMethod.value == "new") || selectedMethod?.CardType == "ACH") && <>
 
 
 
@@ -267,8 +295,8 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ subdom
                 <Dropdown buttonClasses="btn-2 btn-secondary" buttonContent={<>
 
                     <div className="details">
-                        <div style={{paddingRight:"10px"}}>{selectedMethod?.MaskedAccountNumber}</div>
-                       
+                        <div style={{ paddingRight: "10px" }}>{selectedMethod?.MaskedAccountNumber}</div>
+
                         ▼
                     </div>
                 </>
@@ -280,14 +308,34 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ subdom
                                     {method.CardType === "ACH"
                                         ? <span style={{ fontSize: "1.5em" }}>🏦</span>
                                         : getCardIcon(method.CardType)}
+
+
                                 </div>
+
+
 
                                 <div className="details">
                                     <div className="masked-number">{method.MaskedAccountNumber}</div>
                                     {method.Exp && (
                                         <div className="exp-date">Exp: {method.Exp.slice(0, 2)}/{method.Exp.slice(2)}</div>
                                     )}
+
+                                    {!method.isDefault && <a className="link-btn-pymt" onClick={async () => {
+
+                                        let methods = await service.setDefaultPaymentMethod(method.Token, lookupCode);
+
+                                        setPaymentMethod(methods);
+
+                                    }}> Make Default  </a>
+                                    }
+
+                                    {
+                                        method.isDefault && <span className="default-badge">Default</span>
+                                    }
+                                    <a className="link-btn-pymt" onClick={() => { if(method.isDefault){ alert("Cannot delete default method"); return; } setShowConfirmDelete(true); setDeleteMethod(method) }}><Trash size={14} /> </a>
                                 </div>
+
+
 
 
 
@@ -318,12 +366,21 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ subdom
             </div>
         </div>
 
-        {!((activeTab == "eCheck" && selectedMethod.value == "new") || selectedMethod.CardType == "ACH") &&
-
-            <div style={{ display: "flex", color: "#148dc2", fontSize: "15px", fontWeight: 600, marginBottom: "15px", padding: "0 10px" }}>
-                <label> Grand Total : </label>
-                <div> ${(paymentAmount + (paymentAmount * (transferFee / 100))).toFixed(2)} </div>
-            </div>
+        {!((activeTab == "eCheck" && selectedMethod.value == "new") || selectedMethod?.CardType == "ACH") &&
+            <>
+                <div style={{ display: "flex", fontSize: "13px", fontWeight: 400,  padding: "0 10px" }}>
+                    <label> Subtotal : </label>
+                    <div> ${(paymentAmount ).toFixed(2)} </div>
+                </div>
+                <div style={{ display: "flex", fontSize: "13px", fontWeight: 400, padding: "0 10px" }}>
+                    <label> Transfer Fee : </label>
+                    <div> ${ (paymentAmount * (transferFee / 100)).toFixed(2)} </div>
+                </div>
+                <div style={{ display: "flex", color: "#148dc2", fontSize: "15px", fontWeight: 600, marginBottom: "15px", padding: "0 10px" }}>
+                    <label> Grand Total : </label>
+                    <div> ${(paymentAmount + (paymentAmount * (transferFee / 100))).toFixed(2)} </div>
+                </div>
+            </>
         }
 
 

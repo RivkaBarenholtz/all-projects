@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { fetchWithAuth } from "../Utilities";
 
-export const ReadOnlyCustomerInfo = ({customerID})=> 
+export const ReadOnlyCustomerInfo = ({customerID,  setCustomerObj})=> 
 {
     const [customer, setCustomer ] = useState({}); 
 
@@ -10,6 +10,7 @@ export const ReadOnlyCustomerInfo = ({customerID})=>
         {
             const cust= await  fetchWithAuth("get-cardknox-customers", {CustomerId : customerID})
             setCustomer(cust.Customers[0]) ;
+            setCustomerObj && setCustomerObj(cust.Customers[0])
         }
         if (customerID != null && customerID!= "")
           getCustomer();

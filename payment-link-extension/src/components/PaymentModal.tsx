@@ -119,6 +119,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({  subdomain, setIsAut
                 client={client}
                 subdomain={subdomain}
                 accountId={accountId}
+                surcharge={surcharge}
                 onShowCopied={() => {
                   setShowCopied(true);
                   setTimeout(() => setShowCopied(false), 3000);

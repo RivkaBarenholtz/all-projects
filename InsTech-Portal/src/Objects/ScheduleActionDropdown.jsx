@@ -52,8 +52,8 @@ export const ScheduleActionDropdown =({schedule, setSchedule})=>
 
     }
 
-    const buttonContent = <MoreVertical/>
-    return <Dropdown classes={"transaction-action"} buttonContent={ buttonContent} buttonClasses = "trd-btn" show={show} >
+   
+    return <>
        { showStopConfirm && <ConfirmationModal onConfirm={StopSchedule} onClose={()=>{setShowStopConfirm(false); setShow(!show)}} confirmButtonText="Stop Schedule" >
         <div className="all-padding-bottom">
             <h2>Stop Schedule</h2>
@@ -100,24 +100,29 @@ export const ScheduleActionDropdown =({schedule, setSchedule})=>
 
        </ConfirmationModal>  }
 
-       <ul>
+       <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            flexDirection: 'column',
+            gap: '10px'
+        }}>
             { !schedule.IsActive && <>
-            <li onClick={()=>{setShowEnableConfirm(true)}}>
+           <button style={{justifyContent:"center", padding: ".25rem" }} className="btn btn-secondary"  onClick={()=>{setShowEnableConfirm(true)}}>
                <CheckCheck style={{marginRight:"10px"}}/>  Enable Schedule
-            </li>
-            <li onClick={()=>{setShowDeleteConfirm(true)}}>
+            </button>
+           <button style={{justifyContent:"center", padding: ".25rem" }} className="btn btn-secondary"  onClick={()=>{setShowDeleteConfirm(true)}}>
                <Trash2 style={{marginRight:"10px"}}/> Delete Schedule
-            </li>
+            </button>
             </>
         }
          { schedule.IsActive && <>
-            <li onClick={()=>{setShowStopConfirm(true)}}>
+           <button style={{justifyContent:"center", padding: ".25rem" }} className="btn btn-secondary"  onClick={()=>{setShowStopConfirm(true)}}>
                <X style={{marginRight:"10px"}}/>  
                Stop Schedule
-            </li>
+            </button>
             </>
          }
             
-        </ul>
-   </Dropdown>
+        </div>
+   </>
 }

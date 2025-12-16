@@ -45,7 +45,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onClose, subdomain }) => {
             <div className="body-class">
                 <div className="header">
                     <div className="logo">
-                        <img src="https://www.instech360.com/InsureTech360.svg" style={{ height: '100px' }} alt="Logo" />
+                        <img src="https://insure-tech-vendor-data.s3.us-east-1.amazonaws.com/logos/InsTechLogo.png" style={{ height: '100px' }} alt="Logo" />
                     </div>
                     <div className="flex gap-2 items-center">
                         {isAuthenticated && (

@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { getUserInfo } from "../Services/api";
 
-
 const Navbar = () => {
-  const [user, setUser]= useState({});
+  const [user, setUser] = useState({});
+  const [open, setOpen] = useState(false); // for mobile menu
+  const [vendor , setVendor] = useState("");
   const location = useLocation();
 
-  // Get the current path and normalize it
   const currentPath = location.pathname.toLowerCase();
 
   const getActiveClass = (path) => {
@@ -26,22 +26,41 @@ const Navbar = () => {
     }
     fetchUser();
   }, []);
+
+  useEffect(() => setOpen(false), [location.pathname])
+
+  useEffect (()=>{ 
+    const vend =   localStorage.getItem("currentVendor")?? user[0].VendorId;
+    setVendor(vend);
+  }, [user])
   
+  
+
+
   return (
     <div>
-      <nav className="sidebar" style={styles.nav}>
+      {/* Hamburger button (only visible on mobile) */}
+      <div className="hamburger" onClick={() => setOpen(!open)}>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+
+      <nav className={`sidebar ${open ? "open" : ""}`} style={styles.nav}>
         <div className="logo-nav">
-          <h1><img src="https://www.instech360.com/InsureTech360.svg" style={{ height: "100px"}}></img></h1>
+          <h1>
+            <img
+              src="https://insure-tech-vendor-data.s3.us-east-1.amazonaws.com/logos/InsTechLogo.png"
+              style={{ width: "200px" }}
+            />
+          </h1>
         </div>
 
         <ul className="nav-menu">
-          
-
           <li className="nav-item">
             <Link
               className={`nav-link ${getActiveClass("/transactions")}`}
               to="/transactions"
-              style={styles.link}
             >
               Transactions
             </Link>
@@ -51,7 +70,6 @@ const Navbar = () => {
             <Link
               className={`nav-link ${getActiveClass("/customers")}`}
               to="/customers"
-              style={styles.link}
             >
               Customers
             </Link>
@@ -61,7 +79,6 @@ const Navbar = () => {
             <Link
               className={`nav-link ${getActiveClass("/schedules")}`}
               to="/schedules"
-              style={styles.link}
             >
               Schedules
             </Link>
@@ -71,21 +88,21 @@ const Navbar = () => {
             <Link
               className={`nav-link ${getActiveClass("/dashboard")}`}
               to="/dashboard"
-              style={styles.link}
             >
               Dashboard
             </Link>
           </li>
 
-          {user.Role == "admin" && <li className="nav-item">
-            <Link
-              className={`nav-link ${getActiveClass("/settings")}`}
-              to="/settings"
-              style={styles.link}
-            >
-              Settings
-            </Link>
-          </li>}
+          { Array.isArray(user) && user?.find(x=> x.VendorId == vendor)?.Role?.toLowerCase() === "admin" && (
+            <li className="nav-item">
+              <Link
+                className={`nav-link ${getActiveClass("/settings")}`}
+                to="/settings"
+              >
+                Settings
+              </Link>
+            </li>
+          )}
         </ul>
       </nav>
     </div>
@@ -93,18 +110,10 @@ const Navbar = () => {
 };
 
 const styles = {
-    
-    logo: {
-      marginBottom: '2rem',
-      fontSize: '1.5rem',
-    },
-    nav: {
-          display: 'block',
-          unicodeBidi: 'isolate'
-    }
-  };
-  
+  nav: {
+    display: "block",
+    unicodeBidi: "isolate",
+  },
+};
+
 export default Navbar;
-
-
-

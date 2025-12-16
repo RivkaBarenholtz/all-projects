@@ -1,4 +1,4 @@
-export const ConfirmationModal = ({onClose , onConfirm , children, confirmButtonText})=>{
+export const ConfirmationModal = ({onClose , onConfirm , children, confirmButtonText, loading})=>{
 
 return <div className="modal-overlay dark">
         <div className="modal confirm">

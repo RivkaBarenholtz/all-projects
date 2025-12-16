@@ -28,10 +28,7 @@ export default function TransactionDetail({ transaction, onClose , getTransactio
             <div className="trd-header">
               <h2>Transaction Details</h2>
               <div >
-                <div className="dropdown-container">
-                    
-                    <TransactionActionDropdown getTransactions={()=>{getTransactions(); onClose();  }} transaction={transaction} />
-                </div>
+               
                 <button onClick={onClose} type='button' className="trd-btn close">
                     <X/>
                 </button>
@@ -138,6 +135,7 @@ export default function TransactionDetail({ transaction, onClose , getTransactio
                     </div>
                   }
                 </div>
+                <TransactionActionDropdown getTransactions={()=>{getTransactions(); onClose();  }} transaction={transaction} />
               </div>
 
              

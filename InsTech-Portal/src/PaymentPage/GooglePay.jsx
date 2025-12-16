@@ -72,7 +72,8 @@ const GooglePay = ({amount, surcharge, AccountID, invoiceID , csrCode, csrEmail,
    
   };
 
-  return (
+  return (<div style={{padding: '10px'}} >
+    
     <GooglePayButton
       environment={import.meta.env.DEV?"TEST":"PRODUCTION" }
       buttonSizeMode="fill"
@@ -80,6 +81,7 @@ const GooglePay = ({amount, surcharge, AccountID, invoiceID , csrCode, csrEmail,
       onLoadPaymentData={handlePaymentData}
       onError={(err) => console.error("Google Pay error:", err)}
     />
+    </div>
   );
 };
 

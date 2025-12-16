@@ -1,125 +1,129 @@
 
 
 
-export const SchedulingInfo = ({ formData, handleChange, submitPressed}) => {
-    
+export const SchedulingInfo = ({ formData, handleChange, submitPressed, mode }) => {
+
 
 
 
 
   return (
     <>
-      <h2>Add Schedule</h2>
+      <h2>{mode == "edit" ? "Edit Schedule" : "Add Schedule"}</h2>
 
       {/* Schedule Info */}
       <div >
         <div className="form-group">
-            <label>Schedule Name</label>
-            <input type="text" name="scheduleName" value={formData.scheduleName} onChange={handleChange} />
+          <label>Schedule Name</label>
+          <input type="text" name="scheduleName" value={formData.scheduleName} onChange={handleChange} />
         </div>
-        <div className="form-group">
+        {
+          !mode == "edit" && <div className="form-group">
             <label>Description</label>
             <input type="text" name="description" value={formData.description} onChange={handleChange} />
-        </div>
+          </div>
+        }
         <div className="form-row">
-            <div className="form-group">
-                <label>Amount</label>
-                <input type="number" name="amount" value={formData.amount} onChange={handleChange} />
-                 {submitPressed && Number(formData.amount) <= 0 ? <div className="toast show" id="toast-for-account-holder">Amount required.</div> : ''}
+          <div className="form-group">
+            <label>Amount</label>
+            <input type="number" name="amount" value={formData.amount} onChange={handleChange} />
+            {submitPressed && Number(formData.amount) <= 0 ? <div className="toast show" id="toast-for-account-holder">Amount required.</div> : ''}
 
-            </div>
-            
-             { formData.includeFee && !formData.isCheck && <><div className="form-group">
-                <label>Transfer Fee</label>
-                <input type="number" name="electronicFee" value={(formData.amount * (formData.transferFee/100))?.toFixed(2)}  readOnly />
+          </div>
 
-            </div>
+          {formData.includeFee && !formData.isCheck && <><div className="form-group">
+            <label>Transfer Fee</label>
+            <input type="number" name="electronicFee" value={(formData.amount * (formData.transferFee / 100))?.toFixed(2)} readOnly />
+
+          </div>
             <div className="form-group">
-                <label>Total Amount</label>
-                <input type="number" name="totalAmount" value={((formData.amount * (formData.transferFee/100)) + Number(formData.amount))?.toFixed(2)} readOnly />
+              <label>Total Amount</label>
+              <input type="number" name="totalAmount" value={((formData.amount * (formData.transferFee / 100)) + Number(formData.amount))?.toFixed(2)} readOnly />
             </div>
-            </>}
-           
+          </>}
+
         </div>
       </div>
-         {!formData.isCheck && <><div className="form-group">
-           
-            <input type="checkbox" name="includeFee" checked={formData.includeFee} onChange={handleChange} />
-            Include Transfer Fee
-            
-        </div>
-      {/* Electronic Transfer Fee */}
-      {formData.includeFee && <div className="form-row">
-        <div className="form-group percent-input-wrapper">
-                 <label >
-                Transfer Fee: 
+      {!formData.isCheck && <><div className="form-group">
+
+        <input type="checkbox" name="includeFee" checked={formData.includeFee} onChange={handleChange} />
+        Include Transfer Fee
+
+      </div>
+        {/* Electronic Transfer Fee */}
+        {formData.includeFee && <div className="form-row">
+          <div className="form-group percent-input-wrapper">
+            <label >
+              Transfer Fee:
             </label>
-            
+
             <input
-                type="number"
-                name="transferFee"
-                min="0"
-                max="3.5"
-                step="0.01"
-                value={formData.transferFee}
-                onChange={handleChange}
-                placeholder="0"
+              type="number"
+              name="transferFee"
+              min="0"
+              max="3.5"
+              step="0.01"
+              value={formData.transferFee}
+              onChange={handleChange}
+              placeholder="0"
             />
             <span className="percent-sign">%</span>
-           
-            </div>
-            
-        <div className="form-group">
-                 <label>&nbsp; </label>
+
+          </div>
+
+          <div className="form-group">
+            <label>&nbsp; </label>
             <input
-                className="arrow-slider"
-                type="range"
-                id="transferFee"
-                name="transferFee"
-                min="0"
-                max="3.5"
-                step="0.01"
-                value={formData.transferFee}
-                onChange={handleChange}
+              className="arrow-slider"
+              type="range"
+              id="transferFee"
+              name="transferFee"
+              min="0"
+              max="3.5"
+              step="0.01"
+              value={formData.transferFee}
+              onChange={handleChange}
             />
-            </div>
-      </div>
+          </div>
+        </div>
         }</>}
       {/* Invoice */}
-      
-        <div className="form-group">
-            <label>Invoice</label>
-            <input type="text" name="invoice" value={formData.invoice} onChange={handleChange} />
-        </div>
+
+      <div className="form-group">
+        <label>Invoice</label>
+        <input type="text" name="invoice" value={formData.invoice} onChange={handleChange} />
+      </div>
 
 
-      {/* Frequency */}
+      {
+        mode != "edit" &&
       <div className="form-row" >
         <div className="form-group">
-        <label>Frequency</label>
-         <input type="text" name="frequencyNum" value={formData.frequencyNum} onChange={handleChange} />
+          <label>Frequency</label>
+          <input type="text" name="frequencyNum" value={formData.frequencyNum} onChange={handleChange} />
           {submitPressed && formData.frequencyNum <= 0 ? <div className="toast show" id="toast-for-account-holder">Frequency required.</div> : ''}
 
         </div>
-         <div className="form-group">
-            <label>Type</label>
-        <select name="frequency" value={formData.frequency} onChange={handleChange}>
-          <option value="day">Day(s)</option>
-          <option value="week">Week(s)</option>
-          <option value="month">Month(s)</option>
-          <option value="year">Year(s)</option>
-        </select>
+        <div className="form-group">
+          <label>Type</label>
+          <select name="frequency" value={formData.frequency} onChange={handleChange}>
+            <option value="day">Day(s)</option>
+            <option value="week">Week(s)</option>
+            <option value="month">Month(s)</option>
+            <option value="year">Year(s)</option>
+          </select>
         </div>
-          </div>
-        {/* <label>
+      </div>
+      }
+      {/* <label>
           <input type="checkbox" name="runSpecificDay" checked={formData.runSpecificDay} onChange={handleChange} />
           Run recurring at a specific day of the week
         </label> */}
-        <label>
-          <input type="checkbox" name="skipDays" checked={formData.skipDays} onChange={handleChange} />
-          Skip Sabbath and Holidays
-        </label>
-    
+      <label>
+        <input type="checkbox" name="skipDays" checked={formData.skipDays} onChange={handleChange} />
+        Skip Sabbath and Holidays
+      </label>
+
 
       {/* Calendar */}
       {/* <div className="form-group">
@@ -133,33 +137,45 @@ export const SchedulingInfo = ({ formData, handleChange, submitPressed}) => {
       {/* Dates */}
       <div className="form-group">
         <label>End Type</label>
-            <select name="endOption" value={formData.endOption} onChange={handleChange}>
-                <option value="Never">Never</option>
-                <option value="Date">Date</option>
-                <option value="NumberOfPayments">Number of Payments</option>
-            </select>
-        </div>
+        <select name="endOption" value={formData.endOption} onChange={handleChange}>
+          <option value="Never">Never</option>
+          <option value="Date">Date</option>
+          <option value="NumberOfPayments">Number of Payments</option>
+        </select>
+      </div>
       <div className="form-row">
+        {
+          mode != "edit" || Date(formData.startDate) > new Date() &&
         <div className="form-group">
-            <label>Start</label>
-            <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} />
-        </div>
-        
-        { formData.endOption == "Date" && <div className="form-group">
-            <label>End</label>
-            <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} />
-             {submitPressed && formData.endDate == "" ? <div className="toast show" id="toast-for-account-holder">End date required.</div> : ''}
+          <label>Start</label>
+          <input
+            type="date"
+            name="startDate"
+            value={
+              formData.startDate
+                ? new Date(formData.startDate).toISOString().split('T')[0]
+                : ''
+            }
+            onChange={handleChange}
+          />
 
         </div>
         }
-         { formData.endOption == "NumberOfPayments" && <div className="form-group">
-            <label>Number Of Payments</label>
-            <input type="number" name="numberOfPayments" value={formData.numberOfPayments} onChange={handleChange} />
-             {submitPressed && formData.numberOfPayments <=0  ? <div className="toast show" id="toast-for-account-holder"># of pymnts required.</div> : ''}
+        {formData.endOption == "Date" && <div className="form-group">
+          <label>End</label>
+          <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} />
+          {submitPressed && formData.endDate == "" ? <div className="toast show" id="toast-for-account-holder">End date required.</div> : ''}
 
         </div>
         }
-        
+        {formData.endOption == "NumberOfPayments" && <div className="form-group">
+          <label>Number Of Payments</label>
+          <input type="number" name="numberOfPayments" value={formData.numberOfPayments} onChange={handleChange} />
+          {submitPressed && formData.numberOfPayments <= 0 ? <div className="toast show" id="toast-for-account-holder"># of pymnts required.</div> : ''}
+
+        </div>
+        }
+
       </div>
 
       {/* Options */}
@@ -182,21 +198,21 @@ export const SchedulingInfo = ({ formData, handleChange, submitPressed}) => {
       <div className="form-section">
         <h3>Retry settings</h3>
         <div className="form-row">
-            <div className="form-group">
-                <label>Retry Times</label>
-                <input type="number" name="retryAttempts" value={formData.retryAttempts} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-                <label>Retry after how many days?</label>
-                <input type="number" name="retryDays" value={formData.retryDays} onChange={handleChange} />
-            </div>
+          <div className="form-group">
+            <label>Retry Times</label>
+            <input type="number" name="retryAttempts" value={formData.retryAttempts} onChange={handleChange} />
+          </div>
+          <div className="form-group">
+            <label>Retry after how many days?</label>
+            <input type="number" name="retryDays" value={formData.retryDays} onChange={handleChange} />
+          </div>
         </div>
         <div className="form-group">
-            <label>After final retry</label>
-            <select name="afterFail" value={formData.afterFail} onChange={handleChange}>
-                <option value="ContinueNextInterval">Maintain schedule</option>
-                <option value="Disable">Cancel schedule</option>
-            </select>
+          <label>After final retry</label>
+          <select name="afterFail" value={formData.afterFail} onChange={handleChange}>
+            <option value="ContinueNextInterval">Maintain schedule</option>
+            <option value="Disable">Cancel schedule</option>
+          </select>
         </div>
       </div>
 
@@ -207,7 +223,7 @@ export const SchedulingInfo = ({ formData, handleChange, submitPressed}) => {
         <input type="text" name="custom2" placeholder="Custom2" value={formData.custom2} onChange={handleChange} />
       </div> */}
 
-     
+
     </>
   );
 }

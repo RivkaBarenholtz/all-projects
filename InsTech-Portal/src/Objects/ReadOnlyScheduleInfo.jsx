@@ -1,7 +1,8 @@
 //import { useState, useEffect } from "react";
 import {  FormatCurrency} from "../Utilities";
+import { ScheduleActionDropdown } from "./ScheduleActionDropdown";
 
-export const ReadOnlyScheduleInfo = ({ schedule})=> 
+export const ReadOnlyScheduleInfo = ({ schedule, setSchedule})=> 
 {
     
     
@@ -42,7 +43,7 @@ export const ReadOnlyScheduleInfo = ({ schedule})=>
                     </div>
                  <div className="trd-info-row">
                         <span className="trd-label">Last Run On:</span>
-                        <span className="trd-value">{schedule.LastRunTime.split(" ")[0]}</span>
+                        <span className="trd-value">{schedule.LastRunTime?.split(" ")[0]}</span>
                     </div>
                  <div className="trd-info-row">
                         <span className="trd-label">Next Run Time:</span>
@@ -61,7 +62,7 @@ export const ReadOnlyScheduleInfo = ({ schedule})=>
                         <span className="trd-value">{schedule.EndDate??(schedule.TotalPayments?`After ${schedule.TotalPayments} payments`: "Continue Indefinitely")}</span>
                     </div>
                    
-                  
+                  <ScheduleActionDropdown schedule={schedule} setSchedule={setSchedule}/>
                 </div>
               </div>
 

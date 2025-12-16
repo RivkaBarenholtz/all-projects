@@ -53,7 +53,8 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
       customerLookup: client?.LookupCode || "",
       accountId: accountId,
       clientName : client?.ClientName || "",
-      subdomain: subdomain
+      subdomain: subdomain,
+      surcharge: surcharge
     });
   }
 

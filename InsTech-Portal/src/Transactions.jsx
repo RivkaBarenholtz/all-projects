@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import { DatePicker } from './FilterObjects/DatePicker';
 import { fetchWithAuth, FormatCurrency } from './Utilities'; 
 import { Grid } from './Objects/Grid';
@@ -26,11 +26,7 @@ function Transactions() {
   const [customBeginDate,setCustomBeginDate]= useState(new Date()); 
   const [customEndDate,setCustomEndDate]= useState(new Date()); 
   const [accountID , setAccountID ]= useState("")
-   const [availableFilters, setAvailableFitlers]  = useState( [
-    { value: "status", label: "Account Status" },
-    { value: "payment", label: "Payment Method" },
-    { value: "account", label: "Account" },
-  ])
+  
 
 
 
@@ -39,49 +35,58 @@ function Transactions() {
       DisplayValue:"Ref #", 
       Show: true, 
       Value:  "xRefNumHtml",
+      FilterValue: "xRefNum",
       SortString : "RefNumber", 
+      FilterType: "text",
       SortAsc: true
     },
    {
       DisplayValue:"Date", 
       Show: true, 
       Value:  "EnteredDateFormatted",
+      FilterValue: "xEnteredDate",
       SortString :"Date",
+      FilterType: "date",
       SortAsc: false
     },
     
 
     {
-      DisplayValue:"Amount Funded", 
+      DisplayValue:"Funded", 
       Show: true, 
       Value:  "AmountFundedFormatted",
       SortString : "FundedAmount", 
+      FilterValue: "AmountFunded",
       SortAsc: true
     },
     
     
     {
-      DisplayValue:"Credit Card Fee", 
+      DisplayValue:"Fee", 
       Show: true, 
       Value:  "CreditCardFormatted",
+      FilterValue: "CreditCardFee",
+      FilterType: "number",
       SortString: "TransactionFee",
       SortAsc: true
     },
     
     
     {
-      DisplayValue:"Total Amount", 
+      DisplayValue:"Total", 
       Show: true, 
       Value:  "AmountFormatted",
+      FilterValue: "xAmount",
       SortString : "Amount",
       SortAsc: true
     },
     
 
     {
-      DisplayValue:"Cardholder Name", 
+      DisplayValue:"Cardholder", 
       Show: true, 
       Value:  "xName",
+      FilterValue: "xName",
       SortString:"Name",
       SortAsc: true
     },
@@ -90,12 +95,14 @@ function Transactions() {
       Show: true, 
       Value:  "xBillLastName",
       SortString : "xBillLastName",
+      FilterValue: "xBillLastName",
       SortAsc: true
     },
     {
       DisplayValue:"Account #", 
       Show: true, 
       Value:  "xMaskedAccountNumberHtml",
+      FilterValue: "xMaskedAccountNumber",
       SortString : "MaskedAccountNumber",
       SortAsc: true
     },
@@ -104,6 +111,7 @@ function Transactions() {
       DisplayValue:"Command", 
       Show: true, 
       Value:  "xCommand",
+      FilterValue: "xCommand",
       SortString: "Command",
       SortAsc: true
     },
@@ -113,6 +121,7 @@ function Transactions() {
       Show: true, 
       Value:  "StatusHtml",
       SortString : "Status", 
+      FilterValue: "StatusString",
       SortAsc: true
     },
     
@@ -120,6 +129,8 @@ function Transactions() {
       DisplayValue:"Description", 
       Show: false, 
       Value:  "xDescription",
+      FilterValue: "xDescription",
+      SortString : "Description",
       SortAsc: true
     },
     
@@ -265,16 +276,13 @@ function Transactions() {
 
   ]
   )
-  const showFilter= (filterValue)=>
-  {
-    setAvailableFitlers((prev) => prev.filter((f) => f.value !== filterValue));
-  }
+ 
   const getFilters = ()=> 
   {
     const filteredOption = statusOptions.filter(a=>a.isSelected);
     const filteredPmntMethods = pmntMethodOptions.filter(a=> a.isSelected);
     return  {
-      TransactionsPerPage: 10, 
+      TransactionsPerPage: 100000, 
       PageNumber: activePage,
       SortBy : "Date", 
       isAsc:false, 
@@ -306,7 +314,11 @@ function Transactions() {
           CreditCardFormatted: <span className={`'amount ' ${trans.xVoid == 1 ? "void": ""}`}> {FormatCurrency(trans.xCustom09 * (trans.xAmount != 0 ?trans.xAmount/ Math.abs(trans.xAmount): 1))??'$0.00' }</span>,
           AmountFundedFormatted: trans.xCustom10 == 0 || trans.xCustom10 == null?AmountHtml(trans.xAmount, trans.xVoid == 1 ): AmountHtml(trans.xCustom10 * (trans.xAmount != 0 ?trans.xAmount/ Math.abs(trans.xAmount): 1), trans.xVoid == 1 ) ,
           StatusHtml: StatusHtml(trans.xResponseResult, trans.xStatus, trans.xCommand) ,
-          AmountFormatted:AmountHtml(trans.xAmount, trans.xVoid == 1 )
+          AmountFormatted:AmountHtml(trans.xAmount, trans.xVoid == 1 ), 
+          AmountFunded : trans.xCustom10 && trans.xCustom10 > 0 ? trans.xCustom10 * (trans.xAmount != 0 ?trans.xAmount/ Math.abs(trans.xAmount): 1) : trans.xAmount,
+          StatusString : GetStatusString(trans.xResponseResult, trans.xStatus, trans.xCommand),
+          CreditCardFee:trans.xCustom09 * (trans.xAmount !=    0 ?trans.xAmount/ Math.abs(trans.xAmount): 1),
+          className: trans.xResponseResult.toLowerCase()=="approved"? "": "not-counted"
         }
       })
     setTransactions(responseFormatted);
@@ -319,13 +331,11 @@ function Transactions() {
    <span className='amount negative'>{FormatCurrency(amt)}</span>
   }
 
-
-
-const StatusHtml = (responseResult, achStatus, command) => {
-  const ach =
+const GetStatusString = (responseResult, achStatus, command) => {
+    const ach =
     responseResult === "Approved"
       ? achStatus === "14"
-        ? "Chargeback"
+        ? "Approved-Chargeback"
         : achStatus === "16"
         ? "Approved-Settled"
         : "Approved-Pending"
@@ -335,6 +345,14 @@ const StatusHtml = (responseResult, achStatus, command) => {
   const isWire = command === "Send Wire";
 
   const statusString = isAch ? ach : isWire? achStatus :responseResult;
+  return statusString;
+
+}
+
+const StatusHtml = (responseResult, achStatus, command) => {
+
+
+  const statusString = GetStatusString  (responseResult, achStatus, command);
 
   let classes = "status ";
 
@@ -345,7 +363,7 @@ const StatusHtml = (responseResult, achStatus, command) => {
       classes += "approved";
       break;
 
-    case "chargeback":
+    case "approved-chargeback":
       classes += "chargeback";
       break;
 
@@ -534,6 +552,15 @@ const CardHtml =(maskedNumber,  xCardType)=>
       }
     }
   } 
+
+  useEffect(()=>
+  {
+    if(!showCustomDateRange)
+    {
+      ApplyFilters();
+    }
+  }, [beginDate, endDate] )
+  
   
   const Sort = async (sortBy, 
     isAsc 
@@ -610,29 +637,12 @@ const CardHtml =(maskedNumber,  xCardType)=>
               
               />
 
-               <TextInput onChange={setRefNum} label={"Ref Number"}/>
-            
           
-            { availableFilters.filter((f)=> f.value == "status").length == 0 && <MultiSelectDropdown close={()=>{setAvailableFitlers((prev) => [...prev, {value:"status", label:"Account Status" }])}} showClose={true} options={statusOptions} label={"Statuses"} setOptions={setStatusOptions}/>}
-
-          {  
-            availableFilters.filter((f)=> f.value == "payment").length == 0 && <MultiSelectDropdown close={()=>{setAvailableFitlers((prev) => [...prev, {value:"payment", label:"Payment Methods" }])}} showClose={true} options={ pmntMethodOptions} label = {"Payment Methods"} setOptions={setPaymentMethodOptions}/>
-          }
-
-           {  
-            availableFilters.filter((f)=> f.value == "account").length == 0 && <TextInput close={()=>{setAvailableFitlers((prev) => [...prev, {value:"account", label:"Account ID" }])}} showClose={true} onChange={setAccountID} label= {"Account ID"}/>
-           }
-           
-           {/* <DatePicker onChange={setFromDate}selectedDate={fromDate} label={"Begin Date"}/>
-            <DatePicker onChange={setToDate} selectedDate={toDate} label={"End Date"}/>
-            <SingleSelectDropdown selectedOptions={[]} onChange={setAchStatus} selectedOption={achStatus} label={"ACH Status "} /> */}
-            {/* <ToggleSwitch onChange={() => setShowError(!showError)} checked={showError} label={'Show errors'}/> */}
-             {availableFilters.length > 0 && <SingleSelectDropdown options={availableFilters} onChange={showFilter} label={"More Filters"}/>}
-            <FilterObject label="&nbsp;">
-              <button type='button' className='btn btn-primary' onClick={ApplyFilters}> Apply Filters</button>
+           {/* <FilterObject label="&nbsp;">
+              <button type='button' className='btn btn-primary' onClick={ApplyFilters}> Search</button>
             
             </FilterObject>
-            
+             */}
           </div>
         </div>
         <div className="summary-card">
@@ -649,7 +659,7 @@ const CardHtml =(maskedNumber,  xCardType)=>
           isSelectable={false} 
           title={'Recent Transactions'} 
           numberOfItems={totalResults} 
-          itemsPerPage={10} 
+          itemsPerPage={100000} 
           activePage={activePage}
           setActivePage={setActivePage}
           Sort= {Sort}
