@@ -1342,7 +1342,12 @@ input#ach-agree {
   margin: 5px 0;
   border-radius: 2px;
 }
-
+ .disabled-row
+ {
+    background: #f9f7f7;
+    color: gray;
+    text-decoration: line-through;
+ }
 /* MOBILE MODE */
 @media (max-width: 768px) {
   /* Show hamburger */
@@ -1374,6 +1379,6 @@ input#ach-agree {
     padding: 10px;
   }
 
- 
+
   
 }

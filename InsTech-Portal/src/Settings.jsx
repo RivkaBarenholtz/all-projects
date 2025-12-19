@@ -12,7 +12,7 @@ export const Settings = () => {
 
     const { showSuccess, SuccessModal } = useSuccessModal();
 
-   
+
 
     useEffect(() => {
         async function fetchUser() {
@@ -34,15 +34,27 @@ export const Settings = () => {
             try {
                 const usersList = await listUsers();
                 const newUserList = usersList.map(u => {
-                    return { ...u, Action: !u.Disabled && u.Role.toLowerCase()=="user"? 
-                    <button style={{padding: ".25rem"}}  className="btn btn-secondary" onClick={async () => {
-                        await fetchWithAuth("disable-user", { UserId: u.Id });
-                        // Refresh user list
-                       fetchUsers(); 
+                    return {
+                        ...u,
+                        className: u.Disabled ? "disabled-row" : "",
+                        Action: !u.Disabled && u.Role.toLowerCase() == "user" ?
+                            <button style={{ padding: ".25rem" }} className="btn btn-secondary" onClick={async () => {
+                                await fetchWithAuth("update-user", { ...u, Disabled: true });
+                                // Refresh user list
+                                fetchUsers();
 
-                    }}>
-                        Disable
-                    </button>:<></>};
+                            }}>
+                                Disable
+                            </button> : u.Disabled ? <button style={{
+                                padding: ".25rem", background: "#e7e7e7",
+                                border: "1px solid gray"
+                            }} className="btn btn-secondary" onClick={async () => {
+                                await fetchWithAuth("update-user", { ...u, Disabled: false });
+                                // Refresh user list
+                                fetchUsers();
+
+                            }}>ReEnable</button> : <></>
+                    };
                 });
                 setUsers(newUserList);
             }
@@ -56,8 +68,8 @@ export const Settings = () => {
 
 
     return <>
-        { user?.Role?.toLowerCase() === "admin" && <div>
-           
+        {user?.Role?.toLowerCase() === "admin" && <div>
+
             {showAddNewUserModal && <NewUser CloseNewUser={() => setShowAddNewUserModal(false)} OnSuccess={() => {
                 setShowAddNewUserModal(false);
                 showSuccess("User created successfully");
@@ -73,7 +85,7 @@ export const Settings = () => {
                     justifyContent: "space-between"
                 }}>
                     <div>Users</div>
-                     <button className="btn btn-primary" onClick={() => setShowAddNewUserModal(true)}>Add New User</button>
+                    <button className="btn btn-primary" onClick={() => setShowAddNewUserModal(true)}>Add New User</button>
                 </div>} hideColumnDropdown={true} headerList={[
                     { DisplayValue: "Email", Show: true, Value: "Email" },
                     { DisplayValue: "Full Name", Show: true, Value: "FullName" },
