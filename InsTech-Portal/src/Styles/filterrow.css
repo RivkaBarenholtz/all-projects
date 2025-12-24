@@ -1,0 +1,235 @@
+/* Header with Filter Icon */
+.header-with-filter {
+  position: relative;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.header-content a {
+  flex: 1;
+  cursor: pointer;
+}
+
+/* Filter Icon Button */
+.filter-icon {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.filter-icon:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.filter-icon.filter-active {
+  color: #4CAF50;
+  background-color: #e8f5e9;
+}
+
+.filter-icon.filter-active:hover {
+  background-color: #c8e6c9;
+}
+
+.filter-icon svg {
+  display: block;
+}
+
+/* Filter Popover */
+.filter-popover {
+  position: fixed;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 250px;
+  max-width: 350px;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.filter-popover-header {
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.filter-popover-content {
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.filter-popover-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.filter-popover-input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+/* Checkbox Filter in Popover */
+.filter-popover-checkbox-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filter-action-btn {
+  flex: 1;
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-action-btn:hover {
+  background-color: #f0f0f0;
+  border-color: #4CAF50;
+}
+
+.filter-popover-checkbox-list {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.filter-popover-checkbox-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.filter-popover-checkbox-item:hover {
+  background-color: #f8f9fa;
+}
+
+.filter-popover-checkbox-item input[type="checkbox"] {
+  margin-right: 10px;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.filter-popover-checkbox-item span {
+  flex: 1;
+}
+
+/* Number Filter in Popover */
+.filter-popover-number {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-range-separator {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Date Filter in Popover */
+.filter-popover-date {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-date-label {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+/* Popover Footer */
+.filter-popover-footer {
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn-clear {
+  background-color: white;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.filter-btn-clear:hover {
+  background-color: #f5f5f5;
+  border-color: #999;
+}
+
+.filter-btn-apply {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.filter-btn-apply:hover {
+  background-color: #45a049;
+}
+
+/* Scrollbar styling for filter dropdowns */
+.filter-popover-content::-webkit-scrollbar,
+.filter-popover-checkbox-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.filter-popover-content::-webkit-scrollbar-track,
+.filter-popover-checkbox-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.filter-popover-content::-webkit-scrollbar-thumb,
+.filter-popover-checkbox-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.filter-popover-content::-webkit-scrollbar-thumb:hover,
+.filter-popover-checkbox-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
