@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { BaseUrl } from "../Utilities";
 import { CopyIcon } from "../FilterObjects/CopyIcon";
 import ReCAPTCHA from "react-google-recaptcha";
+import { useParams } from "react-router-dom";
 
 export const WireTab =({
     bankInfo,  
@@ -28,7 +29,7 @@ export const WireTab =({
     const [captchaToken, setCaptchaToken] = useState('');
     const [submitPressed , setSubmitPressed ] = useState(false); 
     const [showSubmit, setShowSubmit ]= useState(true);
-
+     const { context } = useParams();
     const navigate = useNavigate(); 
     const SubmitWire = async()=> 
     {
@@ -62,14 +63,14 @@ export const WireTab =({
             isDevelopment: import.meta.env.DEV
         }
 
-        await fetch(`${BaseUrl()}/pay/submit-wire`, {
+        await fetch(`${BaseUrl()}/pay/${context}/submit-wire`, {
             method: 'POST',
             body: JSON.stringify(submitWireReq),
             headers: { 'Content-Type': 'application/json' }
         });
 
-        
-        navigate(`/thank-you?amount=${amount}&method=wire`);
+
+        navigate(`/${context}/thank-you?amount=${amount}&method=wire`);
         //call back end which 
         // 1. saves our payment 
 

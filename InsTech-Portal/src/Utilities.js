@@ -88,14 +88,14 @@ export const Sort = ( data,  field, ascending = true) =>{
     export const BaseUrl=() =>{
      return import.meta.env.MODE === 'development'
         ? 'https://ins-dev.instechpay.co'
-        : window.location.origin;
+        : window.location.origin.replace("pay.instechpay.co", "ins-dev.instechpay.co"); 
     }
 
 
   export const handleUnauthorized = () => {
      
     localStorage.removeItem("idToken");
-    import.meta.env.MODE === 'development'?
+    import.meta.env.MODE === 'development'  || window.location.hostname === 'pay.instechpay.co' ?
     window.location.href = "/login":
     window.location.href = "/app/login"
     ;

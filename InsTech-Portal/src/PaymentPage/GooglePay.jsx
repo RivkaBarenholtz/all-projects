@@ -3,11 +3,13 @@ import React from "react";
 import GooglePayButton from "@google-pay/button-react";
 import {  BaseUrl } from '../Utilities';
 import { useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+
 
 
 const GooglePay = ({amount, surcharge, AccountID, invoiceID , csrCode, csrEmail, captchaToken, cardHolderName, zip}) => {
     const navigate = useNavigate();
-    
+     const { context } = useParams();
     
     const paymentRequest = {
     apiVersion: 2,
@@ -59,7 +61,7 @@ const GooglePay = ({amount, surcharge, AccountID, invoiceID , csrCode, csrEmail,
       };
 
     // Send the token to your backend
-    const response = await fetch(`${BaseUrl()}/pay/make-digital-payment`, {
+    const response = await fetch(`${BaseUrl()}/pay/${context}/make-digital-payment`, {
         method: 'POST',
         body: JSON.stringify(request),
         headers: { 'Content-Type': 'application/json' }
@@ -67,7 +69,7 @@ const GooglePay = ({amount, surcharge, AccountID, invoiceID , csrCode, csrEmail,
    const json = await response.json();
    if(json.xStatus == "Approved")
     {
-        navigate("/thank-you")
+        navigate(`/${context}/thank-you`)
     }
    
   };

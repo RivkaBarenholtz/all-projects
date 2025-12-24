@@ -1,61 +1,14 @@
 import { chromium } from "playwright";
+import { getClient } from "./client.js";
 
 export async function handler(event) {
 
-  let browser;
- 
+  const client = await getClient(event);
+  const page = client.page; 
 
-  if (event.isLocalTest) {
-      // Running inside Lambda / Docker
-     browser= await chromium.launch({
-          headless: false, 
-		  slowMo: 500
-           // slow motion for debugging
-      });
-  } else {
-      // Running locally on Windows / Mac / Linux
-      browser = await chromium.launch({
-          
-           // slow motion for debugging
-      });
-  }
+  await page.locator('[title="Home (None)"]').click();
 
-  const page = await browser.newPage();
-  await page.goto(`https://${event.enterpriseId}.appliedepic.com/#/?program=GeneralLedger`, { waitUntil: "domcontentloaded" });
-
-  const context = page.context();
-  const firstTextbox = page.getByRole('textbox').first();
-  await firstTextbox.fill(event.enterpriseId);
-
-    const popupPromise = page.waitForEvent('popup').catch(() => null);
-    const newPagePromise = context.waitForEvent('page').catch(() => null);
-
-    await page.locator('button.button.accept').click();
-
-    await page.click('button:has-text("Login")');
-
-    // whichever happens first wins
-    const popup = await Promise.race([popupPromise, newPagePromise]);
-
-    if (popup) {
-      await popup.waitForLoadState('load');
-      await popup.fill("#usercode", event.userName);
-      await popup.fill("#password", event.password );
-      await popup.getByRole('button', { name: 'Login' }).click();
-      // bouskila 
-      // tova ovadia 
-
-    } else {
-       console.log("No popup or new tab detected");
-    }
-    await page.getByRole('button', { name: 'Continue' }).click();
-    try {
-    // Try to click the "Yes" button
-         await page.getByRole('button', { name: 'Yes' }).click();
-    
-    } catch (err) {
-      console.error("Failed to click the 'Yes' button:");
-    }
+  await page.locator('a.sidebar-button', { hasText: 'General Ledger' }).click();
 
     const receiptsButton = page.getByText('Receipts', { exact: true });
     await receiptsButton.first().waitFor({ state: 'visible', timeout: 5000 });

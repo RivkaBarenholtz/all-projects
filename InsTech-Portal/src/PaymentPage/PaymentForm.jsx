@@ -1,7 +1,7 @@
 import React, { use, useRef, useState, useEffect } from 'react';
 import { useMediaQuery } from 'react-responsive';
 import { FormatCurrency, BaseUrl } from '../Utilities';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams , useParams} from 'react-router-dom';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
@@ -14,7 +14,34 @@ import Loader from './Loader.jsx';
 
 
 
-export default function PaymentForm({isPortal , onSuccess}) {
+export default function PaymentForm({isPortal , onSuccess }) {
+
+
+
+  const {context } = useParams();
+  // const [status, setStatus] = useState("loading");
+
+  // useEffect(() => {
+  //   fetch(`g.instechpay.co/pay/${param}/validate`)
+  //     .then(res => {
+  //       if (res.status === 404) throw new Error("not-found");
+  //       if (!res.ok) throw new Error("error");
+  //       return res.json();
+  //     })
+  //     .then(() => setStatus("ok"))
+  //     .catch(err => {
+  //       if (err.message === "not-found") {
+  //         setStatus("not-found");
+  //       } else {
+  //         setStatus("error");
+  //       }
+  //     });
+  // }, [param]);
+
+  // if (status === "loading") return <div>Loading…</div>;
+  // if (status === "not-found") return <div> 404 Page not found</div>  ;
+  // if (status === "error") return <div>Something went wrong</div>;
+
 
   const [searchParams] = useSearchParams();
   const accountID = searchParams.get("account") ?? "";
@@ -249,7 +276,7 @@ export default function PaymentForm({isPortal , onSuccess}) {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`${BaseUrl()}/pay/get-vendor`);
+        const response = await fetch(`${BaseUrl()}/pay/${context}/get-vendor`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch data');
@@ -281,7 +308,7 @@ export default function PaymentForm({isPortal , onSuccess}) {
           try {
             setIsInvLoading(true);
       
-            const response = await fetch(`${BaseUrl()}/pay/get-invoice`, {
+            const response = await fetch(`${BaseUrl()}/pay/${context}/get-invoice`, {
               method: 'POST',
               body: JSON.stringify({ LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(epicClientNumber)?null:epicClientNumber }),
               headers: { 'Content-Type': 'application/json' }
@@ -319,7 +346,7 @@ export default function PaymentForm({isPortal , onSuccess}) {
     const fetchData = async () => {
 
       try {
-        const response = await fetch(`${BaseUrl()}/pay/get-surcharge`, {
+        const response = await fetch(`${BaseUrl()}/pay/${context}/get-surcharge`, {
           method: 'POST',
           body: JSON.stringify({ ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID)|| invoiceID=="" ? -1 : invoiceID }),
           headers: { 'Content-Type': 'application/json' }
@@ -351,7 +378,7 @@ export default function PaymentForm({isPortal , onSuccess}) {
     {
         const GetRefNum = async()=>
         {
-            const response = await fetch(`${BaseUrl()}/pay/get-ref-num`, {
+            const response = await fetch(`${BaseUrl()}/pay/${context}/get-ref-num`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
                 });

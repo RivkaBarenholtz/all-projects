@@ -12,6 +12,7 @@ import PaymentForm from './PaymentPage/PaymentForm'
 import TransactionDetail from './Objects/TransactionDetail';
 import { getDate } from 'date-fns';
 import { CustomerInfo } from './Objects/CustomerInfo';
+import { X } from 'lucide-react';
 
 function Transactions() {
  // const sixDaysAgo = new Date() - 6 
@@ -19,6 +20,7 @@ function Transactions() {
   const [endDate, setEndDate]= useState(new Date)
   const [showError, setShowError] = useState(false)
   const [activePage, setActivePage] = useState (1);
+   const [filters, setFilters] = useState({});
   const [totalResults , setTotalResults] =useState(0);
   const [total, setTotal ]= useState(0);
   const [selectedTransaction, setSelectedTransaction ] = useState(null);
@@ -88,6 +90,7 @@ function Transactions() {
       Value:  "xName",
       FilterValue: "xName",
       SortString:"Name",
+      FilterType: "text",
       SortAsc: true
     },
     {
@@ -96,6 +99,7 @@ function Transactions() {
       Value:  "xBillLastName",
       SortString : "xBillLastName",
       FilterValue: "xBillLastName",
+      FilterType: "text",
       SortAsc: true
     },
     {
@@ -104,6 +108,7 @@ function Transactions() {
       Value:  "xMaskedAccountNumberHtml",
       FilterValue: "xMaskedAccountNumber",
       SortString : "MaskedAccountNumber",
+      FilterType: "text",
       SortAsc: true
     },
     
@@ -131,6 +136,7 @@ function Transactions() {
       Value:  "xDescription",
       FilterValue: "xDescription",
       SortString : "Description",
+      FilterType: "text",
       SortAsc: true
     },
     
@@ -139,7 +145,9 @@ function Transactions() {
       DisplayValue:"Customer ID", 
       Show: false, 
       Value:  "xCustom01",
+      FilterValue: "xCustom01",
       SortString: "CardknoxCustomer",
+      FilterType: "text",
       SortAsc: true
     },
     
@@ -149,6 +157,7 @@ function Transactions() {
       Show: false, 
       Value:  "xCustom02",
       SortString : "CsrCode",
+      FilterType: "text",
       SortAsc: true
     },
     
@@ -158,6 +167,7 @@ function Transactions() {
       Show: false, 
       Value:  "xCustom03",
       SortString : "CsrEmail",
+      FilterType: "text",
       SortAsc: true
     }
     
@@ -583,7 +593,7 @@ const CardHtml =(maskedNumber,  xCardType)=>
       {showNewTransScreen && <div className="modal-overlay">
         <div className="modal">
           <button onClick={()=> setShowNewTransScreen(false)} type='button' className="modal-close">&times;</button>
-          <PaymentForm isPortal={true} onSuccess={()=>{ setShowNewTransScreen(false); search(getFilters());}}/>
+          <PaymentForm  isPortal={true} onSuccess={()=>{ setShowNewTransScreen(false); search(getFilters());}}/>
         </div>
       </div>
     }
@@ -644,6 +654,23 @@ const CardHtml =(maskedNumber,  xCardType)=>
             </FilterObject>
              */}
           </div>
+
+         <div className='filter-value-selector'>
+            { 
+            Object.keys(filters).map((key, index) => {
+              const header = headers.find(h => h.FilterValue === key);
+              const filterstring = filters[key].min || filters[key].max ? filters[key].min + " - " + filters[key].max : filters[key].from || filters[key].to ? filters[key].from + " - " + filters[key].to : filters[key].value;
+              return <div key={index} className='status pending'>
+                  <X height={10} className='close' onClick={ ()=> {
+                    const newFilters = {...filters};
+                    delete newFilters[key];
+                    setFilters(newFilters);
+                  }}/>
+                {header.DisplayValue}: {Array.isArray(filters[key].value) ? filters[key].value.join(', ') : filters[key].value??filterstring}
+                </div>
+            })
+          }
+          </div>  
         </div>
         <div className="summary-card">
             <div className="summary-label">Total Approved</div>
@@ -656,6 +683,8 @@ const CardHtml =(maskedNumber,  xCardType)=>
           headerList={headers} 
           SetHeaderList = {setHeaders}
           JsonObjectList={transactions} 
+          filters={filters}
+          setFilters={setFilters}
           isSelectable={false} 
           title={'Recent Transactions'} 
           numberOfItems={totalResults} 

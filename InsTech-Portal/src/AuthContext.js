@@ -84,6 +84,6 @@ export  const refreshAccessToken = async () => {
 };
 const redirectToLogin = () => {
   localStorage.removeItem("idToken");
-  window.location.href =process.env.NODE_ENV === 'development' ? '/login' : '/app/login'; 
+  window.location.href =process.env.NODE_ENV === 'development' || window.location.hostname === 'pay.instechpay.co' ? '/login' : '/app/login'; 
 };
   

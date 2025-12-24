@@ -30,8 +30,11 @@ const Navbar = () => {
   useEffect(() => setOpen(false), [location.pathname])
 
   useEffect (()=>{ 
-    const vend =   localStorage.getItem("currentVendor")?? user[0].VendorId;
-    setVendor(vend);
+    if(user.length > 0)
+    {
+      const vend =   localStorage.getItem("currentVendor")?? user[0].VendorId;
+      setVendor(vend);
+    }
   }, [user])
   
   

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import ReCAPTCHA from "react-google-recaptcha";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCreditCard } from '@fortawesome/free-solid-svg-icons';
+import { useParams } from 'react-router-dom';
 import { on } from "process";
 
 
@@ -45,7 +46,7 @@ export const CheckTab = (
     const handleCheckboxChange = () => {
         setAchChecked(!achChecked)
     }
-
+     const { context } = useParams();
     const submitToGateway = async () => {
         setEverythingFocused();
         setSubmitPressed(true);
@@ -84,14 +85,14 @@ export const CheckTab = (
         };
 
         try {
-            const response = await fetch(`${BaseUrl()}/pay/make-check-payment-to-cardknox`, {
+            const response = await fetch(`${BaseUrl()}/pay/${context}make-check-payment-to-cardknox`, {
                 method: 'POST',
                 body: JSON.stringify(request),
                 headers: { 'Content-Type': 'application/json' }
             });
             const responseBody = await response.json();
             if (responseBody.xStatus == "Approved" ) {
-               if(!isPortal) navigate(`/thank-you?amount=${amount}`);
+               if(!isPortal) navigate(`/${context}/thank-you?amount=${amount}`);
                else onFinish(); 
                 
             }

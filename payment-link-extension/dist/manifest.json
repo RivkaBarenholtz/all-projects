@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Insure Tech Applied Epic Extension",
-  "version": "1.07",
+  "version": "1.08",
   "host_permissions": [
     "https://*.appliedepic.com/*",
     "https://*.instechpay.co/*"

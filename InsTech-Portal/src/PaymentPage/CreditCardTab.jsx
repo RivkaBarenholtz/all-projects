@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import ReCAPTCHA from "react-google-recaptcha";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCreditCard, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
+import { useParams } from 'react-router-dom';
 
 
 
@@ -52,6 +53,8 @@ export const CreditCardTab = (
 
     const cardRef = useRef();
     const cvvRef = useRef();
+
+     const { context } = useParams();
 
 
     const onCardToken = (data) => {
@@ -157,7 +160,7 @@ export const CreditCardTab = (
         };
 
         try {
-            const response = await fetch(`${BaseUrl()}/pay/make-payment-cardknox`, {
+            const response = await fetch(`${BaseUrl()}/pay/${context}/make-payment-cardknox`, {
                 method: 'POST',
                 body: JSON.stringify(request),
                 headers: { 'Content-Type': 'application/json' }
@@ -165,7 +168,7 @@ export const CreditCardTab = (
             const responseBody = await response.json();
             if (responseBody.xStatus == "Approved") {
 
-               if(!isPortal) navigate(`/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`)
+               if(!isPortal) navigate(`/${context}/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`)
                 else onFinish();
             }
             else {

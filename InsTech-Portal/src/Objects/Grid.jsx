@@ -3,32 +3,34 @@ import { ColumnDropdown } from './ColumnDropdown';
 import { FilterPopover } from './FilterPopover';
 
 export const Grid = (
-  { JsonObjectList, 
-    headerList, 
-    edit, 
-    delete: deleteFn, 
-    add: addFn, 
-    isSelectable , 
-    title, 
-    numberOfItems , 
-    itemsPerPage,  
-    activePage, 
-    setActivePage, 
-    Sort, 
-    SetHeaderList, 
-    rowClick, 
-    footerObjects , 
+  { JsonObjectList,
+    headerList,
+    edit,
+    delete: deleteFn,
+    add: addFn,
+    isSelectable,
+    title,
+    numberOfItems,
+    itemsPerPage,
+    activePage,
+    setActivePage,
+    Sort,
+    SetHeaderList,
+    rowClick,
+    footerObjects,
     hideColumnDropdown,
+    filters,
+    setFilters,
     enableFilters = true
   }) => {
   const [expandedRows, setExpandedRows] = useState([]);
   const [startPage, setStartPage] = useState(1);
   const [scrollTop, setScrollTop] = useState(0);
   const [containerHeight, setContainerHeight] = useState(600);
-  const [filters, setFilters] = useState({});
+ 
   const [activeFilter, setActiveFilter] = useState(null);
   const [filterPosition, setFilterPosition] = useState({ top: 0, left: 0 });
-  
+
   const scrollContainerRef = useRef(null);
   const tableBodyRef = useRef(null);
   const scrollTimeoutRef = useRef(null);
@@ -39,18 +41,18 @@ export const Grid = (
   const BUFFER_SIZE = 10; // Number of extra rows to render above and below visible area
   const SCROLL_THROTTLE = 50; // Milliseconds between scroll updates
   const SCROLL_COOLDOWN = 200; // Milliseconds to wait after scroll stops before allowing new updates
-  
-  const endPage = Math.min(startPage + 9, Math.ceil(numberOfItems/itemsPerPage));
-  
+
+  const endPage = Math.min(startPage + 9, Math.ceil(numberOfItems / itemsPerPage));
+
   // Determine if virtual scrolling should be enabled
   const useVirtualScrolling = itemsPerPage > 100;
-  
+
   useEffect(() => {
     if (scrollContainerRef.current && useVirtualScrolling) {
       setContainerHeight(scrollContainerRef.current.clientHeight);
     }
   }, [useVirtualScrolling]);
-  
+
   // Measure actual row height after first render
   useEffect(() => {
     if (tableBodyRef.current && useVirtualScrolling && JsonObjectList.length > 0) {
@@ -63,7 +65,7 @@ export const Grid = (
       }
     }
   }, [useVirtualScrolling, JsonObjectList.length]);
-  
+
   // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
@@ -75,28 +77,28 @@ export const Grid = (
       }
     };
   }, []);
-  
+
   const handleScroll = (e) => {
     if (useVirtualScrolling && !isScrollCooldownRef.current) {
       const container = e.target;
       const newScrollTop = container.scrollTop;
       const maxScroll = container.scrollHeight - container.clientHeight;
-      
+
       // Clamp scroll position to prevent overscroll issues
       const clampedScrollTop = Math.max(0, Math.min(newScrollTop, maxScroll));
-      
+
       const now = Date.now();
-      
+
       // Throttle updates to prevent too frequent re-renders
       if (now - lastScrollTimeRef.current < SCROLL_THROTTLE) {
         if (scrollTimeoutRef.current) {
           clearTimeout(scrollTimeoutRef.current);
         }
-        
+
         scrollTimeoutRef.current = setTimeout(() => {
           setScrollTop(clampedScrollTop);
           lastScrollTimeRef.current = Date.now();
-          
+
           // Start cooldown period
           isScrollCooldownRef.current = true;
           if (cooldownTimeoutRef.current) {
@@ -109,7 +111,7 @@ export const Grid = (
       } else {
         setScrollTop(clampedScrollTop);
         lastScrollTimeRef.current = now;
-        
+
         // Start cooldown period
         isScrollCooldownRef.current = true;
         if (cooldownTimeoutRef.current) {
@@ -121,9 +123,10 @@ export const Grid = (
       }
     }
   };
-  
+
   // Memoize the filter function
   const applyFilters = useCallback((data, filters) => {
+    if (!enableFilters || !filters) return data;
     if (Object.keys(filters).length === 0) return data;
 
     return data.filter(item => {
@@ -151,10 +154,10 @@ export const Grid = (
             if (!from && !to) return true;
             const itemDate = new Date(itemValue);
             if (isNaN(itemDate.getTime())) return false;
-            
+
             const fromDate = from ? new Date(from) : new Date('1900-01-01');
             const toDate = to ? new Date(to) : new Date('2100-12-31');
-            
+
             return itemDate >= fromDate && itemDate <= toDate;
 
           default:
@@ -168,48 +171,48 @@ export const Grid = (
   const filteredData = useMemo(() => {
     return applyFilters(JsonObjectList, filters);
   }, [JsonObjectList, filters]);
-  
+
   // Memoize visible range calculation
   const { startIndex, endIndex } = useMemo(() => {
     if (!useVirtualScrolling) {
       return { startIndex: 0, endIndex: filteredData.length };
     }
-    
+
     const totalItems = filteredData.length;
     const visibleRows = Math.ceil(containerHeight / rowHeight);
-    
+
     // Calculate start index with buffer
     let startIndex = Math.floor(scrollTop / rowHeight) - BUFFER_SIZE;
     startIndex = Math.max(0, Math.min(startIndex, totalItems - 1));
-    
+
     // Calculate end index with buffer
     let endIndex = startIndex + visibleRows + BUFFER_SIZE * 2;
     endIndex = Math.min(totalItems, endIndex);
-    
+
     // Ensure we always have at least the visible rows if possible
     if (endIndex - startIndex < visibleRows && startIndex > 0) {
       startIndex = Math.max(0, endIndex - visibleRows - BUFFER_SIZE);
     }
-    
+
     return { startIndex, endIndex };
   }, [useVirtualScrolling, filteredData.length, containerHeight, rowHeight, scrollTop]);
-  
+
   // Memoize visible items
   const visibleItems = useMemo(() => {
-    return useVirtualScrolling 
+    return useVirtualScrolling
       ? filteredData.slice(startIndex, endIndex)
       : filteredData;
   }, [useVirtualScrolling, filteredData, startIndex, endIndex]);
-  
+
   // Memoize height calculations for virtual scrolling
   const totalHeight = useMemo(() => {
     return useVirtualScrolling ? filteredData.length * rowHeight : 'auto';
   }, [useVirtualScrolling, filteredData.length, rowHeight]);
-  
+
   const offsetY = useMemo(() => {
     return useVirtualScrolling ? startIndex * rowHeight : 0;
   }, [useVirtualScrolling, startIndex, rowHeight]);
-   
+
   const handlePrev = () => {
     setStartPage(Math.max(1, startPage - 10));
   };
@@ -230,15 +233,9 @@ export const Grid = (
     }
   };
 
-  const SortByColumn = async (sortBy) => {
+  const SortByColumn = async (sortBy, isAsc) => {
     const HeaderItem = headerList.find(h => h.Value == sortBy);
-    Sort(HeaderItem.SortString, HeaderItem.SortAsc);
-    const newHeaderList = headerList.map(item => 
-      item === HeaderItem 
-        ? { ...HeaderItem, SortAsc: !HeaderItem.SortAsc } 
-        : item
-    );
-    SetHeaderList(newHeaderList);
+    Sort(HeaderItem.SortString, isAsc);
   };
 
   const handleFilterIconClick = (event, header) => {
@@ -252,15 +249,22 @@ export const Grid = (
       left = window.innerWidth + window.scrollX - (POPUP_WIDTH + 10); // 10px padding
     }
     setFilterPosition({
-      top: rect.bottom + 5 + window.scrollY,
+      top: rect.top - 5 + window.scrollY,
       left: left
     });
-    setActiveFilter(header.FilterValue??header.Value);
+
+    if (header.FilterType != 'text') {
+      setActiveFilter(header.FilterValue ?? header.Value);
+    }
   };
 
+  useEffect(() => {
+    console.log('Filters updated:', filters);
+  }, [filters]);
+
   const handleFilterChange = (columnValue, filterValue, filterType) => {
-    if (!filterValue || 
-        (typeof filterValue === 'object' && Object.values(filterValue).every(v => !v || v.length === 0))) {
+    if (!filterValue ||
+      (typeof filterValue === 'object' && Object.values(filterValue).every(v => !v || v.length === 0))) {
       // Remove filter if empty
       const newFilters = { ...filters };
       delete newFilters[columnValue];
@@ -269,7 +273,7 @@ export const Grid = (
       // Add or update filter
       setFilters({
         ...filters,
-        [columnValue]: {...filterValue, type: filterType }
+        [columnValue]: { ...filterValue, type: filterType }
       });
     }
   };
@@ -280,62 +284,92 @@ export const Grid = (
         <div className="table-title">{title}</div>
         {!hideColumnDropdown && <ColumnDropdown headerList={headerList} setHeaderList={SetHeaderList} />}
       </div>
-      
+
       {enableFilters && activeFilter && (
         <FilterPopover
-          header={headerList.find(h =>activeFilter=== h.FilterValue)}
+          header={headerList.find(h => activeFilter === h.FilterValue)}
           data={JsonObjectList}
-          filterValue={filters[activeFilter]??{}}
+          filterValue={filters[activeFilter] ?? {}}
           onFilterChange={handleFilterChange}
           onClose={() => setActiveFilter(null)}
           position={filterPosition}
         />
       )}
-      
-      <div 
+
+      <div
         className='table-scroller'
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        style={useVirtualScrolling ? { 
-          maxHeight: '600px', 
+        style={useVirtualScrolling ? {
+          maxHeight: '900px',
           overflowY: 'auto',
           position: 'relative'
         } : {}}
       >
         <table className='table'>
           <thead style={useVirtualScrolling ? { position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'white' } : {}}>
-            <tr style={{whiteSpace: 'nowrap'}}>
+            <tr style={{ whiteSpace: 'nowrap' }}>
               <th></th>
               {isSelectable && <th></th>}
               {headerList.map((header) => {
                 if (!header.Show) return null;
-                const hasFilter = filters[header.FilterValue??header.Value];
+               
                 return (
                   <th key={header.Value} className="header-with-filter">
                     <div className="header-content">
-                      <a onClick={() => { SortByColumn(header.Value); }}>
-                        {header.DisplayValue}
-                      </a>
-                      {enableFilters && (
+
+                      {header.DisplayValue}
+
+
+                      <div className="sort-arrows">
                         <button
-                          className={`filter-icon ${hasFilter ? 'filter-active' : ''}`}
-                          onClick={(e) => handleFilterIconClick(e, header)}
+                          className="sort-arrow sort-up"
+                          onClick={(e) => SortByColumn( header.Value, true)}
                           type="button"
-                          title="Filter"
+                          title="Sort ascending"
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
+                          <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor">
+                            <path d="M5 0L0 6h10L5 0z" />
                           </svg>
                         </button>
-                      )}
+                        <button
+                          className="sort-arrow sort-down"
+                          onClick={(e) => SortByColumn(header.Value, false)}
+                          type="button"
+                          title="Sort descending"
+                        >
+                          <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor">
+                            <path d="M5 6L10 0H0l5 6z" />
+                          </svg>
+                        </button>
+                      </div>
+
+                    
                     </div>
                   </th>
                 );
               })}
               {(edit || deleteFn || addFn) && <th>Actions</th>}
             </tr>
+            {enableFilters && <tr>
+              <td></td>
+              {headerList.map((header) => {
+                if (!header.Show) return null;
+                return (
+                  <td key={header.Value} style={{padding:'5px'}}>
+                    {header.FilterValue && (
+                      <input type='text' style={{padding:'.5rem', border:'1px solid gray', borderRadius: '8px'}} onChange={(e)=> handleFilterChange(header.FilterValue??header.Value, { value: e.target.value }, header.FilterType??'text')}   onFocus={(e)=> handleFilterIconClick(e, header)} />                   
+                        
+                    )}
+                  </td>
+                );  
+              })}
+
+               
+            </tr>
+              }
           </thead>
-          <tbody 
+          <tbody
             ref={tableBodyRef}
             className='table-scroller-vertical'
           >
@@ -344,14 +378,14 @@ export const Grid = (
                 <td colSpan={headerList.filter(h => h.Show).length + (isSelectable ? 3 : 2)} style={{ padding: 0, border: 'none', height: `${Math.floor(offsetY)}px` }} />
               </tr>
             )}
-            
+
             {visibleItems.map((item) => (
               <React.Fragment key={item.id || item.UniqueKey}>
-                <tr 
-                key={item.id || item.UniqueKey}
+                <tr
+                  key={item.id || item.UniqueKey}
                   className={item.className || ''}
                   data-row
-                  onClick={rowClick ? () => { rowClick(item); } : () => {}}
+                  onClick={rowClick ? () => { rowClick(item); } : () => { }}
                 >
                   {isSelectable && (
                     <td className='grid'>
@@ -405,12 +439,12 @@ export const Grid = (
                 )}
               </React.Fragment>
             ))}
-            
+
             {useVirtualScrolling && (() => {
               const renderedRowsHeight = (endIndex - startIndex) * rowHeight;
               const remainingHeight = totalHeight - offsetY - renderedRowsHeight;
               const bottomSpacerHeight = Math.max(0, Math.floor(remainingHeight));
-              
+
               return bottomSpacerHeight > 5 ? (
                 <tr style={{ height: `${bottomSpacerHeight}px`, lineHeight: 0 }}>
                   <td colSpan={headerList.filter(h => h.Show).length + (isSelectable ? 3 : 2)} style={{ padding: 0, border: 'none', height: `${bottomSpacerHeight}px` }} />
@@ -420,7 +454,7 @@ export const Grid = (
           </tbody>
         </table>
       </div>
-      
+
       {itemsPerPage < numberOfItems && (
         <div className="pagination">
           {itemsPerPage && numberOfItems && activePage && (
@@ -439,9 +473,9 @@ export const Grid = (
             {Array.from({ length: endPage - startPage + 1 }, (_, i) => {
               const pageNum = startPage + i;
               return (
-                <button 
-                  className={`pagination-btn ${activePage == pageNum ? "active" : ""}`} 
-                  key={pageNum} 
+                <button
+                  className={`pagination-btn ${activePage == pageNum ? "active" : ""}`}
+                  key={pageNum}
                   onClick={() => setActivePage(pageNum)}
                   type='button'
                 >
@@ -454,7 +488,7 @@ export const Grid = (
               <a onClick={handleNext}>
                 . . . . .
               </a>
-            )}       
+            )}
           </div>
         </div>
       )}

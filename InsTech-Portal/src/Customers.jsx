@@ -174,7 +174,7 @@ export default function Customers() {
 
 
       }
-      <Grid rowClick={setCustomer} JsonObjectList={data} headerList={headers} SetHeaderList={setHeaders} Sort={sortData} footerObjects={<a className = "view-more" onClick={getData}> View More  </a>}/>
+      <Grid enableFilters={false} rowClick={setCustomer} JsonObjectList={data} headerList={headers} SetHeaderList={setHeaders} Sort={sortData} footerObjects={<a className = "view-more" onClick={getData}> View More  </a>}/>
       
       <SuccessModal/>
    </>

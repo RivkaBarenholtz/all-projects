@@ -2,15 +2,15 @@ const { handler } = require("./index");
 
 (async () => {
   const event = {
-    enterpriseId : "sapph02", 
-    userName : "RRUBIN", 
-    password: "Proactovate1!", 
+    enterpriseid : "GNPIN01", 
+    username : "BARRI1", 
+    password: "Rivka@instech360", 
     amount: ".25", 
     paymentMethod: "Check", 
     bankAccountNumber : 1010, 
     description : "test description", 
     detailDescription : "test detail description", 
-    accountLookupCode : "ALLECUS-01", 
+    accountInput : "TEST", 
     isDebit: true, 
     isLocalTest: true
   }

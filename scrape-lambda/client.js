@@ -6,11 +6,19 @@ import { login } from "./login.js";
 
 
 
-export async function handler(event) {
+export async function getClient(event) {
 
  const page = await login (event.username, event.password , event.databaseName, event.enterpriseid );
- console.log(page);
- await page.goto(`https://${event.enterpriseid}.appliedepic.com/#/?program=AccountLocate`, { waitUntil: "domcontentloaded" });
+// console.log(page);
+const a = await page.locator('.main-button', { hasText: 'Locate' });
+console.log(a);
+await page.waitForTimeout(200); // short UI settle
+await a.click();
+try {
+    await a.click(); 
+}
+catch (error) {
+}
 
     // Step 1: locate the outer div
 const comboContainer = page.locator('div[data-automation-id="cboLocateBy"]');
@@ -64,15 +72,20 @@ await page.waitForTimeout(2000); // time is in milliseconds
     return {
     statusCode: 200,
     body: JSON.stringify({ 
+        page: page, 
         lookupCode:event.accountInput ,
         accountName : accountName
     }),
   };
     }
 
+    //body rows 
+
+
   return {
     statusCode: 200,
-    body: JSON.stringify({ lookupCode:"Playwright test ran successfully!" ,
+    page: page,
+    body: JSON.stringify({ lookupCode:"UNFOUND" ,
         accountName : ""
     }),
   };
