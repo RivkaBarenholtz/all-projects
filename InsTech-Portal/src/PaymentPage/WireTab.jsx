@@ -63,14 +63,16 @@ export const WireTab =({
             isDevelopment: import.meta.env.DEV
         }
 
-        await fetch(`${BaseUrl()}/pay/${context}/submit-wire`, {
+         const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
+
+        await fetch(`${BaseUrl()}/pay/${clientid}/submit-wire`, {
             method: 'POST',
             body: JSON.stringify(submitWireReq),
             headers: { 'Content-Type': 'application/json' }
         });
 
 
-        navigate(`/${context}/thank-you?amount=${amount}&method=wire`);
+        navigate(`/${context}/?amount=${amount}&method=wire`);
         //call back end which 
         // 1. saves our payment 
 

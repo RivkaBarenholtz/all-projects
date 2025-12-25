@@ -29,7 +29,7 @@ const CardnoxField = React.forwardRef((props , ref )=>  {
     xSoftwareVersion: "1.0.0"
   };
   const options = {
-    placeholder: ifieldType === CARD_TYPE ? 'Card Number' : 'CVV',
+    placeholder: ifieldType === CARD_TYPE ? 'Card Number' : ifieldType === CVV_TYPE ? 'CVV' : 'Account Number',
     enableLogging: false,
     autoFormat: true,
     autoFormatSeparator: ' ',

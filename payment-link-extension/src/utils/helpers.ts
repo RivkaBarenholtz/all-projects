@@ -34,7 +34,7 @@ export function generatePaymentUrl(
     queryParams = `&invoiceid=${options.invoiceIds.join(',')}`;
   }
 
-  return `https://${subdomain}.instechpay.co/app/pay?account=${lookupCode}${accountString}${queryParams}`;
+  return `https://pay.instechpay.co/${subdomain}?account=${lookupCode}${accountString}${queryParams}`;
 }
 
 export async function copyToClipboard(text: string): Promise<void> {

@@ -125,7 +125,7 @@ export async function createTransaction(transaction: any, subdomain:string, isCh
 {
   const urlendpoint = isCheck?"make-check-payment-to-cardknox":"make-payment-cardknox"
 
-  const response = await fetch(`https://${subdomain}.instechpay.co/pay/${subdomain}/${urlendpoint}`, {
+  const response = await fetch(`https://ins-dev.instechpay.co/pay/${subdomain}/${urlendpoint}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

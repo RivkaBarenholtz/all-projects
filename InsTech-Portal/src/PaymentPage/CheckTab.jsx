@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { FormatCurrency, BaseUrl } from '../Utilities';
 import { useNavigate } from 'react-router-dom';
 import ReCAPTCHA from "react-google-recaptcha";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCreditCard } from '@fortawesome/free-solid-svg-icons';
 import { useParams } from 'react-router-dom';
+import CardnoxField from "./CardnoxField";
 import { on } from "process";
+import { ACH_TYPE } from "@cardknox/react-ifields";
 
 
 export const CheckTab = (
@@ -26,19 +28,26 @@ export const CheckTab = (
         zip, 
         isPortal, 
         onFinish,
+        ifieldsKey,
         showProcess = true  
     }) => {
     const [accountName, setAccountName] = useState('');
-    const [accountNumber, setAccountNumber] = useState('');
+    const [checkToken, setCheckToken] = useState('');
     const [routingNumber, setRoutingNumber] = useState('');
     const [accountType, setAccountType] = useState('checking');
     const [captchaToken, setCaptchaToken] = useState('');
     const [submitPressed, setSubmitPressed] = useState(false);
 
+    const checkRef = useRef();
+
     const handleAccountTypeChange = (event) => {
         setAccountType(event.target.value);
     };
 
+    
+    const verify3DS = (verifyData) => {
+        window.ck3DS.verifyTrans(verifyData);
+    }
     const [achChecked, setAchChecked] = useState(false);
 
     const navigate = useNavigate();
@@ -47,6 +56,12 @@ export const CheckTab = (
         setAchChecked(!achChecked)
     }
      const { context } = useParams();
+
+       const onCheckToken = (data) => {
+        setCheckToken(data.xToken);
+    };
+
+
     const submitToGateway = async () => {
         setEverythingFocused();
         setSubmitPressed(true);
@@ -59,7 +74,7 @@ export const CheckTab = (
             //alert("Please verify that you are not a robot");
             return;
         }
-        if (accountNumber == "" || routingNumber == "" || accountCode == "")
+        if (checkToken == "" || routingNumber == "" || accountCode == "")
             return;
 
         let request = {
@@ -71,7 +86,7 @@ export const CheckTab = (
             Email: email,
             Notes: notes,
             Phone: phone,
-            AccountNumber: accountNumber,
+            AccountNumber: checkToken,
             Amount: amount,
             RoutingNumber: routingNumber,
             AccountType: accountType,
@@ -85,14 +100,15 @@ export const CheckTab = (
         };
 
         try {
-            const response = await fetch(`${BaseUrl()}/pay/${context}make-check-payment-to-cardknox`, {
+             const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
+            const response = await fetch(`${BaseUrl()}/pay/${clientid}/make-check-payment-to-cardknox`, {
                 method: 'POST',
                 body: JSON.stringify(request),
                 headers: { 'Content-Type': 'application/json' }
             });
             const responseBody = await response.json();
             if (responseBody.xStatus == "Approved" ) {
-               if(!isPortal) navigate(`/${context}/thank-you?amount=${amount}`);
+               if(!isPortal) window.location.href = `https://ins-dev.instechpay.co/app/thank-you?amount=${amount}`;
                else onFinish(); 
                 
             }
@@ -140,14 +156,16 @@ export const CheckTab = (
                     </div>
                     <div className="form-group">
                         <label htmlFor="account-number" className="form-label">Account Number</label>
-                        <input
-                            type="text"
-                            id="account-number"
-                            name="account-number"
-                            className={`form-input ${submitPressed && accountNumber == "" ? "invalid" : ""}`}
-                            onChange={(e) => setAccountNumber(e.target.value)}
+                          <CardnoxField
+                            
+                            ifieldType={ACH_TYPE}
+                             onToken={onCheckToken}
+                            handle3DSResults={verify3DS}
+                            ref={checkRef}
+                            className={`ifields`}
+                            ifieldsKey={ifieldsKey}
                         />
-                        {submitPressed && accountNumber == "" ? <div className="toast show" id="toast-for-account-number">Account number required.</div> : ''}
+                        {submitPressed && checkToken == "" ? <div className="toast show" id="toast-for-account-number">Account number required.</div> : ''}
 
                     </div>
 

@@ -160,15 +160,15 @@ export const CreditCardTab = (
         };
 
         try {
-            const response = await fetch(`${BaseUrl()}/pay/${context}/make-payment-cardknox`, {
+             const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
+            const response = await fetch(`${BaseUrl()}/pay/${clientid}/make-payment-cardknox`, {
                 method: 'POST',
                 body: JSON.stringify(request),
                 headers: { 'Content-Type': 'application/json' }
             });
             const responseBody = await response.json();
             if (responseBody.xStatus == "Approved") {
-
-               if(!isPortal) navigate(`/${context}/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`)
+               if(!isPortal) window.location.href = `https://ins-dev.instechpay.co/app/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
                 else onFinish();
             }
             else {

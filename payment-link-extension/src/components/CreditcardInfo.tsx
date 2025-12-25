@@ -73,7 +73,7 @@ export const CreditCardInfo = ({
         // Function to fetch data from your API
           const fetchData = async () => {
             try {
-                const response = await fetch(`https://${subdomain}.instechpay.co/pay/get-vendor`);
+                const response = await fetch(`https://${subdomain}.instechpay.co/pay/${subdomain}/get-vendor`);
                 const data = await response.json();
                 setVendor(data);
             } catch (err) {

@@ -25,7 +25,7 @@ const GooglePay = ({amount, surcharge, AccountID, invoiceID , csrCode, csrEmail,
           type: "PAYMENT_GATEWAY",
           parameters: {
             gateway: "cardknox", 
-            gatewayMerchantId: "googletest", // cardknoxprod
+            gatewayMerchantId: import.meta.env.DEV?"googletest":"cardknoxprod"  ,
           },
         },
       },
@@ -61,7 +61,8 @@ const GooglePay = ({amount, surcharge, AccountID, invoiceID , csrCode, csrEmail,
       };
 
     // Send the token to your backend
-    const response = await fetch(`${BaseUrl()}/pay/${context}/make-digital-payment`, {
+     const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
+    const response = await fetch(`${BaseUrl()}/pay/${clientid}/make-digital-payment`, {
         method: 'POST',
         body: JSON.stringify(request),
         headers: { 'Content-Type': 'application/json' }
@@ -69,7 +70,7 @@ const GooglePay = ({amount, surcharge, AccountID, invoiceID , csrCode, csrEmail,
    const json = await response.json();
    if(json.xStatus == "Approved")
     {
-        navigate(`/${context}/thank-you`)
+        window.location.href = `https://ins-dev.instechpay.co/app/thank-you?amount=${request.Amount}`;
     }
    
   };

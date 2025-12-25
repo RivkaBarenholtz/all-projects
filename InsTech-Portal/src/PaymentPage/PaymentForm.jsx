@@ -234,6 +234,7 @@ export default function PaymentForm({isPortal , onSuccess }) {
         setEverythingFocused={setEverythingFocused}
         isPortal={isPortal}
         onFinish={onSuccess}
+         ifieldsKey={vendor.CardknoxIFeildsKey}
       />,
     ...(vendor.BankInfo && {"Wire Funds":
       <WireTab
@@ -276,7 +277,8 @@ export default function PaymentForm({isPortal , onSuccess }) {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`${BaseUrl()}/pay/${context}/get-vendor`);
+         const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
+        const response = await fetch(`${BaseUrl()}/pay/${clientid}/get-vendor`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch data');
@@ -307,8 +309,8 @@ export default function PaymentForm({isPortal , onSuccess }) {
         if (!hasNaN) {
           try {
             setIsInvLoading(true);
-      
-            const response = await fetch(`${BaseUrl()}/pay/${context}/get-invoice`, {
+            const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
+            const response = await fetch(`${BaseUrl()}/pay/${clientid}/get-invoice`, {
               method: 'POST',
               body: JSON.stringify({ LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(epicClientNumber)?null:epicClientNumber }),
               headers: { 'Content-Type': 'application/json' }
@@ -346,7 +348,8 @@ export default function PaymentForm({isPortal , onSuccess }) {
     const fetchData = async () => {
 
       try {
-        const response = await fetch(`${BaseUrl()}/pay/${context}/get-surcharge`, {
+        const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
+        const response = await fetch(`${BaseUrl()}/pay/${clientid}/get-surcharge`, {
           method: 'POST',
           body: JSON.stringify({ ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID)|| invoiceID=="" ? -1 : invoiceID }),
           headers: { 'Content-Type': 'application/json' }
@@ -378,7 +381,8 @@ export default function PaymentForm({isPortal , onSuccess }) {
     {
         const GetRefNum = async()=>
         {
-            const response = await fetch(`${BaseUrl()}/pay/${context}/get-ref-num`, {
+           const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
+            const response = await fetch(`${BaseUrl()}/pay/${clientid}/get-ref-num`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
                 });
