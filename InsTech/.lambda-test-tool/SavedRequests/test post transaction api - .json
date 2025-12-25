@@ -1,0 +1,62 @@
+{
+  "version": "2.0",
+  "routeKey": "$default",
+  "rawPath": "/path/to/resource",
+  "rawQueryString": "parameter1=value1&parameter1=value2&parameter2=value",
+  "cookies": [ "cookie1", "cookie2" ],
+  "headers": {
+    "host": "ins-dev.instechpay.co",
+    "Header2": "value2"
+  },
+  "queryStringParameters": {
+    "parameter1": "value1,value2",
+    "parameter2": "value"
+  },
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "api-id",
+    "authentication": {
+      "clientCert": {
+        "clientCertPem": "CERT_CONTENT",
+        "subjectDN": "www.example.com",
+        "issuerDN": "Example issuer",
+        "serialNumber": "a1:a1:a1:a1:a1:a1:a1:a1:a1:a1:a1:a1:a1:a1:a1:a1",
+        "validity": {
+          "notBefore": "May 28 12:30:02 2019 GMT",
+          "notAfter": "Aug  5 09:36:04 2021 GMT"
+        }
+      }
+    },
+    "authorizer": {
+      "jwt": {
+        "claims": {
+          "claim1": "value1",
+          "claim2": "value2"
+        },
+        "scopes": [ "scope1", "scope2" ]
+      }
+    },
+    "domainName": "id.execute-api.us-east-1.amazonaws.com",
+    "domainPrefix": "domain-id",
+    "http": {
+      "method": "POST",
+      "path": "/path/to/resource",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "IP",
+      "userAgent": "agent"
+    },
+    "requestId": "request-id",
+    "routeId": "route-id",
+    "routeKey": "$default-route",
+    "stage": "$default-stage",
+    "time": "12/Mar/2020:19:03:58 +0000",
+    "timeEpoch": 1583348638390
+  },
+  "body": "xAmount=250.00&xBillLastName=gishle0001&xCustom02=rs123&xCustom03=rivkyswia%40gmail.com&xEnteredDate=4%2f29%2f2025+3%3a07%3a39+PM&xInvoice=45&xMaskedCardNumber=4xxxxxxxxxxx1111&xName=gishle0001&xRefNum=10516667937&xRequestAmount=250.00&xResponseResult=Approved&xSubtotal=250.00&xToken=94600n3q5nh4gh08qn359p2235103p56&xcommand=cc:sale",
+  "pathParameters": { "parameter1": "value1" },
+  "isBase64Encoded": false,
+  "stageVariables": {
+    "stageVariable1": "value1",
+    "stageVariable2": "value2"
+  }
+}

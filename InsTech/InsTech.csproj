@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <AWSProjectType>Lambda</AWSProjectType>
+    <!-- This property makes the build directory similar to a publish directory and helps the AWS .NET Lambda Mock Test Tool find project dependencies. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- Generate ready to run images during publishing to improve cold start time. -->
+    <PublishReadyToRun>true</PublishReadyToRun>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="ApiClient.cs" />
+    <Compile Remove="AppliedApiClient.cs" />
+    <Compile Remove="AppliedGetClientRequest.cs" />
+    <Compile Remove="AppliedPaymentRecieveRequest.cs" />
+    <Compile Remove="AppliedPaymentResponse.cs" />
+    <Compile Remove="AWSSecretManager.cs" />
+    <Compile Remove="BatchReceipt.cs" />
+    <Compile Remove="CardknoxApiRequest.cs" />
+    <Compile Remove="CardknoxTransaction.cs" />
+    <Compile Remove="CardknoxTransactionApiRequest.cs" />
+    <Compile Remove="CardknoxTransactionReportResponse.cs" />
+    <Compile Remove="Email.cs" />
+    <Compile Remove="GlobalLog.cs" />
+    <Compile Remove="S3Bucket.cs" />
+    <Compile Remove="Utilities.cs" />
+    <Compile Remove="Vendor.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="2.7.2" />
+    <PackageReference Include="Amazon.Lambda.Core" Version="2.8.0" />
+    <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4" />
+    <PackageReference Include="Amazon.Lambda.SQSEvents" Version="2.2.0" />
+    <PackageReference Include="AWSSDK.Core" Version="4.0.3.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AmazonUtilities\AmazonUtilities.csproj" />
+    <ProjectReference Include="..\InsTechClassesV2\InsTechClassesV2.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,64 @@
+{
+  "version": "2.0",
+  "routeKey": "$default",
+  "rawPath": "/pay/make-digital-payment",
+  "rawQueryString": "parameter1=value1&parameter1=value2&parameter2=value",
+  "cookies": ["cookie1", "cookie2"],
+  "headers": {
+    "host": "ins-dev.instechpay.co",
+    "Header2": "value2"
+  },
+  "queryStringParameters": {
+    "parameter1": "value1,value2",
+    "parameter2": "value"
+  },
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "api-id",
+    "authentication": {
+      "clientCert": {
+        "clientCertPem": "CERT_CONTENT",
+        "subjectDN": "www.example.com",
+        "issuerDN": "Example issuer",
+        "serialNumber": "a1:a1:a1:a1:a1:a1:a1:a1:a1:a1:a1:a1:a1:a1:a1:a1",
+        "validity": {
+          "notBefore": "May 28 12:30:02 2019 GMT",
+          "notAfter": "Aug  5 09:36:04 2021 GMT"
+        }
+      }
+    },
+    "authorizer": {
+      "jwt": {
+        "claims": {
+          "claim1": "value1",
+          "claim2": "value2"
+        },
+        "scopes": ["scope1", "scope2"]
+      }
+    },
+    "domainName": "id.execute-api.us-east-1.amazonaws.com",
+    "domainPrefix": "domain-id",
+    "http": {
+      "method": "POST",
+      "path": "/path/to/resource",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "IP",
+      "userAgent": "agent"
+    },
+    "requestId": "request-id",
+    "routeId": "route-id",
+    "routeKey": "$default-route",
+    "stage": "$default-stage",
+    "time": "12/Mar/2020:19:03:58 +0000",
+    "timeEpoch": 1583348638390
+  },
+  "body": "{\"Amount\":\"55.83\",\"Subtotal\":\"55.00\",\"Surcharge\":\"0.015\",\"CardNumber\":\"{\\\"signature\\\":\\\"MEUCIEsEua3BSSlIgRGwdW8Lf5LUMvt+4/nM3aN3tAeWKOYGAiEA2K2NeBETuSs/oAWaL1paMGW9O+TLW7bVdhL2th0Dg2o=\\\",\\\"intermediateSigningKey\\\":{\\\"signedKey\\\":\\\"{\\\\\\\"keyValue\\\\\\\":\\\\\\\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJC6c7hlytuBb3ewSoj93ZiBFGE7YVco/3hkLAe3WbrgcEh3/WHXM9nbV/YVTcmBEx/ZO17i7WngHm89c+lEoXw=\\\\\\\",\\\\\\\"keyExpiration\\\\\\\":\\\\\\\"1750155268828\\\\\\\"}\\\",\\\"signatures\\\":[\\\"MEQCIEdJK6XX/VBaJOiUBLMlC7E4sh5iKnkRJVEAyLyig8jLAiA/9JIpLcoyyIio2t4kMRkjUGGYobHlXyXAPTPIMWncUA==\\\"]},\\\"protocolVersion\\\":\\\"ECv2\\\",\\\"signedMessage\\\":\\\"{\\\\\\\"encryptedMessage\\\\\\\":\\\\\\\"zP25vNQLKz8Zq0IN3EP2VHj65GTyLwo8CN0HP2txEkr9XZPRa7HVt7AWhwKrY2p+dZ9u76K4H3pBrPBVonVGkN4AkzKDHQWYQXOaCEqFEbDGYlbXeG2aJF+slhjsiMdcxJQWjFJy1pREFwxVfk1NnwPrbmu9vZxW9LlC7nHh34XrCYXF/J0IuYXRcpLWBuXRIRLNRSl1uPVfrulG48Ii1HFbqyCmTRAIkxydb4hCYOf8f/BURO/IuVOPibRu7tErP8VbNZluArif4gQv1u76DcAaSkDQ5bfgXXlwV6Y6yWuBH3nmR8KxkKyxoZW5jeyhxy4l7CjJnplnwCGLl7DXxs+/R4dI9O5XKJPk3lDACQvztQS5Bw+zDucs6glu15+40gIAIRAevuTZ2s/Hogr9flJevjFP6TfQDJp/fSBhCXlhy0DMHaXQgOwf3NDbQXQNGK4SIEklJ/hw9RpK9WbzY6DYAC31lQpyrEEQqc/yb3jYcYpGfCT9GmSKNdpc/KICoKXWUSq3je2fHErH5P3jRYpgR+IBm/Qs2owXNa7WiQOPKFR8\\\\\\\",\\\\\\\"ephemeralPublicKey\\\\\\\":\\\\\\\"BOiqFPNdBrEOCR7D8qhXW2I1WX/qzC2g4PfEnZ53mHPkDNfY3QzuX7XMtsazovOY7BFvSh4lToMV7titGAEfrO4=\\\\\\\",\\\\\\\"tag\\\\\\\":\\\\\\\"XW5FZtLDyfbai1ebiz0KuQlbxaG2GEz23fZJvaZcU4Y=\\\\\\\"}\\\"}\"}",
+  "pathParameters": {
+    "parameter1": "value1"
+  },
+  "isBase64Encoded": false,
+  "stageVariables": {
+    "stageVariable1": "value1",
+    "stageVariable2": "value2"
+  }
+}

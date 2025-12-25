@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35825.156
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InsTech", "InsTech\InsTech.csproj", "{D040D4A5-BD37-F6AF-7297-98AE6B826DF8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InsTechReceivePayment", "InsTechReceivePayment\InsTechReceivePayment.csproj", "{7BA57C42-8177-9C1B-FCB1-C09ADC03C34C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmazonUtilities", "AmazonUtilities\AmazonUtilities.csproj", "{0106AEA7-EFC7-49A0-BDB7-015590FB7953}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InsTechClassesV2", "InsTechClassesV2\InsTechClassesV2.csproj", "{59F954D6-BE9C-4024-9A55-5F10E73637E4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InsTechPortal", "InsTech-portal\InsTechPortal.csproj", "{B2D74BAA-550E-EB59-1EF2-41498F1A655D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncCardknoxToDynamo", "SyncCardknoxToDynamo\SyncCardknoxToDynamo.csproj", "{C7D7532F-AC62-F692-310A-84C643902EF7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebhookHandler", "WebhookHandler\WebhookHandler.csproj", "{64706DAF-6340-847E-5A93-F02C12722D33}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D040D4A5-BD37-F6AF-7297-98AE6B826DF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D040D4A5-BD37-F6AF-7297-98AE6B826DF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D040D4A5-BD37-F6AF-7297-98AE6B826DF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D040D4A5-BD37-F6AF-7297-98AE6B826DF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BA57C42-8177-9C1B-FCB1-C09ADC03C34C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BA57C42-8177-9C1B-FCB1-C09ADC03C34C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BA57C42-8177-9C1B-FCB1-C09ADC03C34C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BA57C42-8177-9C1B-FCB1-C09ADC03C34C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0106AEA7-EFC7-49A0-BDB7-015590FB7953}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0106AEA7-EFC7-49A0-BDB7-015590FB7953}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0106AEA7-EFC7-49A0-BDB7-015590FB7953}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0106AEA7-EFC7-49A0-BDB7-015590FB7953}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59F954D6-BE9C-4024-9A55-5F10E73637E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59F954D6-BE9C-4024-9A55-5F10E73637E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59F954D6-BE9C-4024-9A55-5F10E73637E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59F954D6-BE9C-4024-9A55-5F10E73637E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2D74BAA-550E-EB59-1EF2-41498F1A655D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2D74BAA-550E-EB59-1EF2-41498F1A655D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2D74BAA-550E-EB59-1EF2-41498F1A655D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2D74BAA-550E-EB59-1EF2-41498F1A655D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7D7532F-AC62-F692-310A-84C643902EF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7D7532F-AC62-F692-310A-84C643902EF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7D7532F-AC62-F692-310A-84C643902EF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7D7532F-AC62-F692-310A-84C643902EF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64706DAF-6340-847E-5A93-F02C12722D33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64706DAF-6340-847E-5A93-F02C12722D33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64706DAF-6340-847E-5A93-F02C12722D33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64706DAF-6340-847E-5A93-F02C12722D33}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CFB05F98-299D-4660-A6A4-5304DD586AFE}
+	EndGlobalSection
+EndGlobal
