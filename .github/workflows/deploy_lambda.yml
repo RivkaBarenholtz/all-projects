@@ -17,27 +17,27 @@ jobs:
       matrix:
         # Define all your Lambda functions here
         lambda:
-          - name: SqsHandlerPostTransactions
-            handler: "InsTech::InsTech.Function::SQSHandler"
-            role: arn:aws:iam::664418966079:role/lambda_exec_PostTransactions
-            project-dir: ./InsTech
-            timeout: 30
-            memory: 512
-          
-          # Add more Lambda functions below:
-          - name: InstechPortal
-            handler: "InsTechPortal::InsTech_portal.Function::FunctionHandler"
-            role: arn:aws:iam::664418966079:role/lambda_exec_InstechPortal
-            project-dir: ./InsTech-portal
-            timeout: 30
-            memory: 512
-          # Add more Lambda functions below:
-          - name: payment-portal
-            handler: "InsTechReceivePayment::InsTechReceivePayment.Function::FunctionHandler"
-            role: arn:aws:iam::664418966079:role/lambda_exec_payment-portal
-            project-dir: ./InsTechReceivePayment
-            timeout: 30
-            memory: 512
+          # - name: SqsHandlerPostTransactions
+          #   handler: "InsTech::InsTech.Function::SQSHandler"
+          #   role: arn:aws:iam::664418966079:role/lambda_exec_PostTransactions
+          #   project-dir: ./InsTech
+          #   timeout: 30
+          #   memory: 512
+
+          # # Add more Lambda functions below:
+          # - name: InstechPortal
+          #   handler: "InsTechPortal::InsTech_portal.Function::FunctionHandler"
+          #   role: arn:aws:iam::664418966079:role/lambda_exec_InstechPortal
+          #   project-dir: ./InsTech-portal
+          #   timeout: 30
+          #   memory: 512
+          # # Add more Lambda functions below:
+          # - name: payment-portal
+          #   handler: "InsTechReceivePayment::InsTechReceivePayment.Function::FunctionHandler"
+          #   role: arn:aws:iam::664418966079:role/lambda_exec_payment-portal
+          #   project-dir: ./InsTechReceivePayment
+          #   timeout: 30
+          #   memory: 512
           # Add more Lambda functions below:
           - name: SyncCardknoxToDynamo
             handler: "SyncCardknoxToDynamo::SyncCardknoxToDynamo.Function::FunctionHandler"
@@ -45,14 +45,14 @@ jobs:
             project-dir: ./SyncCardknoxToDynamo
             timeout: 30
             memory: 512
-          # Add more Lambda functions below:
-          - name: WebhookHandler
-            handler: "WebhookHandler::WebhookHandler.Function::FunctionHandler"
-            role: arn:aws:iam::664418966079:role/lambda_exec_PostTransactions
-            project-dir: ./WebhookHandler
-            timeout: 30
-            memory: 512
-          
+          # # Add more Lambda functions below:
+          # - name: WebhookHandler
+          #   handler: "WebhookHandler::WebhookHandler.Function::FunctionHandler"
+          #   role: arn:aws:iam::664418966079:role/lambda_exec_PostTransactions
+          #   project-dir: ./WebhookHandler
+          #   timeout: 30
+          #   memory: 512
+
           # Example: Another function from a different project
           # - name: AnotherFunction
           #   handler: "AnotherProject::AnotherProject.Handlers::MainHandler"
@@ -60,7 +60,7 @@ jobs:
           #   project-dir: ./AnotherProject
           #   timeout: 60
           #   memory: 1024
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
