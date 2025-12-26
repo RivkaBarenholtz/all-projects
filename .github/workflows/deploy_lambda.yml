@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - 'InsTech/**'  # Adjust to your actual .NET project folder(s)
+      - 'SyncCardknoxToDynamo/**'  # Adjust to your actual .NET project folder(s)
 env:
   AWS_REGION: us-east-1
   DOTNET_VERSION: '8.0.x'
