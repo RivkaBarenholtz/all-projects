@@ -46,6 +46,9 @@ public class Function
         Vendor? vendor = null;
         try
         {
+
+
+
             var caseInsensitiveHeaders = new Dictionary<string, string>(input.Headers, StringComparer.OrdinalIgnoreCase);
 
             string fullPath = input.RawPath ?? "";
