@@ -108,6 +108,14 @@ jobs:
             --function-handler "${{ matrix.lambda.handler }}" \
             --function-memory-size ${{ matrix.lambda.memory }} \
             --function-timeout ${{ matrix.lambda.timeout }}
+      
+      - name: Wait for ${{ matrix.lambda.name }} to be ready
+        run: |
+          echo "Waiting for Lambda function to finish updating..."
+          aws lambda wait function-updated \
+            --function-name ${{ matrix.lambda.name }} \
+            --region ${{ env.AWS_REGION }}
+          echo "Function is ready!"
 
       - name: Verify deployment of ${{ matrix.lambda.name }}
         run: |
