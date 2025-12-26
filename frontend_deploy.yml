@@ -1,0 +1,140 @@
+name: Deploy Frontend with Matrix CloudFront Invalidations
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+
+env:
+  AWS_REGION: us-east-1
+  S3_BUCKET: your-frontend-bucket-name
+  NODE_VERSION: '20'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build frontend (Vite)
+        working-directory: ./frontend
+        run: npm run build
+        env:
+          NODE_ENV: production
+          # Add your Vite environment variables here:
+          # VITE_API_URL: ${{ secrets.API_URL }}
+          # VITE_API_KEY: ${{ secrets.API_KEY }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to S3
+        working-directory: ./frontend
+        run: |
+          BUILD_DIR="dist"  # Vite builds to 'dist' directory
+          
+          # Upload assets folder with long cache (Vite uses /assets instead of /static)
+          aws s3 sync ${BUILD_DIR}/assets s3://${{ env.S3_BUCKET }}/assets \
+            --delete \
+            --cache-control "public,max-age=31536000,immutable" \
+            --exclude "*.map"
+          
+          aws s3 sync ${BUILD_DIR}/ s3://${{ env.S3_BUCKET }} \
+            --exclude "*" \
+            --include "*.js" \
+            --include "*.css" \
+            --cache-control "public,max-age=31536000,immutable" \
+            --exclude "*.map"
+          
+          aws s3 sync ${BUILD_DIR}/ s3://${{ env.S3_BUCKET }} \
+            --exclude "*" \
+            --include "*.html" \
+            --cache-control "public,max-age=0,must-revalidate" \
+            --content-type "text/html"
+          
+          aws s3 sync ${BUILD_DIR}/ s3://${{ env.S3_BUCKET }} \
+            --delete \
+            --cache-control "public,max-age=3600"
+          
+          echo "✅ S3 deployment complete"
+
+  invalidate-cloudfront:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Define all CloudFront distributions here
+        distribution:
+          - id: E1ABCDEFGHIJK2
+            name: Production
+            domain: www.example.com
+          
+          - id: E2BCDEFGHIJKL3
+            name: Staging
+            domain: staging.example.com
+          
+          - id: E3CDEFGHIJKLM4
+            name: Development
+            domain: dev.example.com
+          
+          # Add more distributions as needed:
+          # - id: E4DEFGHIJKLMN5
+          #   name: Beta
+          #   domain: beta.example.com
+    
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Invalidate CloudFront - ${{ matrix.distribution.name }}
+        id: invalidate
+        run: |
+          echo "🔄 Invalidating ${{ matrix.distribution.name }} (${{ matrix.distribution.id }})..."
+          
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
+            --distribution-id ${{ matrix.distribution.id }} \
+            --paths "/*" \
+            --query 'Invalidation.Id' \
+            --output text)
+          
+          echo "invalidation_id=$INVALIDATION_ID" >> $GITHUB_OUTPUT
+          echo "✅ Invalidation created: $INVALIDATION_ID"
+
+      - name: Wait for invalidation - ${{ matrix.distribution.name }}
+        run: |
+          echo "⏳ Waiting for invalidation to complete..."
+          aws cloudfront wait invalidation-completed \
+            --distribution-id ${{ matrix.distribution.id }} \
+            --id ${{ steps.invalidate.outputs.invalidation_id }}
+          echo "✅ Invalidation completed for ${{ matrix.distribution.name }}"
+        continue-on-error: true
+
+      - name: Summary for ${{ matrix.distribution.name }}
+        run: |
+          echo "✅ ${{ matrix.distribution.name }} updated!"
+          echo "  Distribution: ${{ matrix.distribution.id }}"
+          echo "  Domain: https://${{ matrix.distribution.domain }}"
+          echo "  Invalidation: ${{ steps.invalidate.outputs.invalidation_id }}"

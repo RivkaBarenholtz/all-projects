@@ -1,0 +1,135 @@
+name: Deploy Multiple .NET Lambda Functions
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'InsTech/**'  # Adjust to your actual .NET project folder(s)
+env:
+  AWS_REGION: us-east-1
+  DOTNET_VERSION: '8.0.x'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Define all your Lambda functions here
+        lambda:
+          - name: SqsHandlerPostTransactions
+            handler: "InsTech::InsTech.Function::SQSHandler"
+            role: arn:aws:iam::664418966079:role/lambda_exec_PostTransactions
+            project-dir: ./InsTech
+            timeout: 30
+            memory: 512
+          
+          # Add more Lambda functions below:
+          - name: InstechPortal
+            handler: "InsTechPortal::InsTech_portal.Function::FunctionHandler"
+            role: arn:aws:iam::664418966079:role/lambda_exec_InstechPortal
+            project-dir: ./InsTech-portal
+            timeout: 30
+            memory: 512
+          # Add more Lambda functions below:
+          - name: payment-portal
+            handler: "InsTechReceivePayment::InsTechReceivePayment.Function::FunctionHandler"
+            role: arn:aws:iam::664418966079:role/lambda_exec_payment-portal
+            project-dir: ./InsTechReceivePayment
+            timeout: 30
+            memory: 512
+          # Add more Lambda functions below:
+          - name: SyncCardknoxToDynamo
+            handler: "SyncCardknoxToDynamo::SyncCardknoxToDynamo.Function::FunctionHandler"
+            role: arn:aws:iam::664418966079:role/lambda_exec_PostTransactions
+            project-dir: ./SyncCardknoxToDynamo
+            timeout: 30
+            memory: 512
+          # Add more Lambda functions below:
+          - name: WebhookHandler
+            handler: "WebhookHandler::WebhookHandler.Function::FunctionHandler"
+            role: arn:aws:iam::664418966079:role/lambda_exec_PostTransactions
+            project-dir: ./WebhookHandler
+            timeout: 30
+            memory: 512
+          
+          # Example: Another function from a different project
+          # - name: AnotherFunction
+          #   handler: "AnotherProject::AnotherProject.Handlers::MainHandler"
+          #   role: arn:aws:iam::664418966079:role/another_lambda_role
+          #   project-dir: ./AnotherProject
+          #   timeout: 60
+          #   memory: 1024
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install Amazon.Lambda.Tools
+        run: |
+          dotnet tool install -g Amazon.Lambda.Tools
+
+      - name: Restore dependencies
+        working-directory: ${{ matrix.lambda.project-dir }}
+        run: dotnet restore
+
+      - name: Build project
+        working-directory: ${{ matrix.lambda.project-dir }}
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run tests (optional)
+        working-directory: ${{ matrix.lambda.project-dir }}
+        run: dotnet test --configuration Release --no-build --verbosity normal
+        continue-on-error: true
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy ${{ matrix.lambda.name }} to Lambda
+        working-directory: ${{ matrix.lambda.project-dir }}
+        run: |
+          dotnet lambda deploy-function \
+            --function-name ${{ matrix.lambda.name }} \
+            --function-role ${{ matrix.lambda.role }} \
+            --region ${{ env.AWS_REGION }} \
+            --configuration Release \
+            --framework net8.0 \
+            --function-runtime dotnet8 \
+            --function-handler "${{ matrix.lambda.handler }}" \
+            --function-memory-size ${{ matrix.lambda.memory }} \
+            --function-timeout ${{ matrix.lambda.timeout }}
+
+      - name: Verify deployment of ${{ matrix.lambda.name }}
+        run: |
+          aws lambda get-function \
+            --function-name ${{ matrix.lambda.name }} \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Publish version for ${{ matrix.lambda.name }}
+        id: publish
+        run: |
+          VERSION=$(aws lambda publish-version \
+            --function-name ${{ matrix.lambda.name }} \
+            --description "Deployed from commit ${{ github.sha }}" \
+            --region ${{ env.AWS_REGION }} \
+            --query 'Version' \
+            --output text)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Deployment summary
+        run: |
+          echo "✅ Successfully deployed ${{ matrix.lambda.name }}"
+          echo "Version: ${{ steps.publish.outputs.version }}"
+          echo "Handler: ${{ matrix.lambda.handler }}"
+          echo "Memory: ${{ matrix.lambda.memory }}MB"
+          echo "Timeout: ${{ matrix.lambda.timeout }}s"
+          echo "Commit: ${{ github.sha }}"
