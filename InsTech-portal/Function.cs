@@ -82,9 +82,6 @@ public class Function
                 if (fullDomain.StartsWith ("portal"))
                 {
                     url = $"https://{fullDomain}/app";
-
-
-
                 }
                 return new APIGatewayHttpApiV2ProxyResponse
                 {
