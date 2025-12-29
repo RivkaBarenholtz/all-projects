@@ -30,7 +30,7 @@ namespace AmazonUtilities
                 },
                 Target = new Target
                 {
-                    Arn = "arn:aws:lambda:us-east-1:664418966079:function:PostTransactions",
+                    Arn = "arn:aws:lambda:us-east-1:664418966079:function:WebhookHandler",
                     RoleArn = "arn:aws:iam::664418966079:role/Eventbridge_role",
                     Input = JsonSerializer.Serialize(input)
                 }
