@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 // import { Button } from './components/ui/button';
 import { Card, CardContent } from '../Components/UI/card';
 import { Separator } from '../Components/UI/separator';
-import '../styles/payment-success.css';
+import '../Styles/payment-success.css';
 import { FormatCurrency } from '../Utilities';
 
 export default function ThankYouPage() {
