@@ -6,7 +6,13 @@ on:
     branches:
       - main
     paths:
+      - 'AmazonUtilities/**'  # Adjust to your actual .NET project folder(s)
+      - 'InsTech/**'  # Adjust to your actual .NET project folder(s)
+      - 'InsTechClassesV2/**'  # Adjust to your actual .NET project folder(s)
+      - 'InsTech-portal/**'  # Adjust to your actual .NET project folder(s)
+      - 'InsTechReceivePayment/**'  # Adjust to your actual .NET project folder(s)
       - 'SyncCardknoxToDynamo/**'  # Adjust to your actual .NET project folder(s)
+      - 'WebhookHandler/**'  # Adjust to your actual .NET project folder(s)
 env:
   AWS_REGION: us-east-1
   DOTNET_VERSION: '8.0.x'
@@ -46,21 +52,14 @@ jobs:
             project-dir: ./SyncCardknoxToDynamo
             timeout: 30
             memory: 512
-          # # Add more Lambda functions below:
-          # - name: WebhookHandler
-          #   handler: "WebhookHandler::WebhookHandler.Function::FunctionHandler"
-          #   role: arn:aws:iam::664418966079:role/lambda_exec_PostTransactions
-          #   project-dir: ./WebhookHandler
-          #   timeout: 30
-          #   memory: 512
+          # Add more Lambda functions below:
+          - name: WebhookHandler
+            handler: "WebhookHandler::WebhookHandler.Function::FunctionHandler"
+            role: arn:aws:iam::664418966079:role/lambda_exec_PostTransactions
+            project-dir: ./WebhookHandler
+            timeout: 30
+            memory: 512
 
-          # Example: Another function from a different project
-          # - name: AnotherFunction
-          #   handler: "AnotherProject::AnotherProject.Handlers::MainHandler"
-          #   role: arn:aws:iam::664418966079:role/another_lambda_role
-          #   project-dir: ./AnotherProject
-          #   timeout: 60
-          #   memory: 1024
 
     steps:
       - name: Checkout code
