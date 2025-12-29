@@ -86,7 +86,9 @@ namespace InsTechClassesV2.AppliedEpic
             var response = await UpdateApplied(receipt, vendor);
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"We successfully  payment to invoice  { invoiceNumber} in Applied Epic for client {client.ClientName}. ");
+                Console.WriteLine($"We successfully applied a   payment to invoice  { invoiceNumber} in Applied Epic for client {client.ClientName}. ");
+
+                log.InvoiceMessage = $"Payment applied to invoice # {invoiceNumber} ";
             }
             else
             {
