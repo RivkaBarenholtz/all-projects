@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import '../Styles/FilterRow.css';
+import '../Styles/filterrow.css';
 
 export const FilterPopover = ({ 
   header, 
