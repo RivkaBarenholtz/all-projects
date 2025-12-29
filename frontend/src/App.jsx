@@ -3,7 +3,7 @@ import { useLocation, Routes, Route, useParams } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
-import Navbar from "./Objects/NavBar";
+import Navbar from "./Objects/Navbar";
 import Header from "./Header";
 import "./App.css";
 import Schedules from "./Schedules";
