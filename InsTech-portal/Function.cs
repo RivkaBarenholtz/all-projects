@@ -67,6 +67,9 @@ public class Function
             }
             else if (segments.Length == 1)
             {
+
+
+
                 secondToLastSegment = segments[0];
                 lastSegment = "";
             }
