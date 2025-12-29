@@ -9,7 +9,9 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  S3_BUCKET: your-frontend-bucket-name
+  S3_BUCKET: insure-tech-portal
+  S3_PREFIX: portal  # Add your folder name here (e.g., 'frontend', 'app', 'web')
+  
   NODE_VERSION: '20'
 
 jobs:
@@ -37,7 +39,7 @@ jobs:
         env:
           NODE_ENV: production
           # Add your Vite environment variables here:
-          # VITE_API_URL: ${{ secrets.API_URL }}
+          VITE_RECAPTCHA_SITE_KEY: 6LemXlArAAAAAAglq4VJcXd4qY-pbgVxnKKMBLOq
           # VITE_API_KEY: ${{ secrets.API_KEY }}
 
       - name: Configure AWS credentials
@@ -50,32 +52,8 @@ jobs:
       - name: Deploy to S3
         working-directory: ./frontend
         run: |
-          BUILD_DIR="dist"  # Vite builds to 'dist' directory
-
-          # Upload assets folder with long cache (Vite uses /assets instead of /static)
-          aws s3 sync ${BUILD_DIR}/assets s3://${{ env.S3_BUCKET }}/assets \
-            --delete \
-            --cache-control "public,max-age=31536000,immutable" \
-            --exclude "*.map"
-
-          aws s3 sync ${BUILD_DIR}/ s3://${{ env.S3_BUCKET }} \
-            --exclude "*" \
-            --include "*.js" \
-            --include "*.css" \
-            --cache-control "public,max-age=31536000,immutable" \
-            --exclude "*.map"
-
-          aws s3 sync ${BUILD_DIR}/ s3://${{ env.S3_BUCKET }} \
-            --exclude "*" \
-            --include "*.html" \
-            --cache-control "public,max-age=0,must-revalidate" \
-            --content-type "text/html"
-
-          aws s3 sync ${BUILD_DIR}/ s3://${{ env.S3_BUCKET }} \
-            --delete \
-            --cache-control "public,max-age=3600"
-
-          echo "✅ S3 deployment complete"
+          aws s3 sync dist/ s3://${{ env.S3_BUCKET }}/${{ env.S3_PREFIX }} --delete
+          echo "✅ S3 deployment complete to s3://${{ env.S3_BUCKET }}/${{ env.S3_PREFIX }}"
 
   invalidate-cloudfront:
     needs: build-and-deploy
@@ -84,17 +62,17 @@ jobs:
       matrix:
         # Define all CloudFront distributions here
         distribution:
-          - id: E1ABCDEFGHIJK2
+          - id: E12UPNE31UXPR8
             name: Production
-            domain: www.example.com
+            domain: portal.instechpay.co
 
-          - id: E2BCDEFGHIJKL3
-            name: Staging
-            domain: staging.example.com
+          # - id: E2BCDEFGHIJKL3
+          #   name: Staging
+          #   domain: staging.example.com
 
-          - id: E3CDEFGHIJKLM4
-            name: Development
-            domain: dev.example.com
+          # - id: E3CDEFGHIJKLM4
+          #   name: Development
+          #   domain: dev.example.com
 
           # Add more distributions as needed:
           # - id: E4DEFGHIJKLMN5
