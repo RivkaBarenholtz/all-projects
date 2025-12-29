@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - dev
     paths:
       - 'AmazonUtilities/**'  # Adjust to your actual .NET project folder(s)
       - 'InsTech/**'  # Adjust to your actual .NET project folder(s)
@@ -24,7 +24,7 @@ jobs:
       matrix:
         # Define all your Lambda functions here
         lambda:
-          # - name: SqsHandlerPostTransactions
+          # - name: SqsHandlerPostTransactions_test
           #   handler: "InsTech::InsTech.Function::SQSHandler"
           #   role: arn:aws:iam::664418966079:role/lambda_exec_PostTransactions
           #   project-dir: ./InsTech
@@ -32,32 +32,32 @@ jobs:
           #   memory: 512
 
           # # Add more Lambda functions below:
-          # - name: InstechPortal
+          # - name: InstechPortal_test
           #   handler: "InsTechPortal::InsTech_portal.Function::FunctionHandler"
           #   role: arn:aws:iam::664418966079:role/lambda_exec_InstechPortal
           #   project-dir: ./InsTech-portal
           #   timeout: 30
           #   memory: 512
           # # Add more Lambda functions below:
-          # - name: payment-portal
+          # - name: InsTechReceivePayment_test
           #   handler: "InsTechReceivePayment::InsTechReceivePayment.Function::FunctionHandler"
           #   role: arn:aws:iam::664418966079:role/lambda_exec_payment-portal
           #   project-dir: ./InsTechReceivePayment
           #   timeout: 30
           #   memory: 512
           # Add more Lambda functions below:
-          - name: SyncCardknoxToDynamo
+          - name: SyncCardknoxToDynamo_test
             handler: "SyncCardknoxToDynamo::SyncCardknoxToDynamo.Function::FunctionHandler"
             role: arn:aws:iam::664418966079:role/lambda_exec_PostTransactions
             project-dir: ./SyncCardknoxToDynamo
             timeout: 30
             memory: 512
           # Add more Lambda functions below:
-          - name: WebhookHandler
+          - name: WebhookHandler_test
             handler: "WebhookHandler::WebhookHandler.Function::FunctionHandler"
             role: arn:aws:iam::664418966079:role/lambda_exec_PostTransactions
             project-dir: ./WebhookHandler
-            environment: "QUEUE_URL=https://sqs.us-east-1.amazonaws.com/664418966079/PostReceiptsToApplied.fifo"
+            environment: "QUEUE_URL=https://sqs.us-east-1.amazonaws.com/664418966079/PostReceiptToApplied_test.fifo"
             timeout: 30
             memory: 512
 
