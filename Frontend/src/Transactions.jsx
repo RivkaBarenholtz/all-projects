@@ -13,6 +13,7 @@ import TransactionDetail from './Objects/TransactionDetail';
 import { getDate } from 'date-fns';
 import { CustomerInfo } from './Objects/CustomerInfo';
 import { X } from 'lucide-react';
+import cardknoxErrors from './Data/ErrorCodes.json';
 
 function Transactions() {
  // const sixDaysAgo = new Date() - 6 
@@ -55,7 +56,7 @@ function Transactions() {
 
     {
       DisplayValue:"Funded", 
-      Show: true, 
+      Show: false, 
       Value:  "AmountFundedFormatted",
       SortString : "FundedAmount", 
       FilterValue: "AmountFunded",
@@ -65,7 +66,7 @@ function Transactions() {
     
     {
       DisplayValue:"Fee", 
-      Show: true, 
+      Show: false, 
       Value:  "CreditCardFormatted",
       FilterValue: "CreditCardFee",
       FilterType: "number",
@@ -128,6 +129,14 @@ function Transactions() {
       SortString : "Status", 
       FilterValue: "StatusString",
       SortAsc: true
+    },
+
+    {
+      DisplayValue:"Error",
+      Show: false,
+      Value:  "ErrorDescription",
+      FilterValue: "ErrorDescription",
+      SortString : "ResponseCode",
     },
     
     {
@@ -308,6 +317,11 @@ function Transactions() {
     }
 
   } 
+
+  const paymentErrorMap = Object.fromEntries(
+    cardknoxErrors.map(e => [e.code, e.message])
+  );
+
   const search = async (filters)=>{
       const response = await fetchWithAuth("transaction-report", filters);
       var responseFormatted = response.xReportData.map((trans)=> 
@@ -328,6 +342,7 @@ function Transactions() {
           AmountFunded : trans.xCustom10 && trans.xCustom10 > 0 ? trans.xCustom10 * (trans.xAmount != 0 ?trans.xAmount/ Math.abs(trans.xAmount): 1) : trans.xAmount,
           StatusString : GetStatusString(trans.xResponseResult, trans.xStatus, trans.xCommand),
           CreditCardFee:trans.xCustom09 * (trans.xAmount !=    0 ?trans.xAmount/ Math.abs(trans.xAmount): 1),
+          ErrorDescription: paymentErrorMap[Number(trans.xErrorCode)]|| "", 
           className: trans.xResponseResult.toLowerCase()=="approved"? "": "not-counted"
         }
       })
