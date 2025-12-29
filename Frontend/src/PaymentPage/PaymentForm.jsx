@@ -277,7 +277,10 @@ export default function PaymentForm({isPortal , onSuccess }) {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-         const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
+         const clientid =
+  (context ?? "app") === "app"
+    ? BaseUrl().split('.')[0].split('//')[1]
+    : (context ?? "ins-dev");
         const response = await fetch(`${BaseUrl()}/pay/${clientid}/get-vendor`);
 
         if (!response.ok) {
@@ -309,7 +312,10 @@ export default function PaymentForm({isPortal , onSuccess }) {
         if (!hasNaN) {
           try {
             setIsInvLoading(true);
-            const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
+            const clientid =
+  (context ?? "app") === "app"
+    ? BaseUrl().split('.')[0].split('//')[1]
+    : (context ?? "ins-dev");
             const response = await fetch(`${BaseUrl()}/pay/${clientid}/get-invoice`, {
               method: 'POST',
               body: JSON.stringify({ LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(epicClientNumber)?null:epicClientNumber }),
@@ -348,7 +354,10 @@ export default function PaymentForm({isPortal , onSuccess }) {
     const fetchData = async () => {
 
       try {
-        const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
+        const clientid =
+  (context ?? "app") === "app"
+    ? BaseUrl().split('.')[0].split('//')[1]
+    : (context ?? "ins-dev");
         const response = await fetch(`${BaseUrl()}/pay/${clientid}/get-surcharge`, {
           method: 'POST',
           body: JSON.stringify({ ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID)|| invoiceID=="" ? -1 : invoiceID }),
@@ -381,8 +390,11 @@ export default function PaymentForm({isPortal , onSuccess }) {
     {
         const GetRefNum = async()=>
         {
-           const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
-            const response = await fetch(`${BaseUrl()}/pay/${clientid}/get-ref-num`, {
+           const clientid =
+  (context ?? "app") === "app"
+    ? BaseUrl().split('.')[0].split('//')[1]
+    : (context ?? "ins-dev"); 
+    const response = await fetch(`${BaseUrl()}/pay/${clientid}/get-ref-num`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
                 });

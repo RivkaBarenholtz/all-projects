@@ -61,7 +61,10 @@ const GooglePay = ({amount, surcharge, AccountID, invoiceID , csrCode, csrEmail,
       };
 
     // Send the token to your backend
-     const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
+     const clientid =
+  (context ?? "app") === "app"
+    ? BaseUrl().split('.')[0].split('//')[1]
+    : (context ?? "ins-dev");
     const response = await fetch(`${BaseUrl()}/pay/${clientid}/make-digital-payment`, {
         method: 'POST',
         body: JSON.stringify(request),

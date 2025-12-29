@@ -100,7 +100,10 @@ export const CheckTab = (
         };
 
         try {
-             const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
+            const clientid =
+            (context ?? "app") === "app"
+                ? BaseUrl().split('.')[0].split('//')[1]
+                : (context ?? "ins-dev");
             const response = await fetch(`${BaseUrl()}/pay/${clientid}/make-check-payment-to-cardknox`, {
                 method: 'POST',
                 body: JSON.stringify(request),

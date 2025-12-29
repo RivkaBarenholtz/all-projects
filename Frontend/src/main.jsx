@@ -4,7 +4,11 @@ import   {BrowserRouter} from 'react-router-dom'
 
 import App from './App.jsx'
 
-const basename = process.env.NODE_ENV === 'development' || window.location.hostname === 'pay.instechpay.co' ? '/' : '/app/';
+const basename = process.env.NODE_ENV === 'development' 
+|| window.location.hostname === 'pay.instechpay.co' 
+|| window.location.hostname === 'portal.instechpay.co' ? '/' 
+
+: '/app/';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

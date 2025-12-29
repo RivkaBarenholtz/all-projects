@@ -63,7 +63,10 @@ export const WireTab =({
             isDevelopment: import.meta.env.DEV
         }
 
-         const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
+         const clientid =
+  (context ?? "app") === "app"
+    ? BaseUrl().split('.')[0].split('//')[1]
+    : (context ?? "ins-dev");
 
         await fetch(`${BaseUrl()}/pay/${clientid}/submit-wire`, {
             method: 'POST',

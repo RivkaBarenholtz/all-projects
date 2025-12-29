@@ -58,6 +58,7 @@ function App() {
       <div className="main-content-no-auth">
         <Routes>
           <Route path="/:context" element={<PaymentForm isPortal={false}  />} />
+          <Route path="/*" element={<PaymentForm isPortal={false}  />} />
         </Routes>
       </div>
     );
