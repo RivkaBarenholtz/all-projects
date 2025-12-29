@@ -160,7 +160,10 @@ export const CreditCardTab = (
         };
 
         try {
-             const clientid = context??"app"== "app"? BaseUrl().split('.')[0].split('//')[1]: context??"ins-dev";
+             const clientid =
+  (context ?? "app") === "app"
+    ? BaseUrl().split('.')[0].split('//')[1]
+    : (context ?? "ins-dev");
             const response = await fetch(`${BaseUrl()}/pay/${clientid}/make-payment-cardknox`, {
                 method: 'POST',
                 body: JSON.stringify(request),

@@ -1,0 +1,2590 @@
+[
+    {
+      "code": 9999,
+      "message": "Undefined Error"
+    },
+    {
+      "code": 1000,
+      "message": "Missing Required Variable"
+    },
+    {
+      "code": 1001,
+      "message": "Missing Required Tags"
+    },
+    {
+      "code": 1002,
+      "message": "Missing Required Fields"
+    },
+    {
+      "code": 1010,
+      "message": "Unable to verify card ID number."
+    },
+    {
+      "code": 1011,
+      "message": "Customer Name Required"
+    },
+    {
+      "code": 1012,
+      "message": "More Than One Record Matches PTRANNUM; Please Use TTID"
+    },
+    {
+      "code": 1013,
+      "message": "AVSCode is required"
+    },
+    {
+      "code": 1014,
+      "message": "Bad Cardholder Account Information"
+    },
+    {
+      "code": 1015,
+      "message": "Invalid Issuing Bank"
+    },
+    {
+      "code": 1016,
+      "message": "CVV Required"
+    },
+    {
+      "code": 1017,
+      "message": "Invalid Street"
+    },
+    {
+      "code": 1018,
+      "message": "Unknown Error From Host"
+    },
+    {
+      "code": 1019,
+      "message": "Shipping_Information_Required"
+    },
+    {
+      "code": 1020,
+      "message": "Bank Not On File"
+    },
+    {
+      "code": 1021,
+      "message": "Exceeds Amount Limit"
+    },
+    {
+      "code": 1022,
+      "message": "Pin Required (EBT)"
+    },
+    {
+      "code": 1023,
+      "message": "Refund not permitted"
+    },
+    {
+      "code": 1024,
+      "message": "Security Voilation"
+    },
+    {
+      "code": 1025,
+      "message": "Invalid_Version"
+    },
+    {
+      "code": 1026,
+      "message": "Unmatched Return Not Allowed"
+    },
+    {
+      "code": 1027,
+      "message": "Void Rejected"
+    },
+    {
+      "code": 1028,
+      "message": "Must Allow Partial Auth"
+    },
+    {
+      "code": 1029,
+      "message": "AuthCode Required"
+    },
+    {
+      "code": 1031,
+      "message": "Batch Error"
+    },
+    {
+      "code": 1032,
+      "message": "Unable to parse response"
+    },
+    {
+      "code": 1033,
+      "message": "No Such Issuer"
+    },
+    {
+      "code": 1035,
+      "message": "Authonly not allowed on Debit/EBT transaction"
+    },
+    {
+      "code": 1036,
+      "message": "Lookup status not supported"
+    },
+    {
+      "code": 1037,
+      "message": "Adjustment Error"
+    },
+    {
+      "code": 1038,
+      "message": "Transaction Type Not Voidable"
+    },
+    {
+      "code": 1040,
+      "message": "Command Type Not Supported for Debit"
+    },
+    {
+      "code": 1041,
+      "message": "Incremental Auths Not Supported"
+    },
+    {
+      "code": 1042,
+      "message": "Connection Timeout"
+    },
+    {
+      "code": 1043,
+      "message": "No Original"
+    },
+    {
+      "code": 1044,
+      "message": "A capture requires that the existing transaction be an auth"
+    },
+    {
+      "code": 1045,
+      "message": "The original transaction cannot have this operation performed on it at this time"
+    },
+    {
+      "code": 1046,
+      "message": "Disconnect before response"
+    },
+    {
+      "code": 1048,
+      "message": "Revocation Auth"
+    },
+    {
+      "code": 104,
+      "message": "Login failed. The login is from an untrusted domain and cannot be used with Windows authentication"
+    },
+    {
+      "code": 1050,
+      "message": "Account: Invalid Length"
+    },
+    {
+      "code": 1051,
+      "message": "Transaction type not allowed from this source"
+    },
+    {
+      "code": 1052,
+      "message": "No Account"
+    },
+    {
+      "code": 1054,
+      "message": "Processing Institution Does Not Support That Transaction Type"
+    },
+    {
+      "code": 1055,
+      "message": "Bank Unavailable"
+    },
+    {
+      "code": 1057,
+      "message": "Pin XLate Error"
+    },
+    {
+      "code": 1058,
+      "message": "Merchant number does not relate to a defined bank or financial institution"
+    },
+    {
+      "code": 1059,
+      "message": "Auth Prohibited"
+    },
+    {
+      "code": 1060,
+      "message": "Partial Refund Not Allowed"
+    },
+    {
+      "code": 1062,
+      "message": "The sum of unit and qty minus disc plus freight plus duty plus tax must equal transaction amount"
+    },
+    {
+      "code": 1063,
+      "message": "Original Transaction Not Approved"
+    },
+    {
+      "code": 1064,
+      "message": "Unable to connect to remote server"
+    },
+    {
+      "code": 1066,
+      "message": "The underlying connection was closed"
+    },
+    {
+      "code": 1067,
+      "message": "Credits are not enabled"
+    },
+    {
+      "code": 1070,
+      "message": "Transaction type is not voidable. Issue refund instead."
+    },
+    {
+      "code": 1072,
+      "message": "Routing: Invalid Value"
+    },
+    {
+      "code": 1073,
+      "message": "Account: Invalid Value"
+    },
+    {
+      "code": 1075,
+      "message": "Card Must Be Swiped"
+    },
+    {
+      "code": 1076,
+      "message": "AVS CV2 Declined"
+    },
+    {
+      "code": 1078,
+      "message": "Authentication Error"
+    },
+    {
+      "code": 1080,
+      "message": "Command Not Supported"
+    },
+    {
+      "code": 1082,
+      "message": "Login Failed"
+    },
+    {
+      "code": 1083,
+      "message": "Issuer Unavailable"
+    },
+    {
+      "code": 1084,
+      "message": "Account Not Issued"
+    },
+    {
+      "code": 1085,
+      "message": "Refused"
+    },
+    {
+      "code": 1086,
+      "message": "Velocity Exception"
+    },
+    {
+      "code": 1087,
+      "message": "Invalid Data"
+    },
+    {
+      "code": 1088,
+      "message": "An error occurred while receiving the HTTP response"
+    },
+    {
+      "code": 1089,
+      "message": "Remote Server Error"
+    },
+    {
+      "code": 1090,
+      "message": "Unable to connect to the remote server"
+    },
+    {
+      "code": 1092,
+      "message": "Engine Required"
+    },
+    {
+      "code": 1093,
+      "message": "No checking account"
+    },
+    {
+      "code": 1094,
+      "message": "Invalid CC Account Number"
+    },
+    {
+      "code": 1095,
+      "message": "Terminal not identified or inactive"
+    },
+    {
+      "code": 1096,
+      "message": "This terminal or user id is not permitted to process this transaction type."
+    },
+    {
+      "code": 1097,
+      "message": "Connection Error"
+    },
+    {
+      "code": 1098,
+      "message": "Host Connection Error"
+    },
+    {
+      "code": 1099,
+      "message": "Unknown Transaction Type"
+    },
+    {
+      "code": 1100,
+      "message": "Transaction Not Found"
+    },
+    {
+      "code": 1102,
+      "message": "Payment Initiative Not Supported"
+    },
+    {
+      "code": 1103,
+      "message": "CheckNum Invalid Value"
+    },
+    {
+      "code": 1105,
+      "message": "Unable to Auth"
+    },
+    {
+      "code": 1106,
+      "message": "Valid Auth Not Found"
+    },
+    {
+      "code": 1110,
+      "message": "Gift Issuance not allowed for this location"
+    },
+    {
+      "code": 1112,
+      "message": "Invalid Gift Card"
+    },
+    {
+      "code": 1113,
+      "message": "Invalid GiftCard Magstripe"
+    },
+    {
+      "code": 1114,
+      "message": "Account Already Issued"
+    },
+    {
+      "code": 1115,
+      "message": "Invalid Set ID"
+    },
+    {
+      "code": 1116,
+      "message": "cannot modify transaction during settlement"
+    },
+    {
+      "code": 1117,
+      "message": "Invalid data in Settlement Transaction Detail message"
+    },
+    {
+      "code": 1118,
+      "message": "Reference Number Not Supported"
+    },
+    {
+      "code": 1119,
+      "message": "Transaction is in a state that cannot be refunded"
+    },
+    {
+      "code": 1120,
+      "message": "Transaction already refunded"
+    },
+    {
+      "code": 1121,
+      "message": "Transaction not eligible for refund."
+    },
+    {
+      "code": 1122,
+      "message": "The transaction ID is invalid for this transaction type"
+    },
+    {
+      "code": 1123,
+      "message": "Capture Not Supported"
+    },
+    {
+      "code": 1124,
+      "message": "Max refund amount exceeded"
+    },
+    {
+      "code": 1125,
+      "message": "TAX MUST BE >= 0.00 AND <= AMOUNT"
+    },
+    {
+      "code": 1126,
+      "message": "Invalid Order Amount (MIN)"
+    },
+    {
+      "code": 1127,
+      "message": "Invalid Order Amount (MAX)"
+    },
+    {
+      "code": 1128,
+      "message": "The provided Order has no lines in On Hold status"
+    },
+    {
+      "code": 1130,
+      "message": "None of the order lines specified could be updated to the specified reason."
+    },
+    {
+      "code": 1132,
+      "message": "An error occurred while updating the entries"
+    },
+    {
+      "code": 1135,
+      "message": "Unable to retrieve expiration date"
+    },
+    {
+      "code": 1137,
+      "message": "CVV2 check cannot be performed as no data was supplied in the authorization request."
+    },
+    {
+      "code": 1138,
+      "message": "The cc payment type and/or currency is not accepted"
+    },
+    {
+      "code": 1140,
+      "message": "Name On Account Required."
+    },
+    {
+      "code": 1141,
+      "message": "Pin code required for credit/void"
+    },
+    {
+      "code": 1145,
+      "message": "This account has not been given the permission(s) required for this request."
+    },
+    {
+      "code": 1150,
+      "message": "Exceeds Count Limit"
+    },
+    {
+      "code": 1151,
+      "message": "Refunds cannot be performed until the transaction has settled"
+    },
+    {
+      "code": 1152,
+      "message": "The server is temporarily unavailable. Please try back shortly."
+    },
+    {
+      "code": 1153,
+      "message": "Backend DB Error"
+    },
+    {
+      "code": 1154,
+      "message": "You have tried this card too many times"
+    },
+    {
+      "code": 1155,
+      "message": "No Credit Account"
+    },
+    {
+      "code": 1160,
+      "message": "Revk Pay Ordered"
+    },
+    {
+      "code": 1161,
+      "message": "Stop Pay Ordered"
+    },
+    {
+      "code": 1165,
+      "message": "Invalid Null Account Number Last Four"
+    },
+    {
+      "code": 1167,
+      "message": "UserName not recognized"
+    },
+    {
+      "code": 1170,
+      "message": "Phone Field Required"
+    },
+    {
+      "code": 1171,
+      "message": "Country Field Required"
+    },
+    {
+      "code": 1172,
+      "message": "Email Field Required"
+    },
+    {
+      "code": 1175,
+      "message": "Input String was not in a correct format"
+    },
+    {
+      "code": 1179,
+      "message": "Authenticate Failed"
+    },
+    {
+      "code": 1180,
+      "message": "Lookup Failed"
+    },
+    {
+      "code": 1182,
+      "message": "Balance Temoporarily Unavailable"
+    },
+    {
+      "code": 1184,
+      "message": "Network Error"
+    },
+    {
+      "code": 1185,
+      "message": "No Reply"
+    },
+    {
+      "code": 1187,
+      "message": "Merchant has been deactivated"
+    },
+    {
+      "code": 1188,
+      "message": "Funds can not be released for this transaction"
+    },
+    {
+      "code": 1189,
+      "message": "Incorrect Device Encryption"
+    },
+    {
+      "code": 1190,
+      "message": "Bad MID"
+    },
+    {
+      "code": 1191,
+      "message": "Host Drop"
+    },
+    {
+      "code": 1192,
+      "message": "No Response"
+    },
+    {
+      "code": 1193,
+      "message": "Transaction Count Exceeded Limit"
+    },
+    {
+      "code": 1194,
+      "message": "Amount exceeds original transaction amount."
+    },
+    {
+      "code": 1195,
+      "message": "Processor returned an invalid authorization code"
+    },
+    {
+      "code": 1196,
+      "message": "Zip Required for Keyed Transaction"
+    },
+    {
+      "code": 1197,
+      "message": "Unable to connect to TSYS"
+    },
+    {
+      "code": 1198,
+      "message": "Processing Error Please Try Again"
+    },
+    {
+      "code": 1199,
+      "message": "Server Error"
+    },
+    {
+      "code": 1200,
+      "message": "Unable To Create Transaction. Please Contact Support."
+    },
+    {
+      "code": 1201,
+      "message": "Refund amount exceeds sale amount"
+    },
+    {
+      "code": 1202,
+      "message": "Credit amount exceeds sale amount"
+    },
+    {
+      "code": 1203,
+      "message": "Amount Required"
+    },
+    {
+      "code": 1204,
+      "message": "Invalid Token"
+    },
+    {
+      "code": 1205,
+      "message": "Invalid Zip"
+    },
+    {
+      "code": 1206,
+      "message": "Invalid_Pin"
+    },
+    {
+      "code": 1207,
+      "message": "License Required"
+    },
+    {
+      "code": 1209,
+      "message": "Activity Limit Exceeded"
+    },
+    {
+      "code": 1210,
+      "message": "Over Pin Limit"
+    },
+    {
+      "code": 1211,
+      "message": "Negative amount not allowed"
+    },
+    {
+      "code": 1212,
+      "message": "Swiping Not Allowed. Contact Support"
+    },
+    {
+      "code": 1213,
+      "message": "Invalid Action"
+    },
+    {
+      "code": 1214,
+      "message": "Unsupported Cardtype"
+    },
+    {
+      "code": 1215,
+      "message": "Not Authorized"
+    },
+    {
+      "code": 1217,
+      "message": "Account is inactive"
+    },
+    {
+      "code": 1218,
+      "message": "Unrecognized Trackdata Format"
+    },
+    {
+      "code": 1220,
+      "message": "Duplicate Keys Found"
+    },
+    {
+      "code": 1221,
+      "message": "Invalid GiftCard Number"
+    },
+    {
+      "code": 1223,
+      "message": "Card Number was not between 13 and 16 digits"
+    },
+    {
+      "code": 1224,
+      "message": "Original transaction not specified"
+    },
+    {
+      "code": 1225,
+      "message": "Pin Pad Error"
+    },
+    {
+      "code": 1226,
+      "message": "Invalid_Command"
+    },
+    {
+      "code": 1227,
+      "message": "Auth Declined"
+    },
+    {
+      "code": 1228,
+      "message": "Record Not Found"
+    },
+    {
+      "code": 1230,
+      "message": "Transaction Not Permitted"
+    },
+    {
+      "code": 1231,
+      "message": "OrderNumber is required"
+    },
+    {
+      "code": 1232,
+      "message": "Transaction Already Settled"
+    },
+    {
+      "code": 1233,
+      "message": "Account Required"
+    },
+    {
+      "code": 1234,
+      "message": "Eligible transaction not found"
+    },
+    {
+      "code": 1235,
+      "message": "Missing CardCVV"
+    },
+    {
+      "code": 1236,
+      "message": "Account Not Found"
+    },
+    {
+      "code": 1237,
+      "message": "Terminal ID Error"
+    },
+    {
+      "code": 1238,
+      "message": "PIN Retries Exceeded"
+    },
+    {
+      "code": 1239,
+      "message": "Invalid Credentials"
+    },
+    {
+      "code": 1240,
+      "message": "Invalid Share Group."
+    },
+    {
+      "code": 1241,
+      "message": "GiftCard Already Exists"
+    },
+    {
+      "code": 1242,
+      "message": "Routing: Invalid Length"
+    },
+    {
+      "code": 1243,
+      "message": "Internal Error"
+    },
+    {
+      "code": 1244,
+      "message": "Credit Not Allowed"
+    },
+    {
+      "code": 1245,
+      "message": "Refund Not Allowed"
+    },
+    {
+      "code": 1246,
+      "message": "Void Not Allowed"
+    },
+    {
+      "code": 1247,
+      "message": "Transaction Not Allowed"
+    },
+    {
+      "code": 1248,
+      "message": "Order has already been imported"
+    },
+    {
+      "code": 1249,
+      "message": "Edit Error"
+    },
+    {
+      "code": 1251,
+      "message": "Card Expired"
+    },
+    {
+      "code": 1253,
+      "message": "Unable to locate transaction"
+    },
+    {
+      "code": 1254,
+      "message": "Req exceeds bal"
+    },
+    {
+      "code": 1255,
+      "message": "The request was aborted: Could not create SSL/TLS secure channel."
+    },
+    {
+      "code": 1257,
+      "message": "Transaction amount exceeds limit"
+    },
+    {
+      "code": 1258,
+      "message": "Connection Failed: Possible Setup Error"
+    },
+    {
+      "code": 1259,
+      "message": "Stop Recurring"
+    },
+    {
+      "code": 1260,
+      "message": "Bad SE Number"
+    },
+    {
+      "code": 1261,
+      "message": "Type Not Supported"
+    },
+    {
+      "code": 1262,
+      "message": "Merchant does not support this card type"
+    },
+    {
+      "code": 1264,
+      "message": "Unable to verify card ID number"
+    },
+    {
+      "code": 1265,
+      "message": "Settlement Error"
+    },
+    {
+      "code": 1266,
+      "message": "Limit Exceeded"
+    },
+    {
+      "code": 1267,
+      "message": "Invalid AuthCode"
+    },
+    {
+      "code": 1269,
+      "message": "Invalid Software"
+    },
+    {
+      "code": 1270,
+      "message": "No Open Batches Found"
+    },
+    {
+      "code": 1271,
+      "message": "Billing_Information_Required"
+    },
+    {
+      "code": 1272,
+      "message": "Card Fraud"
+    },
+    {
+      "code": 1273,
+      "message": "Line item total must equal amount"
+    },
+    {
+      "code": 1274,
+      "message": "AMEXSE merchant parameter not provided"
+    },
+    {
+      "code": 1275,
+      "message": "Invalid Routing Number"
+    },
+    {
+      "code": 1277,
+      "message": "SEC Violation"
+    },
+    {
+      "code": 1278,
+      "message": "Invalid_Routing"
+    },
+    {
+      "code": 1279,
+      "message": "Amount Error"
+    },
+    {
+      "code": 1280,
+      "message": "Cardnumber Mismatch"
+    },
+    {
+      "code": 1286,
+      "message": "No Phone Number Provided"
+    },
+    {
+      "code": 1287,
+      "message": "Invalid_CVV"
+    },
+    {
+      "code": 1289,
+      "message": "Invalid Website"
+    },
+    {
+      "code": 1290,
+      "message": "Debit Requires Track2 Data"
+    },
+    {
+      "code": 1291,
+      "message": "Invalid Email"
+    },
+    {
+      "code": 1294,
+      "message": "Invalid Exp Length"
+    },
+    {
+      "code": 1295,
+      "message": "Expiration Date Must Be In Future"
+    },
+    {
+      "code": 1296,
+      "message": "Invalid Merchant ID"
+    },
+    {
+      "code": 1297,
+      "message": "Invalid Terminal ID"
+    },
+    {
+      "code": 1298,
+      "message": "Invalid Account"
+    },
+    {
+      "code": 1299,
+      "message": "Invalid Account Settings"
+    },
+    {
+      "code": 1300,
+      "message": "Invalid Effective Date"
+    },
+    {
+      "code": 1301,
+      "message": "Invalid merchant key"
+    },
+    {
+      "code": 1302,
+      "message": "Try_Again_Later"
+    },
+    {
+      "code": 1303,
+      "message": "Void of activation after account activity"
+    },
+    {
+      "code": 1304,
+      "message": "Edit Honor"
+    },
+    {
+      "code": 1305,
+      "message": "Not approved"
+    },
+    {
+      "code": 1306,
+      "message": "Call acquirer's security"
+    },
+    {
+      "code": 1307,
+      "message": "Crypto box is offline"
+    },
+    {
+      "code": 1308,
+      "message": "Invalid Checking Account Number"
+    },
+    {
+      "code": 1309,
+      "message": "Accepted but not yet processed"
+    },
+    {
+      "code": 1310,
+      "message": "Promo location restricted"
+    },
+    {
+      "code": 1311,
+      "message": "Bulk activation package amount error"
+    },
+    {
+      "code": 1312,
+      "message": "Hard Capture; Pick Up"
+    },
+    {
+      "code": 1313,
+      "message": "Promotions for Internet virtual and physical cards do not match"
+    },
+    {
+      "code": 1314,
+      "message": "Transaction not permitted to terminal"
+    },
+    {
+      "code": 1315,
+      "message": "Reversal Rejected. Do not try again"
+    },
+    {
+      "code": 1316,
+      "message": "Bad checksum. The checksum provided is incorrect"
+    },
+    {
+      "code": 1317,
+      "message": "No term record on system"
+    },
+    {
+      "code": 1318,
+      "message": "System malfunction"
+    },
+    {
+      "code": 1319,
+      "message": "Internet access disabled"
+    },
+    {
+      "code": 1320,
+      "message": "No reason to decline"
+    },
+    {
+      "code": 1321,
+      "message": "Invalid status change"
+    },
+    {
+      "code": 1323,
+      "message": "TransArmor Service Unavailable"
+    },
+    {
+      "code": 1324,
+      "message": "Void/Full Reversal requests in which the Original Authorization was not found"
+    },
+    {
+      "code": 1325,
+      "message": "Too many transactions requested"
+    },
+    {
+      "code": 1327,
+      "message": "Duplicate Return"
+    },
+    {
+      "code": 1328,
+      "message": "Unmatched card expiry date"
+    },
+    {
+      "code": 1329,
+      "message": "Invalid issuer"
+    },
+    {
+      "code": 1330,
+      "message": "Lost card"
+    },
+    {
+      "code": 1331,
+      "message": "Account closed"
+    },
+    {
+      "code": 1332,
+      "message": "Duplicate Transaction"
+    },
+    {
+      "code": 1333,
+      "message": "CCV failed"
+    },
+    {
+      "code": 1334,
+      "message": "Decline"
+    },
+    {
+      "code": 1335,
+      "message": "System Error"
+    },
+    {
+      "code": 1336,
+      "message": "New Account Information"
+    },
+    {
+      "code": 1337,
+      "message": "Invalid account number"
+    },
+    {
+      "code": 1338,
+      "message": "Invalid Card Account"
+    },
+    {
+      "code": 1339,
+      "message": "Count Exceeds Limit"
+    },
+    {
+      "code": 1340,
+      "message": "Transaction Error"
+    },
+    {
+      "code": 1341,
+      "message": "Invalid EAN"
+    },
+    {
+      "code": 1342,
+      "message": "Target embossed card entered and Transaction count entered do not match"
+    },
+    {
+      "code": 1343,
+      "message": "Debit Switch Unavailable"
+    },
+    {
+      "code": 1344,
+      "message": "Approve VIP"
+    },
+    {
+      "code": 1345,
+      "message": "Violation of law"
+    },
+    {
+      "code": 1346,
+      "message": "Transaction destination not"
+    },
+    {
+      "code": 1347,
+      "message": "Expired card"
+    },
+    {
+      "code": 1348,
+      "message": "Already active and reloadable"
+    },
+    {
+      "code": 1349,
+      "message": "Already reversed"
+    },
+    {
+      "code": 1350,
+      "message": "Please retry"
+    },
+    {
+      "code": 1351,
+      "message": "Invalid account/date or sales date in future"
+    },
+    {
+      "code": 1352,
+      "message": "Product code(s) restricted"
+    },
+    {
+      "code": 1353,
+      "message": "Date of Birth Error for Check Processing"
+    },
+    {
+      "code": 1354,
+      "message": "Invalid State Code"
+    },
+    {
+      "code": 1355,
+      "message": "Incorrect PIN"
+    },
+    {
+      "code": 1356,
+      "message": "The authorizing network has a problem decrypting the cryptogram in the request"
+    },
+    {
+      "code": 1357,
+      "message": "Transaction not permitted to cardholder"
+    },
+    {
+      "code": 1358,
+      "message": "Store location zero not allowed"
+    },
+    {
+      "code": 1359,
+      "message": "Error"
+    },
+    {
+      "code": 1360,
+      "message": "Account on hold"
+    },
+    {
+      "code": 1361,
+      "message": "Approved EMV Key Load"
+    },
+    {
+      "code": 1362,
+      "message": "Invalid clerk"
+    },
+    {
+      "code": 1363,
+      "message": "Account is Purged"
+    },
+    {
+      "code": 1364,
+      "message": "Invalid_Amount"
+    },
+    {
+      "code": 1365,
+      "message": "Invalid transaction source"
+    },
+    {
+      "code": 1366,
+      "message": "Invalid time zone"
+    },
+    {
+      "code": 1367,
+      "message": "Service not allowed"
+    },
+    {
+      "code": 1368,
+      "message": "Card issuer timed out"
+    },
+    {
+      "code": 1370,
+      "message": "Bad authorization code"
+    },
+    {
+      "code": 1371,
+      "message": "Duplicate Reversal"
+    },
+    {
+      "code": 1373,
+      "message": "DUKPT: An error while processing the PIN block that is not related to the point-ofsale equipment. Contact the Help Desk for assistance"
+    },
+    {
+      "code": 1372,
+      "message": "Network Response indicates that Merchant ID/SE is invalid"
+    },
+    {
+      "code": 1377,
+      "message": "Bad_repay_date"
+    },
+    {
+      "code": 1378,
+      "message": "Invalid currency"
+    },
+    {
+      "code": 1379,
+      "message": "Incorrect transaction version or format number for POS transactions"
+    },
+    {
+      "code": 1380,
+      "message": "Do not try again"
+    },
+    {
+      "code": 1381,
+      "message": "No account link"
+    },
+    {
+      "code": 1382,
+      "message": "Duplicate Completion"
+    },
+    {
+      "code": 1383,
+      "message": "Allowable PIN tries exceeded"
+    },
+    {
+      "code": 1384,
+      "message": "Bulk activation error"
+    },
+    {
+      "code": 1385,
+      "message": "CVV2 Declined"
+    },
+    {
+      "code": 1386,
+      "message": "Restricted card"
+    },
+    {
+      "code": 1387,
+      "message": "Incorrect location"
+    },
+    {
+      "code": 1388,
+      "message": "Transaction history not available"
+    },
+    {
+      "code": 1389,
+      "message": "Invalid terminal"
+    },
+    {
+      "code": 1390,
+      "message": "Totals Unavailable"
+    },
+    {
+      "code": 1391,
+      "message": "The DUKPT Base Derivation key is missing or incorrect in the PIN pad, or PIN key synchronization error"
+    },
+    {
+      "code": 1392,
+      "message": "No Savings Account"
+    },
+    {
+      "code": 1393,
+      "message": "Cash Back greater than total Transaction amount"
+    },
+    {
+      "code": 1394,
+      "message": "Refer \u2013 Call Authorization (Checks only)"
+    },
+    {
+      "code": 1395,
+      "message": "Password retry exceeded"
+    },
+    {
+      "code": 1396,
+      "message": "Currency conversion error"
+    },
+    {
+      "code": 1397,
+      "message": "Unknown account"
+    },
+    {
+      "code": 1398,
+      "message": "Max balance exceeded"
+    },
+    {
+      "code": 1399,
+      "message": "Honor With Authentication"
+    },
+    {
+      "code": 1401,
+      "message": "TransArmor Key Error"
+    },
+    {
+      "code": 1402,
+      "message": "Not lost or stolen"
+    },
+    {
+      "code": 1403,
+      "message": "Account already linked"
+    },
+    {
+      "code": 1404,
+      "message": "Already active"
+    },
+    {
+      "code": 1405,
+      "message": "Invalid transaction"
+    },
+    {
+      "code": 1406,
+      "message": "No transactions available/no more transactions available"
+    },
+    {
+      "code": 1407,
+      "message": "Debit/EBT network gateway cannot get through to the ISSUER"
+    },
+    {
+      "code": 1409,
+      "message": "Account locked"
+    },
+    {
+      "code": 1410,
+      "message": "Refer to issuer's special conditions"
+    },
+    {
+      "code": 1411,
+      "message": "Insufficent_Funds"
+    },
+    {
+      "code": 1412,
+      "message": "Exceeded account reloads"
+    },
+    {
+      "code": 1413,
+      "message": "Invalid merchant"
+    },
+    {
+      "code": 1414,
+      "message": "Invalid new password"
+    },
+    {
+      "code": 1415,
+      "message": "Request not permitted by this merchant location"
+    },
+    {
+      "code": 1416,
+      "message": "Request not permitted by this account"
+    },
+    {
+      "code": 1417,
+      "message": "Enter lesser amount"
+    },
+    {
+      "code": 1418,
+      "message": "Amount Too Large"
+    },
+    {
+      "code": 1419,
+      "message": "No phone service"
+    },
+    {
+      "code": 1420,
+      "message": "Unsuccessful"
+    },
+    {
+      "code": 1421,
+      "message": "Debit/EBT transaction count exceeds pre-determined limit in specified time/ Withdrawal limit exceeded"
+    },
+    {
+      "code": 1422,
+      "message": "Account not in inactive state"
+    },
+    {
+      "code": 1423,
+      "message": "Bad Post Date"
+    },
+    {
+      "code": 1424,
+      "message": "Stolen card"
+    },
+    {
+      "code": 1426,
+      "message": "Unable to Locate Record On File"
+    },
+    {
+      "code": 1427,
+      "message": "Bulk activation un-attempted error"
+    },
+    {
+      "code": 1428,
+      "message": "Account status is void lock"
+    },
+    {
+      "code": 1429,
+      "message": "Schema Validation Error"
+    },
+    {
+      "code": 1430,
+      "message": "No card record"
+    },
+    {
+      "code": 1432,
+      "message": "Pick Up Card"
+    },
+    {
+      "code": 1433,
+      "message": "The terminal transaction number did not match (on a void or reversal)"
+    },
+    {
+      "code": 1434,
+      "message": "Subsystem Unavailable"
+    },
+    {
+      "code": 1435,
+      "message": "New Account Information available"
+    },
+    {
+      "code": 1436,
+      "message": "Call for authorization"
+    },
+    {
+      "code": 1437,
+      "message": "Approve for partial amount"
+    },
+    {
+      "code": 1438,
+      "message": "Inactive account"
+    },
+    {
+      "code": 1439,
+      "message": "TransArmor Invalid Token or Account Number"
+    },
+    {
+      "code": 1440,
+      "message": "EMV Key Download Error"
+    },
+    {
+      "code": 1441,
+      "message": "Do not honor"
+    },
+    {
+      "code": 1442,
+      "message": "Referred \u2013 Skip Trace Info"
+    },
+    {
+      "code": 1443,
+      "message": "Balance not available (denial)"
+    },
+    {
+      "code": 1444,
+      "message": "Bad mag stripe"
+    },
+    {
+      "code": 1446,
+      "message": "Approved EMV Key Load"
+    },
+    {
+      "code": 1447,
+      "message": "Invalid password"
+    },
+    {
+      "code": 1448,
+      "message": "Exceeds withdrawal frequency limit"
+    },
+    {
+      "code": 1449,
+      "message": "No previous transaction"
+    },
+    {
+      "code": 1451,
+      "message": "Transaction not permitted to acquirer or terminal"
+    },
+    {
+      "code": 1452,
+      "message": "Hard Negative Info On File"
+    },
+    {
+      "code": 1453,
+      "message": "Account row locked"
+    },
+    {
+      "code": 1455,
+      "message": "Format error"
+    },
+    {
+      "code": 1456,
+      "message": "Exceeds withdrawal amount limit"
+    },
+    {
+      "code": 1457,
+      "message": "Resubmission of transaction violates debit/EBT network frequency"
+    },
+    {
+      "code": 1458,
+      "message": "New password required"
+    },
+    {
+      "code": 1462,
+      "message": "Transaction Previously Voided"
+    },
+    {
+      "code": 1463,
+      "message": "Invalid_RefNum"
+    },
+    {
+      "code": 1464,
+      "message": "Invalid Credit Card"
+    },
+    {
+      "code": 1465,
+      "message": "Invalid Trackdata"
+    },
+    {
+      "code": 1466,
+      "message": "Either Token or Magstripe or Card Num and Exp valid per transaction"
+    },
+    {
+      "code": 1467,
+      "message": "Refund/Void not allowed on EBT transaction"
+    },
+    {
+      "code": 1468,
+      "message": "Invalid EBT Card"
+    },
+    {
+      "code": 1469,
+      "message": "Transaction amount exceeded for test account"
+    },
+    {
+      "code": 1470,
+      "message": "Invalid_EXP"
+    },
+    {
+      "code": 1471,
+      "message": "Refund/Void not allowed on Debit transaction"
+    },
+    {
+      "code": 1472,
+      "message": "PIN/DUKPT Required"
+    },
+    {
+      "code": 1474,
+      "message": "Invalid Pin/Dukpt"
+    },
+    {
+      "code": 1477,
+      "message": "Expiration Date Required"
+    },
+    {
+      "code": 1478,
+      "message": "Invalid EBT Card Length"
+    },
+    {
+      "code": 1479,
+      "message": "Invalid Card"
+    },
+    {
+      "code": 1480,
+      "message": "Voice_Authentication_Required"
+    },
+    {
+      "code": 1481,
+      "message": "Timeout"
+    },
+    {
+      "code": 1482,
+      "message": "Billing Address Mismatch"
+    },
+    {
+      "code": 1483,
+      "message": "Invalid DUKPT format"
+    },
+    {
+      "code": 1485,
+      "message": "Account Setup Error"
+    },
+    {
+      "code": 1486,
+      "message": "Credit Denied"
+    },
+    {
+      "code": 1487,
+      "message": "Unsupported Card Type"
+    },
+    {
+      "code": 1488,
+      "message": "Processor temporarily unavailable"
+    },
+    {
+      "code": 1489,
+      "message": "Invalid CVV Length"
+    },
+    {
+      "code": 1490,
+      "message": "Card Number Error"
+    },
+    {
+      "code": 1491,
+      "message": "Invalid_CardNumber"
+    },
+    {
+      "code": 1492,
+      "message": "Invalid Tran Code"
+    },
+    {
+      "code": 1493,
+      "message": "Hold Card"
+    },
+    {
+      "code": 1494,
+      "message": "Use VOID to refund an unsettled transaction"
+    },
+    {
+      "code": 1495,
+      "message": "Invalid Variable"
+    },
+    {
+      "code": 1496,
+      "message": "Invalid Hash"
+    },
+    {
+      "code": 1500,
+      "message": "Invalid FSA Amounts"
+    },
+    {
+      "code": 1501,
+      "message": "Resume Map"
+    },
+    {
+      "code": 1502,
+      "message": "Name exceeds max length"
+    },
+    {
+      "code": 1503,
+      "message": "Monthly volume exceeded"
+    },
+    {
+      "code": 1504,
+      "message": "Transaction can not be completed, violation of law"
+    },
+    {
+      "code": 1505,
+      "message": "Invalid Transaction Type"
+    },
+    {
+      "code": 1506,
+      "message": "Unsupported AID"
+    },
+    {
+      "code": 1507,
+      "message": "Processing Error"
+    },
+    {
+      "code": 1508,
+      "message": "Invalid Store Key"
+    },
+    {
+      "code": 1509,
+      "message": "Invalid Integer"
+    },
+    {
+      "code": 1510,
+      "message": "Routing or MICR Required"
+    },
+    {
+      "code": 1511,
+      "message": "Account Closed - Contact Cardholder (AU)"
+    },
+    {
+      "code": 1512,
+      "message": "Contact Cardholder (AU)"
+    },
+    {
+      "code": 1513,
+      "message": "Specified source key not found."
+    },
+    {
+      "code": 1514,
+      "message": "Invalid Bill Street"
+    },
+    {
+      "code": 1515,
+      "message": "Invalid Bill First Name"
+    },
+    {
+      "code": 1516,
+      "message": "Invalid Bill Last Name"
+    },
+    {
+      "code": 1517,
+      "message": "Invalid Ship Street"
+    },
+    {
+      "code": 1518,
+      "message": "Invalid Ship First Name"
+    },
+    {
+      "code": 1519,
+      "message": "Invalid Ship Last Name"
+    },
+    {
+      "code": 1520,
+      "message": "Declined (SF)"
+    },
+    {
+      "code": 1521,
+      "message": "MVV merchant parameter empty or invalid"
+    },
+    {
+      "code": 1522,
+      "message": "Unable to process transaction"
+    },
+    {
+      "code": 1523,
+      "message": "Transaction cannot be refunded at this time"
+    },
+    {
+      "code": 1524,
+      "message": "Transaction cannot be voided at this time"
+    },
+    {
+      "code": 1525,
+      "message": "Transaction Cannot Be Voided"
+    },
+    {
+      "code": 1526,
+      "message": "Specified source key not found"
+    },
+    {
+      "code": 1530,
+      "message": "FSA Not Supported"
+    },
+    {
+      "code": 1531,
+      "message": "Pin Required for EBT"
+    },
+    {
+      "code": 1532,
+      "message": "Account Setup error. Please Contact Support."
+    },
+    {
+      "code": 1533,
+      "message": "Card or Magstripe or MemberID Required"
+    },
+    {
+      "code": 1534,
+      "message": "Access Denied"
+    },
+    {
+      "code": 1535,
+      "message": "Invalid Input"
+    },
+    {
+      "code": 1536,
+      "message": "Invalid Tax"
+    },
+    {
+      "code": 1537,
+      "message": "Sequence ID Required"
+    },
+    {
+      "code": 1538,
+      "message": "CVV2 Refused"
+    },
+    {
+      "code": 1539,
+      "message": "Transaction exceeds maximum amount."
+    },
+    {
+      "code": 1540,
+      "message": "Name Required"
+    },
+    {
+      "code": 1541,
+      "message": "Street exceeds max length"
+    },
+    {
+      "code": 1542,
+      "message": "Invalid Service Code"
+    },
+    {
+      "code": 1543,
+      "message": "Invalid Account/Card Number."
+    },
+    {
+      "code": 1544,
+      "message": "CVC2/CID Rejected by Issuer."
+    },
+    {
+      "code": 1545,
+      "message": "Reversal error"
+    },
+    {
+      "code": 1546,
+      "message": "Invalid Name"
+    },
+    {
+      "code": 1548,
+      "message": "EXAMOUNT MUST BE >= 0.00 AND <= AMOUNT"
+    },
+    {
+      "code": 1550,
+      "message": "EMV Pin Error"
+    },
+    {
+      "code": 1551,
+      "message": "Ineligible Refnum"
+    },
+    {
+      "code": 1552,
+      "message": "Invalid PNRef"
+    },
+    {
+      "code": 1553,
+      "message": "Command Type Does Not Support Pin"
+    },
+    {
+      "code": 1554,
+      "message": "Void Not Supported For Pin Transactions"
+    },
+    {
+      "code": 1555,
+      "message": "Card not accepted by merchant, please try a different card"
+    },
+    {
+      "code": 1556,
+      "message": "Invalid Invoice"
+    },
+    {
+      "code": 1557,
+      "message": "Refund not permitted, original sale not found"
+    },
+    {
+      "code": 1558,
+      "message": "Balance Temporarily Unavailable"
+    },
+    {
+      "code": 1559,
+      "message": "System temporarily unavailable"
+    },
+    {
+      "code": 1560,
+      "message": "Issue Amount Exceeds Redeem Amount"
+    },
+    {
+      "code": 1561,
+      "message": "This card can not be used with MOTO transactions"
+    },
+    {
+      "code": 1562,
+      "message": "Current permissions do not allow this operation. Please contact customer support."
+    },
+    {
+      "code": 1563,
+      "message": "Transaction amount below minimum"
+    },
+    {
+      "code": 1564,
+      "message": "Invalid check images"
+    },
+    {
+      "code": 1565,
+      "message": "Invalid Username"
+    },
+    {
+      "code": 1566,
+      "message": "Invalid Currency Code"
+    },
+    {
+      "code": 1567,
+      "message": "Invalid Account Type"
+    },
+    {
+      "code": 1568,
+      "message": "Invalid mInitial"
+    },
+    {
+      "code": 1569,
+      "message": "Invalid aptNum"
+    },
+    {
+      "code": 1570,
+      "message": "Invalid city"
+    },
+    {
+      "code": 1571,
+      "message": "Invalid state"
+    },
+    {
+      "code": 1572,
+      "message": "Invalid billZip"
+    },
+    {
+      "code": 1573,
+      "message": "Invalid mailApt"
+    },
+    {
+      "code": 1574,
+      "message": "Invalid mailCity"
+    },
+    {
+      "code": 1575,
+      "message": "Invalid mailState"
+    },
+    {
+      "code": 1576,
+      "message": "Invalid mailZip"
+    },
+    {
+      "code": 1577,
+      "message": "Invalid dayPhone"
+    },
+    {
+      "code": 1578,
+      "message": "Invalid evenPhone"
+    },
+    {
+      "code": 1579,
+      "message": "Invalid ssn"
+    },
+    {
+      "code": 1580,
+      "message": "Invalid dob"
+    },
+    {
+      "code": 1581,
+      "message": "Invalid recEmail"
+    },
+    {
+      "code": 1582,
+      "message": "Invalid knownAccount"
+    },
+    {
+      "code": 1583,
+      "message": "Invalid rtNum"
+    },
+    {
+      "code": 1584,
+      "message": "Invalid splitNum"
+    },
+    {
+      "code": 1585,
+      "message": "A ProPay account With this e-mail address already exists Or User has no AccountNumber"
+    },
+    {
+      "code": 1586,
+      "message": "A ProPay account With this social security number already exists"
+    },
+    {
+      "code": 1587,
+      "message": "The email address provided does Not correspond To a ProPay account."
+    },
+    {
+      "code": 1588,
+      "message": "Recipients e-mail address shouldnt have a ProPay account And does"
+    },
+    {
+      "code": 1589,
+      "message": "Invalid Credential Or IP address Not allowed"
+    },
+    {
+      "code": 1590,
+      "message": "Over credit card use limit"
+    },
+    {
+      "code": 1591,
+      "message": "Miscellaneous Error"
+    },
+    {
+      "code": 1592,
+      "message": "Denied a ProPay account (Developer should display a descriptive message that guides a New user To fill out ProPay exceptions form And submit it.)"
+    },
+    {
+      "code": 1593,
+      "message": "Unauthorized service requested"
+    },
+    {
+      "code": 1594,
+      "message": "Account Not affiliated"
+    },
+    {
+      "code": 1595,
+      "message": "Duplicate invoice number (The same card was charged For the same amount With the same invoice number (including blank invoices) In a 1 minute period. Details about the original transaction are included whenever a 69 response Is returned. These details include a repeat Of the auth code, the original AVS response, And the original CVV response.)"
+    },
+    {
+      "code": 1596,
+      "message": "Duplicate external ID"
+    },
+    {
+      "code": 1597,
+      "message": "Account previously Set up, but problem affiliating it With partner"
+    },
+    {
+      "code": 1598,
+      "message": "The ProPay Account has already been upgraded To a Premium Account"
+    },
+    {
+      "code": 1599,
+      "message": "Invalid Destination Account"
+    },
+    {
+      "code": 1600,
+      "message": "Account Or Trans Error"
+    },
+    {
+      "code": 1601,
+      "message": "Money already pulled"
+    },
+    {
+      "code": 1602,
+      "message": "Not Premium (used only For push/pull transactions)"
+    },
+    {
+      "code": 1603,
+      "message": "Empty results"
+    },
+    {
+      "code": 1604,
+      "message": "Generic account status Error"
+    },
+    {
+      "code": 1605,
+      "message": "InvalidUserID"
+    },
+    {
+      "code": 1606,
+      "message": "BatchTransCountError"
+    },
+    {
+      "code": 1607,
+      "message": "InvalidBeginDate"
+    },
+    {
+      "code": 1608,
+      "message": "InvalidEndDate"
+    },
+    {
+      "code": 1609,
+      "message": "InvalidExternalID"
+    },
+    {
+      "code": 1610,
+      "message": "DuplicateUserID"
+    },
+    {
+      "code": 1611,
+      "message": "Duplicate Batch ID"
+    },
+    {
+      "code": 1612,
+      "message": "Duplicate Batch Transaction"
+    },
+    {
+      "code": 1613,
+      "message": "Batch Transaction amount Error"
+    },
+    {
+      "code": 1614,
+      "message": "Unavailable Tier"
+    },
+    {
+      "code": 1615,
+      "message": "Invalid Country Code"
+    },
+    {
+      "code": 1616,
+      "message": "Account created In documentary status, but still must be validated."
+    },
+    {
+      "code": 1617,
+      "message": "Account created In documentary status, but still must be validated And paid For."
+    },
+    {
+      "code": 1618,
+      "message": "Account created successfully, but still must be paid For."
+    },
+    {
+      "code": 1619,
+      "message": "Invalid Payer Name"
+    },
+    {
+      "code": 1620,
+      "message": "Transaction does Not meet Date criteria"
+    },
+    {
+      "code": 1621,
+      "message": "Direct deposit account Not specified"
+    },
+    {
+      "code": 1622,
+      "message": "Invalid SEC code"
+    },
+    {
+      "code": 1623,
+      "message": "Invalid x509 certificate"
+    },
+    {
+      "code": 1624,
+      "message": "Invalid value for require CC refund"
+    },
+    {
+      "code": 1625,
+      "message": "Required field Is missing (This Is returned only For edit ProPay account. See response tag For field name.)"
+    },
+    {
+      "code": 1626,
+      "message": "Invalid EIN"
+    },
+    {
+      "code": 1627,
+      "message": "Invalid business legal name (DBA)"
+    },
+    {
+      "code": 1628,
+      "message": "One of the business legal address fields Is invalid"
+    },
+    {
+      "code": 1629,
+      "message": "Business (legal) city Is invalid"
+    },
+    {
+      "code": 1630,
+      "message": "Business (legal) state Is invalid"
+    },
+    {
+      "code": 1631,
+      "message": "Business (legal) zip Is invalid"
+    },
+    {
+      "code": 1632,
+      "message": "Business (legal) country Is invalid"
+    },
+    {
+      "code": 1633,
+      "message": "Mailing address invalid"
+    },
+    {
+      "code": 1634,
+      "message": "Business (legal) address Is invalid"
+    },
+    {
+      "code": 1635,
+      "message": "Incomplete business address"
+    },
+    {
+      "code": 1636,
+      "message": "Amount Encumbered by enhanced Spendback"
+    },
+    {
+      "code": 1637,
+      "message": "Invalid key serial number"
+    },
+    {
+      "code": 1638,
+      "message": "You may Not transfer money between these two accounts. Sponsor bank transfer disallowed."
+    },
+    {
+      "code": 1639,
+      "message": "Currency code Not allowed for this transaction"
+    },
+    {
+      "code": 1640,
+      "message": "Currency code Not permitted for this account"
+    },
+    {
+      "code": 1641,
+      "message": "Requires Additional Validation"
+    },
+    {
+      "code": 1642,
+      "message": "Multicurrency processing Is Not allowed for the account"
+    },
+    {
+      "code": 1643,
+      "message": "Multicurrency processing Is Not supported For this bank processor"
+    },
+    {
+      "code": 1644,
+      "message": "Capture amount exceeds allowed amount"
+    },
+    {
+      "code": 1645,
+      "message": "Account setup does Not allow capture For amount greater than authorization"
+    },
+    {
+      "code": 1646,
+      "message": "Threat Metrix risk denied (no responseCode Is returned)"
+    },
+    {
+      "code": 1647,
+      "message": "Threat Metrix Invalid SessionId"
+    },
+    {
+      "code": 1648,
+      "message": "Threat Metrix Invalid Account configuration"
+    },
+    {
+      "code": 1649,
+      "message": "External Payment Provider Not provided"
+    },
+    {
+      "code": 1650,
+      "message": "External Payment Identifier Not provided"
+    },
+    {
+      "code": 1651,
+      "message": "External Payment Provider Not valid"
+    },
+    {
+      "code": 1652,
+      "message": "Inactive Or blocked MCC Code"
+    },
+    {
+      "code": 1653,
+      "message": "Invalid MCC Code (non-numeric Or Not In our database)"
+    },
+    {
+      "code": 1654,
+      "message": "Gross settle: invalid credit card information"
+    },
+    {
+      "code": 1655,
+      "message": "Gross settle: invalid billing information"
+    },
+    {
+      "code": 1656,
+      "message": "Gross settle: no billing information was included with the payment info"
+    },
+    {
+      "code": 1657,
+      "message": "Debit Requires Swipe. Please Swipe or Use Credit."
+    },
+    {
+      "code": 1658,
+      "message": "Swipe again"
+    },
+    {
+      "code": 1659,
+      "message": "Key Is Inactive"
+    },
+    {
+      "code": 1660,
+      "message": "Invalid Void After Refund"
+    },
+    {
+      "code": 1661,
+      "message": "Refund on a refund not allowed"
+    },
+    {
+      "code": 1662,
+      "message": "Invalid Cavv/Eci Value"
+    },
+    {
+      "code": 1663,
+      "message": "Invalid Contactless"
+    },
+    {
+      "code": 1664,
+      "message": "CVV Response Code is required"
+    },
+    {
+      "code": 1665,
+      "message": "Invalid processor"
+    },
+    {
+      "code": 1666,
+      "message": "Processor is temporarily unavailable"
+    },
+    {
+      "code": 1667,
+      "message": "NOT AUTHORISED"
+    },
+    {
+      "code": 1668,
+      "message": "BIN is required"
+    },
+    {
+      "code": 1669,
+      "message": "Invalid license"
+    },
+    {
+      "code": 1670,
+      "message": "Token Expired"
+    },
+    {
+      "code": 1671,
+      "message": "Token reference not found"
+    },
+    {
+      "code": 1672,
+      "message": "Invalid EMV Read. Please try again."
+    },
+    {
+      "code": 1673,
+      "message": "Inactive Gift Card"
+    },
+    {
+      "code": 1674,
+      "message": "Card already active"
+    },
+    {
+      "code": 1675,
+      "message": "Card already inactive"
+    },
+    {
+      "code": 1678,
+      "message": "Refund not permitted, amount exceeds original sale"
+    },
+    {
+      "code": 1679,
+      "message": "Declined - Contact Support"
+    },
+    {
+      "code": 1680,
+      "message": "Unsupported Transaction"
+    },
+    {
+      "code": 1681,
+      "message": "AVS Street Required"
+    },
+    {
+      "code": 1683,
+      "message": "Line Items Required"
+    },
+    {
+      "code": 1684,
+      "message": "Re enter"
+    },
+    {
+      "code": 1685,
+      "message": "Missing or Invalid PARes"
+    },
+    {
+      "code": 1686,
+      "message": "Recapture not supported"
+    },
+    {
+      "code": 1687,
+      "message": "You have tried too many card numbers, please contact merchant."
+    },
+    {
+      "code": 1689,
+      "message": "Capture not allowed on voided auth"
+    },
+    {
+      "code": 1690,
+      "message": "Negative Tax amount not allowed"
+    },
+    {
+      "code": 1691,
+      "message": "Data Unavailable"
+    },
+    {
+      "code": 1692,
+      "message": "Account Unavailable"
+    },
+    {
+      "code": 1693,
+      "message": "This terminal has been disabled. Please contact customer service to configure the terminal."
+    },
+    {
+      "code": 1694,
+      "message": "Transaction not supported"
+    },
+    {
+      "code": 1695,
+      "message": "Cashback not supported"
+    },
+    {
+      "code": 1696,
+      "message": "An unexpected error has occurred. Technical Support has been alerted to this problem."
+    },
+    {
+      "code": 1697,
+      "message": "Unable to map data"
+    },
+    {
+      "code": 1698,
+      "message": "Invalid billing address"
+    },
+    {
+      "code": 1699,
+      "message": "Incorrect CVV"
+    },
+    {
+      "code": 1700,
+      "message": "AID Mismatch"
+    },
+    {
+      "code": 1701,
+      "message": "Batch previously locked for settlement"
+    },
+    {
+      "code": 1702,
+      "message": "Insert Card Again"
+    },
+    {
+      "code": 1703,
+      "message": "Card Type Not Allowed"
+    },
+    {
+      "code": 1704,
+      "message": "Refund not allowed; issue void"
+    },
+    {
+      "code": 1705,
+      "message": "Invalid RoomNum"
+    },
+    {
+      "code": 1706,
+      "message": "Amount Not Supported"
+    },
+    {
+      "code": 1707,
+      "message": "Unsupported Industry"
+    },
+    {
+      "code": 1708,
+      "message": "Transaction authentication required."
+    },
+    {
+      "code": 1709,
+      "message": "Swipe Card"
+    },
+    {
+      "code": 1710,
+      "message": "Encryption Required (Port)"
+    },
+    {
+      "code": 1711,
+      "message": "Specified Encryption Key Not Found"
+    },
+    {
+      "code": 1712,
+      "message": "Debit Void Not Supported"
+    },
+    {
+      "code": 1713,
+      "message": "Command Type Not Supported For Debit/EBT"
+    },
+    {
+      "code": 1714,
+      "message": "Invalid chip read; try again."
+    },
+    {
+      "code": 1715,
+      "message": "Invalid Start Date (Batch Report)"
+    },
+    {
+      "code": 1716,
+      "message": "Invalid Start Date/Time"
+    },
+    {
+      "code": 1717,
+      "message": "Swipe Not Allowed"
+    },
+    {
+      "code": 1718,
+      "message": "Invalid EntryMode"
+    },
+    {
+      "code": 1719,
+      "message": "Invalid Encryption Key"
+    },
+    {
+      "code": 1720,
+      "message": "Signature Invalid (SUT)"
+    },
+    {
+      "code": 1721,
+      "message": "Transaction can no longer be voided"
+    },
+    {
+      "code": 1722,
+      "message": "Invalid Encrypted Swipe"
+    },
+    {
+      "code": 1723,
+      "message": "One or more errors occurred"
+    },
+    {
+      "code": 1724,
+      "message": "The referenced transaction does not meet the criteria for issuing a credit"
+    },
+    {
+      "code": 1725,
+      "message": "Bill field required"
+    },
+    {
+      "code": 1726,
+      "message": "Invalid GiftCard Length"
+    },
+    {
+      "code": 1728,
+      "message": "Invalid Batch Sequence"
+    },
+    {
+      "code": 1729,
+      "message": "Missing Required Credit Card Data"
+    },
+    {
+      "code": 1730,
+      "message": "Unable to Communicate with MAPS Server"
+    },
+    {
+      "code": 1731,
+      "message": "Bad Data"
+    },
+    {
+      "code": 1732,
+      "message": "Verify Balances"
+    },
+    {
+      "code": 1733,
+      "message": "OOS Required"
+    },
+    {
+      "code": 1734,
+      "message": "Currency Not Supported"
+    },
+    {
+      "code": 1735,
+      "message": "Object reference not set to an instance of an object"
+    },
+    {
+      "code": 1736,
+      "message": "Source has been blocked from processing transactions."
+    },
+    {
+      "code": 1737,
+      "message": "Invalid Field"
+    },
+    {
+      "code": 1738,
+      "message": "An error occurred during processing. Call Merchant Service Provider."
+    },
+    {
+      "code": 1739,
+      "message": "Partial Auth not supported for eWIC"
+    },
+    {
+      "code": 1740,
+      "message": "This transaction cannot be accepted."
+    },
+    {
+      "code": 1741,
+      "message": "Invalid eWIC card"
+    },
+    {
+      "code": 1742,
+      "message": "Could not Retrieve Transaction ID"
+    },
+    {
+      "code": 1743,
+      "message": "Missing part of path"
+    },
+    {
+      "code": 1744,
+      "message": "Error Processing Lookup Request Message"
+    },
+    {
+      "code": 1745,
+      "message": "Invoice exceeds max length. Field has been truncated."
+    },
+    {
+      "code": 1746,
+      "message": "Invalid Device IP"
+    },
+    {
+      "code": 1747,
+      "message": "Database Unavailable"
+    },
+    {
+      "code": 1748,
+      "message": "Adjustment not allowed"
+    },
+    {
+      "code": 1749,
+      "message": "Must specify a valid payment method"
+    },
+    {
+      "code": 1750,
+      "message": "An error has occured. Please contact support."
+    },
+    {
+      "code": 1751,
+      "message": "Try Again"
+    },
+    {
+      "code": 1752,
+      "message": "Batch Not Found"
+    },
+    {
+      "code": 1753,
+      "message": "Authentication Data Unavailable"
+    },
+    {
+      "code": 1754,
+      "message": "Exceeds Daily Limit"
+    },
+    {
+      "code": 1755,
+      "message": "Exceeds 7 Day Limit"
+    },
+    {
+      "code": 1756,
+      "message": "Exceeds 30 Day Limit"
+    },
+    {
+      "code": 1757,
+      "message": "FAILED PLZ CALL S80"
+    }
+  ]

@@ -86,7 +86,9 @@ namespace InsTechClassesV2.AppliedEpic
             var response = await UpdateApplied(receipt, vendor);
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"We successfully  payment to invoice  { invoiceNumber} in Applied Epic for client {client.ClientName}. ");
+                Console.WriteLine($"We successfully applied a   payment to invoice  { invoiceNumber} in Applied Epic for client {client.ClientName}. ");
+
+                log.InvoiceMessage = $"Payment applied to invoice # {invoiceNumber} ";
             }
             else
             {
@@ -157,6 +159,8 @@ namespace InsTechClassesV2.AppliedEpic
             DateTime estTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, estZone);
 
 
+            DateTime dateTime = cardknox.ReportData.Count > 0 ? Convert.ToDateTime(cardknox.ReportData[0].EnteredDate) : estTime;
+
             string command = cardknox.ReportData.Count > 0 ? cardknox.ReportData[0].Command.ToLower() : "";
             if (command.Contains("check"))
             {
@@ -165,7 +169,7 @@ namespace InsTechClassesV2.AppliedEpic
                 {
                     negativeDeposit = "-Debits";
                 }
-                batch = $"{estTime.AddHours(3).Date.ToString("yyyyMMdd")}-{vendor.CardknoxAccountCode}{negativeDeposit}";
+                batch = $"{dateTime.AddHours(3).Date.ToString("yyyyMMdd")}-{vendor.CardknoxAccountCode}{negativeDeposit}";
             }
             return batch;
         }
