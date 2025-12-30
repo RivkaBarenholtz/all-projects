@@ -6,7 +6,9 @@ import App from './App.jsx'
 
 const basename = process.env.NODE_ENV === 'development' 
 || window.location.hostname === 'pay.instechpay.co' 
-|| window.location.hostname === 'portal.instechpay.co' ? '/' 
+|| window.location.hostname === 'portal.instechpay.co'
+|| window.location.hostname === 'test.instechpay.co'
+ ? '/' 
 
 : '/app/';
 

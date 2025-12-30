@@ -96,7 +96,10 @@ export const Sort = ( data,  field, ascending = true) =>{
   export const handleUnauthorized = () => {
      
     localStorage.removeItem("idToken");
-    import.meta.env.MODE === 'development' || window.location.hostname === 'portal.instechpay.co' || window.location.hostname === 'pay.instechpay.co' ?
+    import.meta.env.MODE === 'development' 
+    || window.location.hostname === 'portal.instechpay.co' 
+    || window.location.hostname === 'pay.instechpay.co' 
+    || window.location.hostname === 'test.instechpay.co' ?
     window.location.href = "/login":
     window.location.href = "/app/login"
     ;
