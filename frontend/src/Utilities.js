@@ -44,6 +44,7 @@ export const fetchWithAuth = async (url, options = {}, isText = false ) => {
     if (isText)
       return await response.text();
     // Return parsed response
+    //adding test comment to test git commit actions
     return await response.json()
   };
 
