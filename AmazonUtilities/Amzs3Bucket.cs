@@ -98,15 +98,8 @@ namespace AmazonUtilities
             try
             {
                 // Get existing content
-                var getRequest = new GetObjectRequest
-                {
-                    BucketName = bucketName,
-                    Key = fileName
-                };
-
-                using var response = await s3Client.GetObjectAsync(getRequest);
-                using var reader = new StreamReader(response.ResponseStream);
-                var existingContent = await reader.ReadToEndAsync();
+                
+                var existingContent = await this.ReadS3File();
 
                 // Append new line
                 var updatedContent = existingContent + newLine;

@@ -2,7 +2,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FormatCurrency } from "../Utilities";
 import { X, MoreVertical  } from "lucide-react";
 import { TransactionActionDropdown } from "./TransactionActionDropdown";
+import { useEffect } from "react";
 export default function TransactionDetail({ transaction, onClose , getTransactions}) {
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+
+    // Restore scroll when component unmounts
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
   return (
     <AnimatePresence>
       {transaction && (

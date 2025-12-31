@@ -38,13 +38,13 @@ jobs:
           #   project-dir: ./InsTech-portal
           #   timeout: 30
           #   memory: 512
-          # # Add more Lambda functions below:
-          # - name: payment-portal
-          #   handler: "InsTechReceivePayment::InsTechReceivePayment.Function::FunctionHandler"
-          #   role: arn:aws:iam::664418966079:role/lambda_exec_payment-portal
-          #   project-dir: ./InsTechReceivePayment
-          #   timeout: 30
-          #   memory: 512
+          # Add more Lambda functions below:
+          - name: payment-portal
+            handler: "InsTechReceivePayment::InsTechReceivePayment.Function::FunctionHandler"
+            role: arn:aws:iam::664418966079:role/lambda_exec_payment-portal
+            project-dir: ./InsTechReceivePayment
+            timeout: 30
+            memory: 512
           # Add more Lambda functions below:
           - name: SyncCardknoxToDynamo
             handler: "SyncCardknoxToDynamo::SyncCardknoxToDynamo.Function::FunctionHandler"
