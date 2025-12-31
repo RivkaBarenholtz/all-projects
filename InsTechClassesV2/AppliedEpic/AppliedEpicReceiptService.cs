@@ -62,6 +62,7 @@ namespace InsTechClassesV2.AppliedEpic
                     ApplyTo = "Account",
                     Description = $"CC surcharge swallowed for pymt",
                     IsBankAccount = false,
+                    Method = "Credit Card",
                     StructureAgencyCode = SecurityElement.Escape(agencyCode),
                     StructureBranchCode = SecurityElement.Escape(client.BranchCode)
 
