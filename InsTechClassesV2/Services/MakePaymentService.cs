@@ -299,7 +299,7 @@ namespace InsTechClassesV2.Services
 
 
             var customerDefaultFee = Math.Round((subtotal) * vendor.InsureTechFeePercentage,2);
-            var insureTechAmt = Math.Max(customerDefaultFee - cardknoxAmt, 0);
+            var insureTechAmt = Math.Max(customerDefaultFee, 0);
             var vendorAmt = total - insureTechAmt;
             return new List<SplitInstructions>()
                 {
