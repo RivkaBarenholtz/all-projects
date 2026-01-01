@@ -14,7 +14,7 @@ test.describe('eCheck Transaction Flow', () => {
 
     console.log(`Testing with amount: $${testData.amount}`);
 
-    await page.goto('https://pay.instechpay.co/ins-dev');
+    await page.goto('https://test.instechpay.co/pay');
     await page.waitForLoadState('networkidle');
 
     // Click eCheck tab
@@ -100,8 +100,6 @@ test.describe('eCheck Transaction Flow', () => {
     await page.locator('input[name="routing-number"]').fill(testData.routingNumber);
     console.log('✓ Filled Routing Number');
 
-    await page.screenshot({ path: 'debug-before-submit.png', fullPage: true });
-    
     // Scroll down
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(500);
@@ -110,22 +108,14 @@ test.describe('eCheck Transaction Flow', () => {
     await page.locator('input[name="ach-agree"]').check();
     console.log('✓ Checked ACH agreement');
     
-    // PAUSE here to manually:
-    // 1. Fill Account Number if it didn't work
-    // 2. Solve reCAPTCHA
-    console.log('\n⏸️  PAUSED - Please:');
-    console.log('   1. Check if Account Number is filled (fill manually if not)');
-    console.log('   2. Solve the reCAPTCHA');
-    console.log('   3. Click Resume in Playwright Inspector\n');
-    
-    await page.pause();
+
 
     // Click Process Payment
     await page.locator('button:has-text("Process Payment")').click();
     console.log('✓ Clicked Process Payment');
 
     // Wait for thank you page
-    await page.waitForURL('**/thank-you', { timeout: 15000 });
+   await page.waitForURL(url => url.href.includes('thank-you'), { timeout: 15000 });
     
     expect(page.url()).toContain('thank-you');
     console.log('✅ Payment submitted successfully');

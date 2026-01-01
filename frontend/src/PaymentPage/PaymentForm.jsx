@@ -682,7 +682,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
                       inputId="state"
                       options={states}
                       value={state}
-                      onChange={setState}
+                      onChange={(selectedOption) => setState(selectedOption?.value)}
                       isClearable={false}
                       placeholder=""
                       styles={customStyles}
