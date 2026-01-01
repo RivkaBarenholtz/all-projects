@@ -133,7 +133,7 @@ function Transactions() {
 
     {
       DisplayValue:"Error",
-      Show: false,
+      Show: true,
       Value:  "ErrorDescription",
       FilterValue: "ErrorDescription",
       SortString : "ResponseCode",
