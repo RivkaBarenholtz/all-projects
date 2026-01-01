@@ -1,0 +1,22 @@
+{
+  "name": "instech",
+  "version": "1.0.0",
+  "description": "InsureTech",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RivkaBarenholtz/all-projects.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RivkaBarenholtz/all-projects/issues"
+  },
+  "homepage": "https://github.com/RivkaBarenholtz/all-projects#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^25.0.3"
+  }
+}

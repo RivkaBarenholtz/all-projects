@@ -12,8 +12,11 @@ export const fetchWithAuth = async (url, options = {}, isText = false ) => {
       'Vendor': vend, 
       "Content-Type": "application/json",
     };
-
-    const response = await fetch(`${BaseUrl()}/portal-v1/${url}`, {
+    let baseUrl =   BaseUrl();
+    if (!baseUrl.endsWith('portal-v1')) {
+      baseUrl += '/portal-v1';
+    }
+    const response = await fetch(`${baseUrl}/${url}`, {
                 method: 'POST',
                 body: JSON.stringify(options),
                 headers: headers
@@ -87,6 +90,8 @@ export const Sort = ( data,  field, ascending = true) =>{
     }
     
     export const BaseUrl=() =>{
+      if (window.location.origin=="https://test.instechpay.co")
+        return 'https://test.instechpay.co/portal-v1';
      return import.meta.env.MODE === 'development'
         ? 'https://ins-dev.instechpay.co'
         : window.location.origin.replace("pay.instechpay.co", "ins-dev.instechpay.co")

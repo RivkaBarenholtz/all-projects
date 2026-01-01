@@ -132,7 +132,7 @@ export const CreditCardTab = (
 
         setInvalidFields();
         //setAccountFocused(true); //even if it wasn't focused on yet we want it to behave as if it was because submit was pressed 
-        if ((captchaToken == "" || captchaToken == null) && !isPortal) {
+        if ((captchaToken == "" || captchaToken == null) && !isPortal && import.meta.env.VITE_ENV !== 'development') {
             // alert("Please verify that you are not a robot");
             return;
         }
@@ -156,7 +156,7 @@ export const CreditCardTab = (
             CSRCode: csrCode,
             CSREmail: csrEmail,
             CaptchaToken: captchaToken,
-            isDevelopment: import.meta.env.DEV
+            isDevelopment: import.meta.env.VITE_ENV === 'development'
         };
 
         try {
@@ -164,7 +164,7 @@ export const CreditCardTab = (
   (context ?? "app") === "app"
     ? BaseUrl().split('.')[0].split('//')[1]
     : (context ?? "ins-dev");
-            const response = await fetch(`${BaseUrl()}/pay/${clientid}/make-payment-cardknox`, {
+            const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/make-payment-cardknox`, {
                 method: 'POST',
                 body: JSON.stringify(request),
                 headers: { 'Content-Type': 'application/json' }

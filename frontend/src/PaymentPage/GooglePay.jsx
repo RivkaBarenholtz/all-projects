@@ -65,7 +65,7 @@ const GooglePay = ({amount, surcharge, AccountID, invoiceID , csrCode, csrEmail,
   (context ?? "app") === "app"
     ? BaseUrl().split('.')[0].split('//')[1]
     : (context ?? "ins-dev");
-    const response = await fetch(`${BaseUrl()}/pay/${clientid}/make-digital-payment`, {
+    const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/make-digital-payment`, {
         method: 'POST',
         body: JSON.stringify(request),
         headers: { 'Content-Type': 'application/json' }

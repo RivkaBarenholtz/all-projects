@@ -39,7 +39,8 @@ jobs:
         env:
           NODE_ENV: production
           # Add your Vite environment variables here:
-          VITE_RECAPTCHA_SITE_KEY: 6LemXlArAAAAAAglq4VJcXd4qY-pbgVxnKKMBLOq
+          VITE_RECAPTCHA_SITE_KEY: 6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI
+          VITE_ENV: development
           # VITE_API_KEY: ${{ secrets.API_KEY }}
 
       - name: Configure AWS credentials

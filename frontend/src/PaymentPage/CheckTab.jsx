@@ -70,7 +70,7 @@ export const CheckTab = (
             //alert("Please agree to terms and conditions");
             return;
         }
-        if ((captchaToken == "" || captchaToken == null) && !isPortal) {
+        if ((captchaToken == "" || captchaToken == null) && !isPortal && import.meta.env.VITE_ENV !== 'development') {
             //alert("Please verify that you are not a robot");
             return;
         }
@@ -96,7 +96,7 @@ export const CheckTab = (
             CSRCode: csrCode,
             CSREmail: csrEmail,
             CaptchaToken: captchaToken,
-            isDevelopment: import.meta.env.DEV
+            isDevelopment: import.meta.env.VITE_ENV === 'development'
         };
 
         try {
@@ -104,7 +104,7 @@ export const CheckTab = (
             (context ?? "app") === "app"
                 ? BaseUrl().split('.')[0].split('//')[1]
                 : (context ?? "ins-dev");
-            const response = await fetch(`${BaseUrl()}/pay/${clientid}/make-check-payment-to-cardknox`, {
+            const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/make-check-payment-to-cardknox`, {
                 method: 'POST',
                 body: JSON.stringify(request),
                 headers: { 'Content-Type': 'application/json' }
