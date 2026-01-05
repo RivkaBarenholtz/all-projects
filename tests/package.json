@@ -1,0 +1,10 @@
+{
+  "name": "test-insuretech",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@playwright/test": "^1.57.0"
+  },
+  "scripts": {
+    "test": "playwright test"
+  }
+}
