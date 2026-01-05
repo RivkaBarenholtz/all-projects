@@ -134,11 +134,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       
       - name: Install dependencies
-        working-directory: ./tests
         run: npm ci
       
       - name: Install Playwright browsers
-        working-directory: ./tests
         run: npx playwright install --with-deps chromium
       
       - name: Wait for CloudFront propagation
@@ -147,7 +145,6 @@ jobs:
           sleep 30
       
       - name: Run E2E tests
-        working-directory: ./tests
         env:
           TEST_URL: https://test.instechpay.co
         run: npx playwright test

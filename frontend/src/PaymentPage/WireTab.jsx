@@ -7,8 +7,6 @@ import { useParams } from "react-router-dom";
 
 export const WireTab = ({
     bankInfo,
-
-    
     accountId,
     invoiceNumber,
     amount,
