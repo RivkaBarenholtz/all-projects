@@ -25,6 +25,13 @@ jobs:
         with:
           node-version: '20'
           # Remove cache temporarily
+
+      - name: Debug package-lock.json
+        run: |
+          echo "=== First 100 lines of package-lock.json ==="
+          head -100 package-lock.json
+          echo "=== Check if @playwright/test is in package-lock.json ==="
+          grep -A 5 "@playwright/test" package-lock.json || echo "NOT FOUND"
       
       - name: Clean install dependencies
         run: |
