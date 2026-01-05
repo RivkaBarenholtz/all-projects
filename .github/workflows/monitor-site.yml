@@ -33,8 +33,9 @@ jobs:
           echo "=== Check if @playwright/test is in package-lock.json ==="
           grep -A 5 "@playwright/test" package-lock.json || echo "NOT FOUND"
       
-      - name: Clean install dependencies
+      - name: Install dependencies
         run: |
+          rm -f package-lock.json
           npm install
           echo "=== Installed packages ==="
           npm list --depth=0
