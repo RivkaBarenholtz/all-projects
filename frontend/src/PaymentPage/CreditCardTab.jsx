@@ -171,7 +171,7 @@ export const CreditCardTab = (
             });
             const responseBody = await response.json();
             if (responseBody.xStatus == "Approved") {
-               if(!isPortal) window.location.href = `https://ins-dev.instechpay.co/app/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
+               if(!isPortal) window.location.href = `https://${clientid.replace("test", "ins-dev")}.instechpay.co/app/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
                 else onFinish();
             }
             else {

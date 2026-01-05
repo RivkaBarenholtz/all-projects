@@ -73,7 +73,7 @@ const GooglePay = ({amount, surcharge, AccountID, invoiceID , csrCode, csrEmail,
    const json = await response.json();
    if(json.xStatus == "Approved")
     {
-        window.location.href = `https://ins-dev.instechpay.co/app/thank-you?amount=${request.Amount}`;
+        window.location.href = `https://${clientid.replace("test", "ins-dev")}.instechpay.co/app/thank-you?amount=${request.Amount}`;
     }
    
   };
