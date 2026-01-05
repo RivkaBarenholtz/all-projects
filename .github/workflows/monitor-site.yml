@@ -32,7 +32,13 @@ jobs:
           head -100 package-lock.json
           echo "=== Check if @playwright/test is in package-lock.json ==="
           grep -A 5 "@playwright/test" package-lock.json || echo "NOT FOUND"
-      
+      - name: Install Playwright directly
+        run: |
+          npm install -D @playwright/test@1.57.0
+          echo "=== Installed packages ==="
+          npm list --depth=0
+
+          
       - name: Install dependencies
         run: |
           rm -f package-lock.json
