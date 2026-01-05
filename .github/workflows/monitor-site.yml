@@ -35,7 +35,7 @@ jobs:
       
       - name: Clean install dependencies
         run: |
-          npm ci
+          npm install
           echo "=== Installed packages ==="
           npm list --depth=0
       
