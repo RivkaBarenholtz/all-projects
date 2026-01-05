@@ -120,31 +120,7 @@ jobs:
             </body>
             </html>
       
-      - name: Create GitHub issue on failure
-        if: steps.tests.outcome == 'failure'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `🚨 Site Monitoring Failed - ${new Date().toLocaleDateString()}`,
-              body: `
-            ## Site Monitoring Alert
-
-            **Time**: ${new Date().toISOString()}
-            **Workflow Run**: [#${context.runNumber}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
-
-            One or more client sites failed monitoring checks.
-
-            ### Actions Required
-            - Review the test results in the workflow artifacts
-            - Check affected client sites  
-            - Verify payment processing is working
-              `,
-              labels: ['monitoring', 'alert', 'bug']
-            })
-      
+    
       - name: Fail workflow if tests failed
         if: steps.tests.outcome == 'failure'
         run: exit 1
