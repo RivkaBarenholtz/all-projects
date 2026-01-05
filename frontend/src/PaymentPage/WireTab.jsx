@@ -10,6 +10,7 @@ export const WireTab = ({
     accountId,
     invoiceNumber,
     amount,
+    
     notes,
     name,
     billingAddress,
