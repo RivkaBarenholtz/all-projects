@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "InsureTech",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "playwright test",
+    "test:monitor": "playwright test tests/site-monitor.spec.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/RivkaBarenholtz/all-projects.git"
