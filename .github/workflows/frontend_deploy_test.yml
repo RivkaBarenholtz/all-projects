@@ -1,6 +1,7 @@
 name: Deploy Test Frontend with Matrix CloudFront Invalidations
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - dev
@@ -117,3 +118,44 @@ jobs:
           echo "  Distribution: ${{ matrix.distribution.id }}"
           echo "  Domain: https://${{ matrix.distribution.domain }}"
           echo "  Invalidation: ${{ steps.invalidate.outputs.invalidation_id }}"
+
+  e2e-tests:
+    needs: invalidate-cloudfront
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install dependencies
+        working-directory: ./tests
+        run: npm ci
+      
+      - name: Install Playwright browsers
+        working-directory: ./tests
+        run: npx playwright install --with-deps chromium
+      
+      - name: Wait for CloudFront propagation
+        run: |
+          echo "⏳ Waiting 30 seconds for CloudFront to propagate..."
+          sleep 30
+      
+      - name: Run E2E tests
+        working-directory: ./tests
+        env:
+          TEST_URL: https://test.instechpay.co
+        run: npx playwright test
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: tests/playwright-report/
+          retention-days: 7
