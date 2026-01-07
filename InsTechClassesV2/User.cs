@@ -22,7 +22,7 @@ namespace InsTechClassesV2
 
         public static async Task CreateUserInCognitoAndDynamoDb(Cognito cognitoUser)
         {
-            
+            string newUserTemplate = "welcome_email.html";
 
             var user = await GetUserAsync(cognitoUser.Email);
             if (user?.Count == 0 || user== null  )
@@ -31,13 +31,17 @@ namespace InsTechClassesV2
                 var newUser =  await cognitoUser.CreateCognitoUser();
                
             }
+            else
+            {
+                newUserTemplate = "welcome_existing.html";
+            }
             var s3 = new AmzS3Bucket("insure-tech-vendor-data", "Users.jsonl");
 
             await s3.AppendRecordAsync<Cognito>(cognitoUser);
 
 
             var email = new SimpleEmail(new List<string>() { cognitoUser.Email }, "Welcome" , "", new List<string>() );
-            await email.SendFromTemplate("welcome_email.html", cognitoUser);
+            await email.SendFromTemplate(newUserTemplate, cognitoUser);
 
             List<Cognito> list = await  s3.QueryJsonLinesAsync<Cognito>(" LOWER(s.Role) = 'admin'");
 
