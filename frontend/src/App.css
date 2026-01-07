@@ -426,6 +426,10 @@ body {
   z-index: 10000;
   padding: 8px;
 }
+.dropdown-item:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
 
 .dropdown-list.column {
   right: 0;
@@ -480,7 +484,9 @@ body {
 .payment-right-panel {
   padding: 35px 30px;
 }
-
+tr:hover {
+    background-color:#f3f3f3
+}
 
 .payment-right-panel {
   flex: 1;

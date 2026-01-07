@@ -293,7 +293,10 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
             }
 
             {
-                !transaction.xCommand.includes('Wire') && <button style={{justifyContent:"center", padding: ".25rem" }} className="btn btn-secondary" onClick={() => { setShowNewTransaction(true) }}>
+                !transaction.xCommand.includes('Wire') && 
+                <button style={{justifyContent:"center", padding: ".25rem" }} 
+                type="button"
+                className="btn btn-secondary" onClick={() => { setShowNewTransaction(true) }}>
                     <Plus /> New
                 </button>
             }

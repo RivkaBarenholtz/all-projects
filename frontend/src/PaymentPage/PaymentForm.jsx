@@ -45,9 +45,9 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
   const [searchParams] = useSearchParams();
   const accountID = searchParams.get("account") ?? "";
-  const invoiceAmount = searchParams.get("amount") ?? 0;
+  const invoiceAmount = searchParams.get("amount") ?? null;
   const epicClientNumber = searchParams.get("accountid") ?? 0;
-  const invoiceIDparam = searchParams.get("invoiceid") ?? 0;
+  const invoiceIDparam = searchParams.get("invoiceid") ??"";
   const errorCode = searchParams.get("error") ?? "";
   const csrEmail = searchParams.get("csremail")
   const csrCode = searchParams.get("csrcode")
@@ -71,7 +71,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const [notes, setNotes] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [invoiceID, setInvoiceID] = useState(invoiceIDparam ?? 0);
+  const [invoiceID, setInvoiceID] = useState(invoiceIDparam ??"");
   const [amountIsEditable, setAmountIsEditable] = useState(true);
 
 
@@ -494,15 +494,17 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
   return (
     <div>
+      {
+            !isPortal &&
       <div className='logo-header'>
         <div className='logo-container'>
-          {
-            !isPortal &&
+          
             <img style={{ maxHeight: "100%" }} src={isTabletOrMobile ? vendor.MobileLogoUrl : vendor.LogoUrl}></img>
-          }
+         
 
         </div>
       </div>
+       }
       <div className='main'>
         <div >
           <p className="error-field">{error}</p>
@@ -532,6 +534,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
                       type="text"
                       value={accountCode}
                       disabled={!accountIDIsEditable}
+                      placeholder="Account ID"
                       onFocus={() => { setFocusedField("Account") }}
                       onBlur={() => { setFocusedField("") }}
                       onChange={(e) => setAccountCode(e.target.value)}
@@ -649,6 +652,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
                     type="text"
                     id="cardholder-name"
                     name="cardholder-name"
+                    placeholder='Cardholder'
                     className="form-input"
                     onChange={(e) => setCardHolderName(e.target.value)}
                   />
@@ -660,6 +664,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
                     type="text"
                     id="address"
                     name="address"
+                    placeholder='Address'
                     className="form-input" onChange={(e) => setBillingAddress(e.target.value)}
                   />
                 </div>
@@ -715,6 +720,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
                     id="email"
                     name="email"
                     required=""
+                    placeholder="user@email.com"
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>

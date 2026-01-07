@@ -323,7 +323,7 @@ export const CreditCardTab = (
 
                 <div className="payment-total-line" id="convenience-fee-line">
                     <span>Electronic Transfer Fee:</span>
-                    <span id="convenience-fee">{FormatCurrency((surchargeAmount))}</span>
+                    <span id="convenience-fee">{FormatCurrency((surchargeAmount))=="$0.00"?"":FormatCurrency((surchargeAmount))}</span>
                 </div>
                 <div className="payment-total-line grand-total">
                     <span id="grand-total-label">Grand Total:</span>

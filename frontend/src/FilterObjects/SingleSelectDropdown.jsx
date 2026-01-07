@@ -14,7 +14,12 @@ export const SingleSelectDropdown = ({ options, selectedOption, onChange , label
        
             <> {
             options.map(x=> {
-                return < div key={x.value} style={{padding:"3px"}} value={x.value}   onClick={() => {onChange(x.value); setShow(!show);}} > {x.label}</div>
+                return < div 
+                  key={x.value} 
+                  className="dropdown-item"
+                  style={{padding:"3px"}} 
+                  value={x.value}   
+                  onClick={() => {onChange(x.value); setShow(!show);}} > {x.label}</div>
              })   }
              </>
            </Dropdown>

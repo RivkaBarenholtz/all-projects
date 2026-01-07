@@ -106,7 +106,7 @@ export default function Header() {
                     <div className="account-item-name">
                       {vendor.CardknoxAccountCode}
                     </div>
-                    <div className="account-item-id">#{vendor.Id}</div>
+
                   </div>
                   {selectedVendor == vendor.Id && (
                     <div className="account-item-check">✓</div>

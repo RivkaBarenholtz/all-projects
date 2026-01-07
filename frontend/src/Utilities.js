@@ -86,6 +86,7 @@ export const Sort = ( data,  field, ascending = true) =>{
 
   export const FormatCurrency=(amt)=>
     {
+      if (isNaN(amt) || amt == null) return "";
        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amt)
     }
     
