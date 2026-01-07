@@ -184,7 +184,6 @@ export const FilterPopover = ({
       ref={popoverRef}
       className="filter-popover"
       style={{
-        position: 'absolute',
         top: position.top,
         left: position.left,
         zIndex: 1000
