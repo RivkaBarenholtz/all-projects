@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using AmazonUtilities;
 using Amazon.DynamoDBv2.Model;
+using Amazon.Runtime.Internal.Auth;
 
 namespace InsTechClassesV2
 {
@@ -59,9 +60,8 @@ namespace InsTechClassesV2
 
         public async static Task<List<Vendor>?> GetVendorListAsync()
         {
-            var s3 = new AmzS3Bucket("insure-tech-vendor-data", "VendorData.json");
-            string? vendorData = await s3.ReadS3File();
-            List<Vendor>? vendors = JsonConvert.DeserializeObject<List<Vendor>>(vendorData);
+      
+            List<Vendor>? vendors =await DynamoDatabaseTransactions.GetItemsInJsonAsync<Vendor>("VENDOR#INS", "VENODR#");
             return vendors;
 
         }
