@@ -236,6 +236,18 @@ public class Function
                 response.Body = await customerResponse.Content.ReadAsStringAsync();
                 return response;
             }
+            else if (lastSegment == "generate-receipt")
+            {
+                var transaction = JsonConvert.DeserializeObject<CardknoxReportItem>(request.Body);
+                var byteArray = await PdfReceiptGenerator.GenerateReceipt(transaction, transaction.RefNum, "");
+                string base64Pdf = Convert.ToBase64String(byteArray);
+                response.Body = base64Pdf;
+                response.IsBase64Encoded = true;
+                return response;
+            }
+            else if (lastSegment == "email-receipt")
+            {
+            }
             else if (lastSegment == "list-schedules")
             {
                 var scheduleListRequest = JsonConvert.DeserializeObject<ListScheduleApiRequest>(request.Body);
@@ -494,7 +506,7 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(responseBody);
                 return response;
             }
-           
+
             else if (lastSegment == "save-surcharge")
             {
                 try
@@ -536,7 +548,7 @@ public class Function
             }
             else if (lastSegment == "create-user")
             {
-                if (user?.FirstOrDefault(u=> u.VendorId == vendor.Id)?.Role == "admin")
+                if (user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Role == "admin")
                 {
                     var CognitoUser = JsonConvert.DeserializeObject<Cognito>(request.Body);
                     Console.WriteLine($"Creating user: {JsonConvert.SerializeObject(CognitoUser)}");
@@ -555,12 +567,12 @@ public class Function
             }
             else if (lastSegment == "update-user")
             {
-                if(user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Role == "admin")
+                if (user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Role == "admin")
                 {
                     var CognitoUser = JsonConvert.DeserializeObject<Cognito>(request.Body);
 
                     Console.WriteLine($"Disabling user: {JsonConvert.SerializeObject(CognitoUser)}");
-                    await User.UpdateUser (CognitoUser);
+                    await User.UpdateUser(CognitoUser);
                     response.Body = JsonConvert.SerializeObject(new { message = "User updated successfully" });
                 }
                 else

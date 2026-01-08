@@ -3,6 +3,7 @@ import { Dropdown } from "./Dropdown";
 import { MoreVertical, X, RotateCcw, Check, Plus } from "lucide-react";
 import { ConfirmationModal } from "./ConfimationModal";
 import { FormatCurrency, fetchWithAuth } from "../Utilities";
+import PrintPDFButton from "./PrintPdfButton";
 
 import { useAsync } from "react-select/async";
 
@@ -125,7 +126,6 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
         }
     }
 
-    const buttonContent = <MoreVertical />
     return <>
         {showVoidConfirm && <ConfirmationModal onConfirm={VoidTransaction} onClose={() => { setShowVoidConfirm(false); setShow(!show) }} confirmButtonText="Void" >
             <div className="all-padding-bottom">
@@ -277,7 +277,7 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
             flexDirection: 'column',
             gap: '10px'
         }}>
-
+            <PrintPDFButton transaction={transaction} />
 
             <button style={{justifyContent:"center", padding: ".25rem" }} className="btn btn-secondary" onClick={() => { setShowVoidConfirm(true) }}>
                 <X  />  Void
