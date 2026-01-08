@@ -1,42 +1,52 @@
 import React from "react";
 import { fetchWithAuth } from "../Utilities";
 const PrintPDFButton = ({transaction}) => {
-  const handlePrint = async () => {
-    try {
-      const base64Pdf = await fetchWithAuth("generate-receipt", transaction, true);
+const handlePrint = async () => {
+  try {
+    // Fetch Base64 PDF from API
+    let base64Pdf = await fetchWithAuth("generate-receipt", transaction, true);
 
-    
-      // Decode Base64 to bytes
-      const byteCharacters = atob(base64Pdf);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    // Clean Base64 string: remove whitespace and handle URL-safe variants
+    base64Pdf = base64Pdf.replace(/\s/g, '').replace(/-/g, '+').replace(/_/g, '/');
+
+    // Convert Base64 to Uint8Array
+    const base64ToUint8Array = (base64) => {
+      const binaryString = atob(base64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
       }
-      const byteArray = new Uint8Array(byteNumbers);
+      return bytes;
+    };
 
-      // Create Blob and object URL
-      const blob = new Blob([byteArray], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
+    const byteArray = base64ToUint8Array(base64Pdf);
 
-      // Print using iframe
-      const iframe = document.createElement("iframe");
-      iframe.style.display = "none";
-      iframe.src = url;
-      document.body.appendChild(iframe);
+    // Create Blob and object URL
+    const blob = new Blob([byteArray], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
 
-      iframe.onload = function () {
-        iframe.contentWindow.focus();
-        iframe.contentWindow.print();
+    // Print using iframe
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    iframe.src = url;
+    document.body.appendChild(iframe);
 
-        setTimeout(() => {
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(iframe);
-        }, 1000);
-      };
-    } catch (error) {
-      console.error("Error printing PDF:", error);
-    }
-  };
+    iframe.onload = () => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+
+      // Clean up
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(iframe);
+      }, 1000);
+    };
+  } catch (error) {
+    console.error("Error printing PDF:", error);
+  }
+};
+
 
   return <button className="btn btn-secondary" type="button" onClick={handlePrint}>Print Receipt</button>;
 };
