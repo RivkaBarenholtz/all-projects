@@ -541,6 +541,7 @@ public class Function
                     var CognitoUser = JsonConvert.DeserializeObject<Cognito>(request.Body);
                     Console.WriteLine($"Creating user: {JsonConvert.SerializeObject(CognitoUser)}");
                     CognitoUser.AddedBy = userName;
+                    CognitoUser.AccountName = vendor.CardknoxAccountCode;
                     await User.CreateUserInCognitoAndDynamoDb(CognitoUser);
                     response.Body = JsonConvert.SerializeObject(new { message = "User created successfully" });
 

@@ -14,7 +14,7 @@ namespace InsTechClassesV2
             using var client = new HttpClient();
             return await client.GetByteArrayAsync(imageUrl);
         }
-        public static async Task<byte[]> GenerateReceipt(SubmitWireRequest data, string refNum)
+        public static async Task<byte[]> GenerateReceipt(Cardknox.CardknoxReportItem data, string refNum, string? notes)
         {
             QuestPDF.Settings.License = LicenseType.Community;
             byte[] logoBytes = await  DownloadImage("https://insure-tech-vendor-data.s3.us-east-1.amazonaws.com/logos/InsureTech360.png");
@@ -28,7 +28,7 @@ namespace InsTechClassesV2
                     page.DefaultTextStyle(x => x.FontSize(11));
 
                     page.Header().Element(c => ComposeHeader(c, logoBytes));
-                    page.Content().Element(content => ComposeContent(content, data, refNum));
+                    page.Content().Element(content => ComposeContent(content, data, refNum, notes));
                     page.Footer().AlignCenter().Text(text =>
                     {
                         text.Span("Page ");
@@ -56,7 +56,7 @@ namespace InsTechClassesV2
             });
         }
 
-       static void ComposeContent(QuestPDF.Infrastructure.IContainer container, SubmitWireRequest data, string refNum)
+       static void ComposeContent(QuestPDF.Infrastructure.IContainer container, Cardknox.CardknoxReportItem data, string refNum, string? notes)
         {
             container.PaddingVertical(20).Column(column =>
             {
@@ -66,7 +66,7 @@ namespace InsTechClassesV2
                 column.Item().Element(c => ComposeSection(c, "Transaction Summary", new[]
                 {
                 ("Transaction ID", refNum),
-                ("Payment Date", DateTime.Now.ToString("MM/dd/yyyy")),
+                ("Payment Date", Convert.ToDateTime(data.EnteredDate).ToString("MM/dd/yyyy")),
                // ("Status", data.Status),
                 ("Amount Paid", $"${data.Amount:N2}")
                 }));
@@ -74,17 +74,17 @@ namespace InsTechClassesV2
                 // Policy Details
                 column.Item().Element(c => ComposeSection(c, "Policy Details", new[]
                 {
-                ("Account ID", data.AccountId),
-                ("Invoice Number", data.InvoiceNumber),
-                ("Notes", data.Notes ?? "N/A")
+                ("Account ID", data.BillLastName),
+                ("Invoice Number", data.Invoice),
+                ("Notes", notes ?? "N/A")
                 }));
 
                 // Billing Information
                 column.Item().Element(c => ComposeSection(c, "Billing Information", new[]
                 {
-                ("Cardholder Name", data.CustomerName),
-                ("Billing Address", data.BillingAddress),
-                ("City, State ZIP", $"{data.City}, {data.State} {data.Zip}"),
+                ("Cardholder Name", $"{data.Name}"),
+                ("Billing Address", data.Street),
+                ("City, State ZIP", $"{data.BillCity}, {data.BillState} {data.Zip}"),
                 ("Phone", data.Phone),
                 ("Email", data.Email)
                 }));
@@ -92,12 +92,12 @@ namespace InsTechClassesV2
                 // Payment Method
                 column.Item().Element(c => ComposeSection(c, "Payment Method", new[]
                 {
-                ("Method", "Wire sent")
+                ("Method",  data.Command.StartsWith("CC")? "Credit Card": data.Command.StartsWith("Check")?"Check": "Send Wire"),
+                ("Card/Check Number", data.Command),
+                ("Expiration Date", data.Expiration)
                 }));
 
-                // Footer note
-                column.Item().PaddingTop(20).BorderTop(1).BorderColor(Colors.Grey.Lighten2)
-                    .PaddingTop(10).Text("Thank you for your payment!").FontSize(12).Italic();
+               
             });
         }
 
