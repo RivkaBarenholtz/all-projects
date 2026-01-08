@@ -3,7 +3,7 @@ import { fetchWithAuth } from "../Utilities";
 const PrintPDFButton = ({transaction}) => {
   const handlePrint = async () => {
     try {
-      const base64Pdf = await fetchWithAuth("generate-receipt", { transaction }, true);
+      const base64Pdf = await fetchWithAuth("generate-receipt", transaction, true);
 
     
       // Decode Base64 to bytes

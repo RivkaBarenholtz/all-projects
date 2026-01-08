@@ -93,7 +93,7 @@ namespace InsTechClassesV2
                 column.Item().Element(c => ComposeSection(c, "Payment Method", new[]
                 {
                 ("Method",  data.Command.StartsWith("CC")? "Credit Card": data.Command.StartsWith("Check")?"Check": "Send Wire"),
-                ("Card/Check Number", data.Command),
+                ("Card/Check Number", data.MaskedAccountNumber),
                 ("Expiration Date", data.Expiration)
                 }));
 
