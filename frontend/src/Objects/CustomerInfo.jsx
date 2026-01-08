@@ -126,7 +126,7 @@ export const CustomerInfo = ({
           <label>Phone Number</label>
           <input
             type="text"
-            placeholder="(123) 456-7890"
+            placeholder="(718)-000-0000"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
@@ -135,7 +135,7 @@ export const CustomerInfo = ({
           <label>Email Address</label>
           <input
             type="text"
-            placeholder="abc@example.com"
+            placeholder="user@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />

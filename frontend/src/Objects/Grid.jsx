@@ -146,8 +146,8 @@ export const Grid = (
           case 'number':
             const numValue = parseFloat(itemValue);
             if (isNaN(numValue)) return false;
-            const minimum = min != '' ? parseFloat(min) : -Infinity;
-            const maximum = max != '' ? parseFloat(max) : Infinity;
+            const minimum = min && min != '' && min? parseFloat(min) : -Infinity;
+            const maximum = max && max != '' ? parseFloat(max) : Infinity;
             return numValue >= minimum && numValue <= maximum;
 
           case 'date':

@@ -151,6 +151,7 @@ export const CheckTab = (
                             type="text"
                             id="account-name"
                             name="account-name"
+                            placeholder="Account Name"
                             className={`form-input ${submitPressed && accountName == "" ? "invalid" : ""}`}
                             onChange={(e) => setAccountName(e.target.value)}
                         />
@@ -177,6 +178,7 @@ export const CheckTab = (
                         <input
                             type="text"
                             id="routing-number"
+                            placeholder="Routing"
                             name="routing-number"
                             className={`form-input ${submitPressed && routingNumber == "" ? "invalid" : ""}`}
                             onChange={(e) => setRoutingNumber(e.target.value)}
