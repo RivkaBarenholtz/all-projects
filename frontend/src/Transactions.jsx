@@ -670,22 +670,7 @@ const CardHtml =(maskedNumber,  xCardType)=>
              */}
           </div>
 
-         <div className='filter-value-selector'>
-            { 
-            Object.keys(filters).map((key, index) => {
-              const header = headers.find(h => h.FilterValue === key);
-              const filterstring = filters[key].min || filters[key].max ? filters[key].min + " - " + filters[key].max : filters[key].from || filters[key].to ? filters[key].from + " - " + filters[key].to : filters[key].value;
-              return <div key={index} className='status pending'>
-                  <X height={10} className='close' onClick={ ()=> {
-                    const newFilters = {...filters};
-                    delete newFilters[key];
-                    setFilters(newFilters);
-                  }}/>
-                {header.DisplayValue}: {Array.isArray(filters[key].value) ? filters[key].value.join(', ') : filters[key].value??filterstring}
-                </div>
-            })
-          }
-          </div>  
+  
         </div>
         <div className="summary-card">
             <div className="summary-label">Total Approved</div>

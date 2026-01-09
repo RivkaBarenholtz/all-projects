@@ -227,44 +227,48 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
                         onChange={(e) => setNewTransactionAmount(e.target.value)}
                     />
                 </div>
-                <div className="form-row">
+                {
+                   transaction.xCommand.startsWith("CC") && <>
+                        <div className="form-row">
 
-                    <div className="form-group percent-input-wrapper">
-                        <label >
-                            Transfer Fee:
-                        </label>
+                            <div className="form-group percent-input-wrapper">
+                                <label >
+                                    Transfer Fee:
+                                </label>
 
-                        <input
-                            type="number"
-                            name="transferFee"
-                            min="0"
-                            max="3.5"
-                            step="0.01"
-                            value={transferFee}
-                            onChange={(e) => setTransferFee(e.target.value)}
-                            placeholder="0"
-                        />
-                        <span className="percent-sign">%</span>
+                                <input
+                                    type="number"
+                                    name="transferFee"
+                                    min="0"
+                                    max="3.5"
+                                    step="0.01"
+                                    value={transferFee}
+                                    onChange={(e) => setTransferFee(e.target.value)}
+                                    placeholder="0"
+                                />
+                                <span className="percent-sign">%</span>
 
-                    </div>
+                            </div>
 
-                    <div className="form-group">
-                        <label>&nbsp; </label>
-                        <input
-                            className="arrow-slider"
-                            type="range"
-                            id="transferFee"
-                            name="transferFee"
-                            min="0"
-                            max="3.5"
-                            step="0.01"
-                            value={transferFee}
-                            onChange={(e) => setTransferFee(e.target.value)}
-                        />
-                    </div>
-                </div>
-                <div style={{ fontSize: "14px" }} className="form-row">Subtotal: {FormatCurrency(newTransactionAmount)} </div>
-                <div style={{ fontSize: "14px" }} className="form-row"> Transfer Fee: {FormatCurrency(newTransactionAmount * (transferFee / 100))} </div>
+                            <div className="form-group">
+                                <label>&nbsp; </label>
+                                <input
+                                    className="arrow-slider"
+                                    type="range"
+                                    id="transferFee"
+                                    name="transferFee"
+                                    min="0"
+                                    max="3.5"
+                                    step="0.01"
+                                    value={transferFee}
+                                    onChange={(e) => setTransferFee(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <div style={{ fontSize: "14px" }} className="form-row">Subtotal: {FormatCurrency(newTransactionAmount)} </div>
+                        <div style={{ fontSize: "14px" }} className="form-row"> Transfer Fee: {FormatCurrency(newTransactionAmount * (transferFee / 100))} </div>
+                    </>
+                }
                 <div style={{ fontWeight: "bold", color: "#0078d7" }} className="form-row"> Grand Total {FormatCurrency(Number(newTransactionAmount) + (newTransactionAmount * (transferFee / 100)))} </div>
 
 
