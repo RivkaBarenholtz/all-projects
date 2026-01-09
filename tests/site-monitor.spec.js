@@ -64,7 +64,7 @@ test.describe('Site Monitoring - All Clients', () => {
         console.log(`✓ [${subdomain}] Credit card fields exist`);
         
         // Test 3: Convenience fee calculation
-        const amountInput = await page.locator('input[placeholder="Enter amount"]');
+        const amountInput = await page.locator('input[placeholder="$0.00"]');
             console.log('✓ Amount');
         
         await expect(amountInput).toBeVisible();
