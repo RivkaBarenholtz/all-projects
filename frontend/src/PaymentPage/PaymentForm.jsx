@@ -308,7 +308,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
         const invoiceIdList = invoiceID.split(',');
 
-        const hasNaN = invoiceIdList.some(item => Number.isNaN(item));
+        const hasNaN = invoiceIdList.some(item => Number.isNaN(Number(item)));
 
         if (!hasNaN) {
           try {
@@ -319,7 +319,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
                 : (context ?? "ins-dev");
             const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/get-invoice`, {
               method: 'POST',
-              body: JSON.stringify({ LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(epicClientNumber) ? null : epicClientNumber }),
+              body: JSON.stringify({ LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(Number(epicClientNumber)) ? null : epicClientNumber }),
               headers: { 'Content-Type': 'application/json' }
             });
 
@@ -616,7 +616,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
                     ref={amountRef}
                     className="form-input"
                     type="text"
-                    placeholder="Enter amount"
+                    placeholder="$0.00"
                     value={invoice && invoice.length > 1 ? FormatCurrency(invoice.reduce((sum, item) => sum + (item.Selected ? item.Balance : 0), 0)) : amntDisplayValue}
                     onChange={handleAmountChange}
                     onBlur={handleAmountBlur}

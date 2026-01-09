@@ -91,7 +91,7 @@ export const Sort = ( data,  field, ascending = true) =>{
     }
     
     export const BaseUrl=() =>{
-      if (window.location.origin=="https://test.instechpay.co")
+      if (window.location.origin=="https://test.instechpay.co" )
         return 'https://test.instechpay.co/portal-v1';
      return import.meta.env.MODE === 'development'
         ? 'https://ins-dev.instechpay.co'
