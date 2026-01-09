@@ -69,15 +69,15 @@ test.describe('Site Monitoring - All Clients', () => {
         
         await expect(amountInput).toBeVisible();
         
-        const convenienceFee = page.locator('#convenience-fee');
-        await expect(convenienceFee).toBeVisible();
         
-        const initialFee = await convenienceFee.textContent();
-        console.log(`  Initial fee: ${initialFee}`);
+        
         
         await amountInput.clear();
         await amountInput.fill('100');
         await amountInput.blur();
+        
+        const convenienceFee = page.locator('#convenience-fee');
+        await expect(convenienceFee).toBeVisible();
         
         // Wait for calculation
         await page.waitForTimeout(1500);
