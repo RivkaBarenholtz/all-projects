@@ -1,17 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { DatePicker } from './FilterObjects/DatePicker';
+
 import { fetchWithAuth, FormatCurrency } from './Utilities'; 
 import { Grid } from './Objects/Grid';
-import { SingleSelectDropdown } from './FilterObjects/SingleSelectDropdown';
-import { MultiSelectDropdown } from './FilterObjects/MultiSelectDropdown';
-import { NumberTextbox } from './FilterObjects/NumberTextBox';
-import ToggleSwitch from './FilterObjects/ToggleSwitch';
-import { TextInput } from './FilterObjects/TextInput';
-import { FilterObject } from './FilterObjects/FilterObject';
+
 import PaymentForm from './PaymentPage/PaymentForm'
 import TransactionDetail from './Objects/TransactionDetail';
-import { getDate } from 'date-fns';
-import { CustomerInfo } from './Objects/CustomerInfo';
+import { ColumnDropdown } from './Objects/ColumnDropdown';
 import { X } from 'lucide-react';
 import cardknoxErrors from './Data/ErrorCodes.json';
 
@@ -49,10 +43,17 @@ function Transactions() {
       Value:  "EnteredDateFormatted",
       FilterValue: "xEnteredDate",
       SortString :"Date",
-      FilterType: "date",
+      FilterType: "none",
       SortAsc: false
     },
-    
+    {
+      DisplayValue:"Status", 
+      Show: true, 
+      Value:  "StatusHtml",
+      SortString : "Status", 
+      FilterValue: "StatusString",
+      SortAsc: true
+    },
 
     {
       DisplayValue:"Funded", 
@@ -60,6 +61,7 @@ function Transactions() {
       Value:  "AmountFundedFormatted",
       SortString : "FundedAmount", 
       FilterValue: "AmountFunded",
+      FilterType: "number",
       SortAsc: true
     },
     
@@ -81,6 +83,7 @@ function Transactions() {
       Value:  "AmountFormatted",
       FilterValue: "xAmount",
       SortString : "Amount",
+      FilterType: "number",
       SortAsc: true
     },
     
@@ -122,14 +125,7 @@ function Transactions() {
       SortAsc: true
     },
     
-    {
-      DisplayValue:"Status", 
-      Show: true, 
-      Value:  "StatusHtml",
-      SortString : "Status", 
-      FilterValue: "StatusString",
-      SortAsc: true
-    },
+  
 
     {
       DisplayValue:"Error",
@@ -724,48 +720,21 @@ const CardHtml =(maskedNumber,  xCardType, xCommand)=>
                   </svg>
                   Print
               </button>
+
+              <ColumnDropdown 
+                headerList={headers} 
+                setHeaderList={setHeaders} 
+              />
             </div>
           </div>
       </div>
 
-        {/* Active Filters Display */}
-        {Object.keys(filters).length > 0 && (
-         <div className='filter-value-selector'>
-            {Object.keys(filters).map((key, index) => {
-              const header = headers.find(h => h.FilterValue === key);
-              const filterstring = filters[key].min || filters[key].max 
-                ? `${filters[key].min || ''} - ${filters[key].max || ''}` 
-                : filters[key].from || filters[key].to 
-                ? `${filters[key].from || ''} - ${filters[key].to || ''}` 
-                : filters[key].value;
-              
-              return (
-                <div key={index} className='filter-chip'>
-                  <span>
-                    {header?.DisplayValue}: {Array.isArray(filters[key].value) 
-                      ? filters[key].value.join(', ') 
-                      : filters[key].value ?? filterstring}
-                  </span>
-                  <X 
-                    height={14} 
-                    className='filter-close' 
-                    onClick={() => {
-                    const newFilters = {...filters};
-                    delete newFilters[key];
-                    setFilters(newFilters);
-                    }}
-                  />
-                </div>
-              );
-            })}
-      </div>
-        )}
 
         {/* Grid */}
         <div className="table-wrapper-main">
         <Grid 
           headerList={headers} 
-            SetHeaderList={setHeaders}
+          SetHeaderList={setHeaders}
           JsonObjectList={transactions} 
           filters={filters}
           setFilters={setFilters}
@@ -777,6 +746,7 @@ const CardHtml =(maskedNumber,  xCardType, xCommand)=>
           setActivePage={setActivePage}
           Sort={Sort}
           rowClick={setSelectedTransaction}
+          showTotals={true}
           />
       </div>
     </div>

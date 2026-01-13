@@ -3,7 +3,7 @@ import { Dropdown } from "./Dropdown";
 import { MoreVertical, X, RotateCcw, Check, Plus } from "lucide-react";
 import { ConfirmationModal } from "./ConfimationModal";
 import { FormatCurrency, fetchWithAuth } from "../Utilities";
-import PrintPDFButton from "./PrintPdfButton";
+import {PrintPDFButton, DownloadPDFButton} from "./PrintPdfButton";
 
 import { useAsync } from "react-select/async";
 
@@ -281,7 +281,10 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
             flexDirection: 'column',
             gap: '10px'
         }}>
-            <PrintPDFButton transaction={transaction} />
+           <div style={{display:"flex" , gap:"15px"}}>
+                 <PrintPDFButton transaction={transaction} />
+                 <DownloadPDFButton transaction={transaction} />
+            </div> 
 
             <button style={{justifyContent:"center", padding: ".25rem" }} className="btn btn-secondary" onClick={() => { setShowVoidConfirm(true) }}>
                 <X  />  Void

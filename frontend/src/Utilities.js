@@ -1,6 +1,6 @@
 import { refreshSession } from "./AuthContext";
 
-export const fetchWithAuth = async (url, options = {}, isText = false ) => {
+export const fetchWithAuth = async (url, options = {}, isText = false, isBlob = false) => {
   const token = localStorage.getItem('idToken');
   const userEmail = SafeParseJson(localStorage.getItem('User')).email;
   const vendor = localStorage.getItem("currentVendor");
@@ -46,6 +46,8 @@ export const fetchWithAuth = async (url, options = {}, isText = false ) => {
 
     if (isText)
       return await response.text();
+    if (isBlob)
+      return await response.blob();
     // Return parsed response
     //adding test comment to test git commit actions
     return await response.json()

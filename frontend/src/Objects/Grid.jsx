@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { ColumnDropdown } from './ColumnDropdown';
 import { FilterPopover } from './FilterPopover';
+import { FormatCurrency } from '../Utilities';
 
 export const Grid = (
   { JsonObjectList,
@@ -9,6 +10,7 @@ export const Grid = (
     delete: deleteFn,
     add: addFn,
     isSelectable,
+    showTotals, 
     title,
     numberOfItems,
     itemsPerPage,
@@ -40,9 +42,8 @@ export const Grid = (
   const [rowHeight, setRowHeight] = useState(50);
   const BUFFER_SIZE = 10; // Number of extra rows to render above and below visible area
   const SCROLL_THROTTLE = 50; // Milliseconds between scroll updates
-  const SCROLL_COOLDOWN = 200; // Milliseconds to wait after scroll stops before allowing new updates
+  const SCROLL_COOLDOWN = 100; // Milliseconds to wait after scroll stops before allowing new updates
 
-  const endPage = Math.min(startPage + 9, Math.ceil(numberOfItems / itemsPerPage));
 
   // Determine if virtual scrolling should be enabled
   const useVirtualScrolling = itemsPerPage > 100;
@@ -280,12 +281,7 @@ export const Grid = (
 
   return (
     <div className="grid-container">
-      {!hideColumnDropdown && (
-        <ColumnDropdown 
-          headerList={headerList} 
-          setHeaderList={SetHeaderList} 
-        />
-      )}
+      
 
       {activeFilter && (
         <FilterPopover
@@ -306,13 +302,13 @@ export const Grid = (
         <table className='transactions-table'>
           <thead>
             <tr className="header-row">
-              <th className="expand-col"></th>
+         
               {isSelectable && <th className="select-col"></th>}
               {headerList.map((header) => {
                 if (!header.Show) return null;
                
                 return (
-                  <th key={header.Value} className="header-cell">
+                  <th key={header.Value} className="">
                     <div className="header-cell-content">
                       <span>{header.DisplayValue}</span>
                       {header.SortString && (
@@ -339,13 +335,13 @@ export const Grid = (
             </tr>
             {enableFilters && (
               <tr className="filter-row">
-                <td className="expand-col"></td>
+                
                 {isSelectable && <td className="select-col"></td>}
               {headerList.map((header) => {
                 if (!header.Show) return null;
                 return (
                     <td key={header.Value} className="filter-cell">
-                    {header.FilterValue && (
+                    {header.FilterValue && header.FilterType !=='none' && (
                         <input 
                           type='text' 
                           className="filter-input"
@@ -370,7 +366,7 @@ export const Grid = (
             {useVirtualScrolling && offsetY > 0 && (
               <tr style={{ height: `${Math.floor(offsetY)}px`, lineHeight: 0 }}>
                 <td 
-                  colSpan={headerList.filter(h => h.Show).length + (isSelectable ? 3 : 2)} 
+                  colSpan={headerList.filter(h => h.Show).length + (isSelectable ? 2 : 1)} 
                   style={{ padding: 0, border: 'none', height: `${Math.floor(offsetY)}px` }} 
                 />
               </tr>
@@ -384,18 +380,13 @@ export const Grid = (
                   data-row
                   onClick={rowClick ? () => { rowClick(item); } : () => { }}
                 >
-                  <td className="expand-col">
-                    {(item.subData || item.getSubData) && (
+                
+                  {isSelectable && (item.subData || item.getSubData) && (
                       <button type="button" onClick={() => toggleRow(item)} className="expand-btn">
                         {expandedRows.includes(item.id) ? '▼' : '▶'}
                       </button>
                     )}
-                  </td>
-                  {isSelectable && (
-                    <td className='select-col'>
-                      <input type="checkbox" checked={item.Selected} />
-                    </td>
-                  )}
+                    
                   {headerList.map((header) => {
                     if (!header.Show) return null;
                     return (
@@ -443,6 +434,7 @@ export const Grid = (
               </React.Fragment>
             ))}
 
+           
             {useVirtualScrolling && (() => {
               const renderedRowsHeight = (endIndex - startIndex) * rowHeight;
               const remainingHeight = totalHeight - offsetY - renderedRowsHeight;
@@ -452,16 +444,50 @@ export const Grid = (
                 <tr style={{ height: `${bottomSpacerHeight}px`, lineHeight: 0 }}>
                   <td 
                     colSpan={headerList.filter(h => h.Show).length + (isSelectable ? 3 : 2)} 
-                    style={{ padding: 0, border: 'none', height: `${bottomSpacerHeight}px` }} 
+                    style={{ padding: 0, border: 'none', backgroundColor:"white", height: `${bottomSpacerHeight}px` }} 
                   />
                 </tr>
               ) : null;
             })()}
           </tbody>
+
+           { showTotals && <tfoot>
+              <tr>
+                {isSelectable && (item.subData || item.getSubData) && (
+                      <td >
+                      </td>
+                      
+                    )}
+                    
+                  {headerList.map((header, index) => {
+                    if (!header.Show) return null;
+                    return (
+                      <td 
+                        key={header.Value} 
+                        className="footer-cell"
+                        >
+                          {index === 0 ? 'Count: ' + filteredData.length : ''}
+                          {index === 1 ? <span  style={{fontWeight:"bold"}}>Total:</span> : ''}
+                          {index > 1 && header.FilterType === 'number' ?
+                          <span className='amount positive'>
+                           {FormatCurrency(filteredData.reduce((sum, item) => {
+                              const value = parseFloat(item[header.FilterValue]);
+                              return isNaN(value) ? sum : sum + value;
+                              }, 0))
+                            }
+                            </span> : <></>}
+                        </td>
+                    );
+                  })}
+              
+              </tr>
+              </tfoot>
+              }
+
         </table>
       </div>
 
-      { numberOfItems && (
+      { footerObjects && (
         <div className="pagination">
           {itemsPerPage && numberOfItems && activePage && (
             <div className="pagination-info">
