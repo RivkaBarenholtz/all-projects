@@ -478,6 +478,15 @@ public class Function
                 await MakePaymentService.VoidWire(vendor, confirmWireRequest);
                 response.Body = JsonConvert.SerializeObject(new { message = "Success" });
             }
+            else if (lastSegment == "get-invoice")
+            {
+
+                var body = await AppliedEpicDataService.GetInvoiceFromInvoiceNumberAndLookupCode(vendor, request.Body);
+                response.Body = JsonConvert.SerializeObject(body);
+                return response;
+
+
+            }
 
             else if (lastSegment == "get-open-invoices")
             {
