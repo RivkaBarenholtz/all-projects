@@ -2,13 +2,11 @@
 import React from "react";
 import GooglePayButton from "@google-pay/button-react";
 import {  BaseUrl } from '../Utilities';
-import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 
 
 
 const GooglePay = ({amount, surcharge, AccountID, invoiceID , csrCode, csrEmail, captchaToken, cardHolderName, zip}) => {
-    const navigate = useNavigate();
      const { context } = useParams();
     
     const paymentRequest = {

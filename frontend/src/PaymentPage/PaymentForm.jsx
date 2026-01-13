@@ -237,7 +237,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         onFinish={onSuccess}
         ifieldsKey={vendor.CardknoxIFeildsKey}
       />,
-    ...(vendor.BankInfo && {
+    ...(vendor.BankInfo && !isPortal &&  {
       "Wire Funds":
         <WireTab
           refNum={refNum}

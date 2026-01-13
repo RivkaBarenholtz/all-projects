@@ -338,7 +338,7 @@ export const CreditCardTab = (
                 </div>
             </section>
 
-                {amount > 0 && !isNaN(surcharge) && accountValid ? <GooglePay amount={amount} surcharge={surcharge} AccountID={accountCode} captchaToken={captchaToken} cardHolderName={cardHolderName} csrCode={csrCode} csrEmail={csrEmail} invoiceID={invoiceID} zip={zip} /> : <></>}
+                {amount > 0 && !isNaN(surcharge) && accountValid && !isPortal ? <GooglePay amount={amount} surcharge={surcharge} AccountID={accountCode} captchaToken={captchaToken} cardHolderName={cardHolderName} csrCode={csrCode} csrEmail={csrEmail} invoiceID={invoiceID} zip={zip} /> : <></>}
 
                 <div className="button-spaced mt-3">
                     <button className="btn btn-primary" type="button" onClick={submitToGateway}>
