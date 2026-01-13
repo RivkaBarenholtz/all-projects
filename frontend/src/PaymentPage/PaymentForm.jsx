@@ -411,11 +411,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   useEffect(() => {
     const GetRefNum = async () => {
 
-      if (isPortal) {
-        const refNumObj = await fetchWithAuth("get-ref-num", {});
-        setRefNum(refNumObj.refNum);
-        return;
-      }
+     
       const clientid =
         (context ?? "app") === "app"
           ? BaseUrl().split('.')[0].split('//')[1]
