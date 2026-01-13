@@ -1,6 +1,6 @@
 import React, { use, useRef, useState, useEffect } from 'react';
 import { useMediaQuery } from 'react-responsive';
-import { FormatCurrency, BaseUrl } from '../Utilities';
+import { FormatCurrency, BaseUrl, fetchWithAuth } from '../Utilities';
 import { useSearchParams, useParams } from 'react-router-dom';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -11,6 +11,7 @@ import { CreditCardTab } from './CreditCardTab';
 import { WireTab } from './WireTab.jsx';
 import { CheckTab } from './CheckTab.jsx';
 import Loader from './Loader.jsx';
+import { set } from 'date-fns';
 
 
 
@@ -47,7 +48,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const accountID = searchParams.get("account") ?? "";
   const invoiceAmount = searchParams.get("amount") ?? null;
   const epicClientNumber = searchParams.get("accountid") ?? 0;
-  const invoiceIDparam = searchParams.get("invoiceid") ??"";
+  const invoiceIDparam = searchParams.get("invoiceid") ?? "";
   const errorCode = searchParams.get("error") ?? "";
   const csrEmail = searchParams.get("csremail")
   const csrCode = searchParams.get("csrcode")
@@ -71,7 +72,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const [notes, setNotes] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [invoiceID, setInvoiceID] = useState(invoiceIDparam ??"");
+  const [invoiceID, setInvoiceID] = useState(invoiceIDparam ?? "");
   const [amountIsEditable, setAmountIsEditable] = useState(true);
 
 
@@ -279,10 +280,18 @@ export default function PaymentForm({ isPortal, onSuccess }) {
     const fetchData = async () => {
       setIsLoading(true);
       try {
+
+        if (isPortal) {
+          const result = fetchWithAuth("get-vendor", {})
+          setVendor(result);
+          setIsLoading(false)
+          return
+        }
         const clientid =
           (context ?? "app") === "app"
             ? BaseUrl().split('.')[0].split('//')[1]
             : (context ?? "ins-dev");
+
         const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/get-vendor`);
 
         if (!response.ok) {
@@ -313,21 +322,27 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         if (!hasNaN) {
           try {
             setIsInvLoading(true);
-            const clientid =
-              (context ?? "app") === "app"
-                ? BaseUrl().split('.')[0].split('//')[1]
-                : (context ?? "ins-dev");
-            const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/get-invoice`, {
-              method: 'POST',
-              body: JSON.stringify({ LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(Number(epicClientNumber)) ? null : epicClientNumber }),
-              headers: { 'Content-Type': 'application/json' }
-            });
-
-            if (!response.ok) {
-              throw new Error('Failed to fetch data');
+            let result = null;
+            if (isPortal) {
+              result = await fetchWithAuth("get-invoice", { LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(Number(epicClientNumber)) ? null : epicClientNumber });
             }
+            else {
+              const clientid =
+                (context ?? "app") === "app"
+                  ? BaseUrl().split('.')[0].split('//')[1]
+                  : (context ?? "ins-dev");
+              const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/get-invoice`, {
+                method: 'POST',
+                body: JSON.stringify({ LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(Number(epicClientNumber)) ? null : epicClientNumber }),
+                headers: { 'Content-Type': 'application/json' }
+              });
 
-            const result = await response.json();
+              if (!response.ok) {
+                throw new Error('Failed to fetch data');
+              }
+
+              result = await response.json();
+            }
             setInvoice(result);
             if (result && result.length > 0) {
               result.forEach((r) => r['AmountDisplay'] = FormatCurrency(r.Balance));
@@ -355,21 +370,27 @@ export default function PaymentForm({ isPortal, onSuccess }) {
     const fetchData = async () => {
 
       try {
-        const clientid =
-          (context ?? "app") === "app"
-            ? BaseUrl().split('.')[0].split('//')[1]
-            : (context ?? "ins-dev");
-        const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/get-surcharge`, {
-          method: 'POST',
-          body: JSON.stringify({ ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID) || invoiceID == "" ? -1 : invoiceID }),
-          headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch data');
+        let result = null;
+        if (isPortal) {
+          result = await fetchWithAuth("get-surcharge", request);
         }
+        else {
+          const clientid =
+            (context ?? "app") === "app"
+              ? BaseUrl().split('.')[0].split('//')[1]
+              : (context ?? "ins-dev");
+          const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/get-surcharge`, {
+            method: 'POST',
+            body: JSON.stringify({ ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID) || invoiceID == "" ? -1 : invoiceID }),
+            headers: { 'Content-Type': 'application/json' }
+          });
 
-        const result = await response.json();
+          if (!response.ok) {
+            throw new Error('Failed to fetch data');
+          }
+
+          result = await response.json();
+        }
         setSurcharge(result);
       } catch (err) {
         setError(err.message); // Set error if something goes wrong
@@ -389,6 +410,12 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
   useEffect(() => {
     const GetRefNum = async () => {
+
+      if (isPortal) {
+        const refNumObj = await fetchWithAuth("get-ref-num", {});
+        setRefNum(refNumObj.refNum);
+        return;
+      }
       const clientid =
         (context ?? "app") === "app"
           ? BaseUrl().split('.')[0].split('//')[1]
@@ -495,16 +522,16 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   return (
     <div>
       {
-            !isPortal &&
-      <div className='logo-header'>
-        <div className='logo-container'>
-          
-            <img style={{ maxHeight: "100%" }} src={isTabletOrMobile ? vendor.MobileLogoUrl : vendor.LogoUrl}></img>
-         
+        !isPortal &&
+        <div className='logo-header'>
+          <div className='logo-container'>
 
+            <img style={{ maxHeight: "100%" }} src={isTabletOrMobile ? vendor.MobileLogoUrl : vendor.LogoUrl}></img>
+
+
+          </div>
         </div>
-      </div>
-       }
+      }
       <div className='main'>
         <div >
           <p className="error-field">{error}</p>

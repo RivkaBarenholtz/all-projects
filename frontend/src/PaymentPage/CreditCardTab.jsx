@@ -14,29 +14,29 @@ import { useParams } from 'react-router-dom';
 
 
 export const CreditCardTab = (
-    { 
-        amount, 
-        surcharge, 
-        surchargeAmount, 
-        accountCode, 
-        accountValid, 
-        invoiceID, 
-        csrCode, 
-        csrEmail, 
-        ifieldsKey, 
-        cardHolderName, 
-        billingAddress, 
-        state, 
-        city, 
-        notes, 
-        phone, 
-        email, 
-        zip, 
+    {
+        amount,
+        surcharge,
+        surchargeAmount,
+        accountCode,
+        accountValid,
+        invoiceID,
+        csrCode,
+        csrEmail,
+        ifieldsKey,
+        cardHolderName,
+        billingAddress,
+        state,
+        city,
+        notes,
+        phone,
+        email,
+        zip,
         setEverythingFocused,
-        selectCustomStyles, 
-        isPortal, 
-        onFinish ,
-        showProcess = true 
+        selectCustomStyles,
+        isPortal,
+        onFinish,
+        showProcess = true
     }) => {
 
 
@@ -54,7 +54,7 @@ export const CreditCardTab = (
     const cardRef = useRef();
     const cvvRef = useRef();
 
-     const { context } = useParams();
+    const { context } = useParams();
 
 
     const onCardToken = (data) => {
@@ -160,18 +160,24 @@ export const CreditCardTab = (
         };
 
         try {
-             const clientid =
-  (context ?? "app") === "app"
-    ? BaseUrl().split('.')[0].split('//')[1]
-    : (context ?? "ins-dev");
-            const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/make-payment-cardknox`, {
-                method: 'POST',
-                body: JSON.stringify(request),
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const responseBody = await response.json();
+            let responseBody = null;
+            if (isPortal) {
+                responseBody = await fetchWithAuth("make-payment-cardknox", request);
+            }
+            else {
+                const clientid =
+                    (context ?? "app") === "app"
+                        ? BaseUrl().split('.')[0].split('//')[1]
+                        : (context ?? "ins-dev");
+                const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/make-payment-cardknox`, {
+                    method: 'POST',
+                    body: JSON.stringify(request),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                responseBody = await response.json();
+            }
             if (responseBody.xStatus == "Approved") {
-               if(!isPortal) window.location.href = `https://${clientid.replace("test", "ins-dev")}.instechpay.co/app/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
+                if (!isPortal) window.location.href = `https://${clientid.replace("test", "ins-dev")}.instechpay.co/app/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
                 else onFinish();
             }
             else {
@@ -303,7 +309,7 @@ export const CreditCardTab = (
             </div>
 
             {
-                !isPortal && 
+                !isPortal &&
                 <div style={{ padding: "25px" }} >
                     <ReCAPTCHA
                         sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
@@ -323,7 +329,7 @@ export const CreditCardTab = (
 
                 <div className="payment-total-line" id="convenience-fee-line">
                     <span>Electronic Transfer Fee:</span>
-                    <span id="convenience-fee">{FormatCurrency((surchargeAmount))=="$0.00"?"":FormatCurrency((surchargeAmount))}</span>
+                    <span id="convenience-fee">{FormatCurrency((surchargeAmount)) == "$0.00" ? "" : FormatCurrency((surchargeAmount))}</span>
                 </div>
                 <div className="payment-total-line grand-total">
                     <span id="grand-total-label">Grand Total:</span>
@@ -331,25 +337,25 @@ export const CreditCardTab = (
                 </div>
             </section>
 
-            {amount > 0 && !isNaN(surcharge) && accountValid ? <GooglePay amount={amount} surcharge={surcharge} AccountID={accountCode} captchaToken={captchaToken} cardHolderName={cardHolderName} csrCode={csrCode} csrEmail={csrEmail} invoiceID={invoiceID} zip={zip} /> : <></>}
+                {amount > 0 && !isNaN(surcharge) && accountValid ? <GooglePay amount={amount} surcharge={surcharge} AccountID={accountCode} captchaToken={captchaToken} cardHolderName={cardHolderName} csrCode={csrCode} csrEmail={csrEmail} invoiceID={invoiceID} zip={zip} /> : <></>}
 
-            <div className="button-spaced mt-3">
-                <button className="btn btn-primary" type="button" onClick={submitToGateway}>
-                    <FontAwesomeIcon icon={faCreditCard} style={{ paddingRight: '5px' }} />
-                    Process Payment
-                </button>
-            </div>
-            <p className="secure-info">
-                <FontAwesomeIcon icon={faShieldAlt}
-                    style={
-                        {
-                            color: 'var(--success-color)',
-                            marginRight: '5px'
-                        }}>
+                <div className="button-spaced mt-3">
+                    <button className="btn btn-primary" type="button" onClick={submitToGateway}>
+                        <FontAwesomeIcon icon={faCreditCard} style={{ paddingRight: '5px' }} />
+                        Process Payment
+                    </button>
+                </div>
+                <p className="secure-info">
+                    <FontAwesomeIcon icon={faShieldAlt}
+                        style={
+                            {
+                                color: 'var(--success-color)',
+                                marginRight: '5px'
+                            }}>
 
-                </FontAwesomeIcon>
-                100% Secure <br /> SSL encryption &amp; PCI compliant
-            </p>
+                    </FontAwesomeIcon>
+                    100% Secure <br /> SSL encryption &amp; PCI compliant
+                </p>
             </>}
         </div>
 

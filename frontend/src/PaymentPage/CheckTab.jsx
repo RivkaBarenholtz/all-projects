@@ -100,6 +100,11 @@ export const CheckTab = (
         };
 
         try {
+            let responseBody = null;
+            if (isPortal) {
+                responseBody = await fetchWithAuth("make-check-payment-to-cardknox", request);
+            }
+            else {
             const clientid =
             (context ?? "app") === "app"
                 ? BaseUrl().split('.')[0].split('//')[1]
@@ -109,7 +114,8 @@ export const CheckTab = (
                 body: JSON.stringify(request),
                 headers: { 'Content-Type': 'application/json' }
             });
-            const responseBody = await response.json();
+             responseBody = await response.json();
+        }
             if (responseBody.xStatus == "Approved" ) {
                if(!isPortal) window.location.href = `https://${clientid.replace("test", "ins-dev")}.instechpay.co/app/thank-you?amount=${amount}`;
                else onFinish(); 
