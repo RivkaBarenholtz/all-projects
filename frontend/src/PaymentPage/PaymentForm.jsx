@@ -372,7 +372,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
       try {
         let result = null;
         if (isPortal) {
-          result = await fetchWithAuth("get-surcharge", request);
+          result = await fetchWithAuth("get-surcharge", { ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID) || invoiceID == "" ? -1 : invoiceID });
         }
         else {
           const clientid =
