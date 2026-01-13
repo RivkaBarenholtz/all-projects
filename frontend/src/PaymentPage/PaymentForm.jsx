@@ -282,7 +282,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
       try {
 
         if (isPortal) {
-          const result = fetchWithAuth("get-vendor", {})
+          const result = await fetchWithAuth("get-vendor", {})
           setVendor(result);
           setIsLoading(false)
           return
