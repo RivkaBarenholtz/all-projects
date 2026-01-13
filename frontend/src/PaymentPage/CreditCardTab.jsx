@@ -10,6 +10,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCreditCard, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import { useParams } from 'react-router-dom';
+import { fetchWithAuth } from "../Utilities";
 
 
 
