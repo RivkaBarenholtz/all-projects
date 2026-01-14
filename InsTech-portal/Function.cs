@@ -46,14 +46,23 @@ public class Function
                 Headers = new Dictionary<string, string>
                 {
                     { "Access-Control-Allow-Origin", "*" },
-                    { "Access-Control-Allow-Headers", "Content-Type, user, Vendor" },
-                    { "Access-Control-Allow-Methods", "POST, OPTIONS, GET" },
+                    {"Access-Control-Allow-Headers", "Authorization, Content-Type, User, Vendor"},
+                    {"Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"},
                     { "Content-Type", "application/json" }
 
                 },
                 StatusCode = 200
-            }; 
-           string fullPath = request.RawPath ?? "";
+            };
+
+            if (string.Equals( request?.RequestContext?.Http?.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+            {
+                response.Body = "Success";
+                return response;
+            }
+            var caseInsensitiveHeaders = new Dictionary<string, string>(request.Headers, StringComparer.OrdinalIgnoreCase);
+
+
+            string fullPath = request.RawPath ?? "";
 
             string[] segments = fullPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
@@ -73,7 +82,7 @@ public class Function
                 secondToLastSegment = segments[0];
                 lastSegment = "";
             }
-            if (string.IsNullOrEmpty(lastSegment) )
+            if (string.IsNullOrEmpty(lastSegment))
             {
                 var a = request.Headers.TryGetValue("host", out string? fullDomain);
 
@@ -82,7 +91,7 @@ public class Function
                 .ToList();
 
                 var url = $"https://{fullDomain}/make-payment?{string.Join("&", query)}";
-                if (fullDomain.StartsWith ("portal"))
+                if (fullDomain.StartsWith("portal"))
                 {
                     url = $"https://{fullDomain}/app";
                 }
@@ -99,7 +108,9 @@ public class Function
             List<Cognito> user = new();
             Console.WriteLine(JsonConvert.SerializeObject(request));
 
-            if (!request.Headers.TryGetValue("authorization", out var authHeader) || !authHeader.StartsWith("Bearer "))
+
+
+            if (!caseInsensitiveHeaders.TryGetValue("authorization", out var authHeader) || !authHeader.StartsWith("Bearer "))
             {
                 Console.WriteLine("No proper authorization header. ");
 
@@ -107,7 +118,7 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(new { message = "Missing or invalid Authorization header" });
                 return response;
             }
-            if (!request.Headers.TryGetValue("user", out var userName) || userName == "")
+            if (!caseInsensitiveHeaders.TryGetValue("user", out var userName) || userName == "")
             {
                 response.StatusCode = 401;
                 response.Body = JsonConvert.SerializeObject(new { message = "Missing or invalid user header" });
@@ -116,7 +127,7 @@ public class Function
             else
             {
                 var username = userName;
-               
+
                 user = await User.GetUserAsync(username);
                 //Console.WriteLine(JsonConvert.SerializeObject(User));
             }
@@ -151,11 +162,9 @@ public class Function
                 return response;
             }
             Vendor vendor = null;
-            var caseInsensitiveHeaders = new Dictionary<string, string>(request.Headers, StringComparer.OrdinalIgnoreCase);
-
-            if (request.Headers != null && caseInsensitiveHeaders.TryGetValue("vendor", out string? vid) && int.TryParse(vid, out int value))
+             if (request.Headers != null && caseInsensitiveHeaders.TryGetValue("vendor", out string? vid) && int.TryParse(vid, out int value))
             {
-                    vendor = await Utilities.GetVendorByID(value);   
+                vendor = await Utilities.GetVendorByID(value);
             }
             else
             {
@@ -167,7 +176,7 @@ public class Function
                 else
                 { throw new Exception("Missing host header"); }
             }
-            if (user.FirstOrDefault(u => u.VendorId == vendor?.Id && !u.Disabled ) == null)
+            if (user.FirstOrDefault(u => u.VendorId == vendor?.Id && !u.Disabled) == null)
             {
                 response.StatusCode = 401;
                 response.Body = JsonConvert.SerializeObject(new { message = "Forbidden: You do not have access to this vendor." });
@@ -180,8 +189,8 @@ public class Function
                 await errorEmail.Send();
             }
 
-           
-        
+
+
             if (lastSegment == "transaction-report")
             {
                 var reportRequest = Newtonsoft.Json.JsonConvert.DeserializeObject<CardknoxReportRequest>(request.Body);
@@ -239,7 +248,7 @@ public class Function
             else if (lastSegment == "generate-receipt")
             {
                 var transaction = JsonConvert.DeserializeObject<CardknoxReportItem>(request.Body);
-                var byteArray = await PdfReceiptGenerator.GenerateReceipt(transaction, transaction.RefNum, "");
+                var byteArray = await PdfReceiptGenerator.GenerateReceipt(transaction, transaction.RefNum, "", vendor);
                 string base64Pdf = Convert.ToBase64String(byteArray);
                 response.Body = base64Pdf;
                 response.IsBase64Encoded = true;
@@ -610,7 +619,7 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(rsp);
                 return response;
             }
-                return response; 
+            return response;
         }
         catch (Exception ex)
         {
@@ -623,14 +632,14 @@ public class Function
                     { "Access-Control-Allow-Headers", "Content-Type, user, Vendor" },
                     { "Access-Control-Allow-Methods", "POST, OPTIONS, GET" },
                     { "Content-Type", "application/json" }
-                    
+
 
                 },
                 StatusCode = 500,
                 Body = JsonConvert.SerializeObject(new { message = ex.Message })
 
-            };  
-            
+            };
+
         }
 
     }

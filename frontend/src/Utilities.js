@@ -95,8 +95,10 @@ export const Sort = ( data,  field, ascending = true) =>{
     export const BaseUrl=() =>{
       if (window.location.origin=="https://test.instechpay.co" )
         return 'https://test.instechpay.co/portal-v1';
+      if(window.location.origin.startsWith("http://localhost"))
+        return "http://127.0.0.1:3000"
      return import.meta.env.MODE === 'development'
-        ? 'https://ins-dev.instechpay.co'
+        ? 'https://test.instechpay.co/portal-v1'
         : window.location.origin.replace("pay.instechpay.co", "ins-dev.instechpay.co")
         .replace("portal.instechpay.co", "ins-dev.instechpay.co"); 
     }

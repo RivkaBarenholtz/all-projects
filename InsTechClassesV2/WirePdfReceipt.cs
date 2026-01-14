@@ -14,10 +14,14 @@ namespace InsTechClassesV2
             using var client = new HttpClient();
             return await client.GetByteArrayAsync(imageUrl);
         }
-        public static async Task<byte[]> GenerateReceipt(Cardknox.CardknoxReportItem data, string refNum, string? notes)
+        public static async Task<byte[]> GenerateReceipt(
+    Cardknox.CardknoxReportItem data,
+    string refNum,
+    string? notes,
+    Vendor vendor)
         {
             QuestPDF.Settings.License = LicenseType.Community;
-            byte[] logoBytes = await  DownloadImage("https://insure-tech-vendor-data.s3.us-east-1.amazonaws.com/logos/InsureTech360.png");
+            byte[] logoBytes = await DownloadImage("https://insure-tech-vendor-data.s3.us-east-1.amazonaws.com/logos/InsureTech360.png");
 
             var document = Document.Create(container =>
             {
@@ -27,7 +31,7 @@ namespace InsTechClassesV2
                     page.Margin(2, Unit.Centimetre);
                     page.DefaultTextStyle(x => x.FontSize(11));
 
-                    page.Header().Element(c => ComposeHeader(c, logoBytes));
+                    page.Header().Element(c => ComposeHeader(c, logoBytes, vendor));
                     page.Content().Element(content => ComposeContent(content, data, refNum, notes));
                     page.Footer().AlignCenter().Text(text =>
                     {
@@ -42,7 +46,10 @@ namespace InsTechClassesV2
             return document.GeneratePdf();
         }
 
-        static void ComposeHeader(QuestPDF.Infrastructure.IContainer container, byte[] logoBytes)
+        static void ComposeHeader(
+     QuestPDF.Infrastructure.IContainer container,
+     byte[] logoBytes,
+     Vendor vendor)
         {
             container.Row(row =>
             {
@@ -50,13 +57,21 @@ namespace InsTechClassesV2
                 {
                     column.Item().Text("PAYMENT RECEIPT").FontSize(20).Bold().FontColor("#148dc2");
                     column.Item().Text($"Date: {DateTime.Now:MM/dd/yyyy}").FontSize(10);
+
+                    // Space between date and company info
+                    column.Item().PaddingTop(10);
+
+                    // Company info
+                    column.Item().PaddingTop(3).Text(vendor.CompanyName ?? "").FontSize(11).Bold();
+                    column.Item().PaddingTop(3).Text(vendor.CompanyAddress ?? "").FontSize(11);
+                    column.Item().PaddingTop(3).Text(vendor.CompanyCityStateZip ?? "").FontSize(11);
+                    column.Item().PaddingTop(3).Text(vendor.CompanyPhone ?? "").FontSize(11);
                 });
 
                 row.ConstantItem(200).Height(100).Image(logoBytes);
             });
         }
-
-       static void ComposeContent(QuestPDF.Infrastructure.IContainer container, Cardknox.CardknoxReportItem data, string refNum, string? notes)
+        static void ComposeContent(QuestPDF.Infrastructure.IContainer container, Cardknox.CardknoxReportItem data, string refNum, string? notes)
         {
             container.PaddingVertical(20).Column(column =>
             {

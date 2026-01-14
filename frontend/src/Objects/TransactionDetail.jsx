@@ -3,6 +3,7 @@ import { FormatCurrency } from "../Utilities";
 import { X, MoreVertical  } from "lucide-react";
 import { TransactionActionDropdown } from "./TransactionActionDropdown";
 import { useEffect } from "react";
+import { PrintPDFButton, DownloadPDFButton } from "./PrintPdfButton";
 export default function TransactionDetail({ transaction, onClose , getTransactions}) {
 
   useEffect(() => {
@@ -97,6 +98,12 @@ export default function TransactionDetail({ transaction, onClose , getTransactio
               {/* Billing Info */}
               <div className="trd-section">
                 <h3 className="trd-section-title">Billing Information</h3>
+
+                 <div style={{display:"flex", width:"100%" , gap:"12px" , marginBottom:"10px"}}>
+                 <PrintPDFButton transaction={transaction} />
+                 <PrintPDFButton transaction={transaction} />
+                 <DownloadPDFButton transaction={transaction} />
+            </div> 
                 <div className="trd-info-grid">
                   {
                     transaction.xName  && transaction.xName != "" && 

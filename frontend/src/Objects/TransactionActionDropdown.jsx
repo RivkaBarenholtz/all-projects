@@ -281,20 +281,17 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
             flexDirection: 'column',
             gap: '10px'
         }}>
-           <div style={{display:"flex" , gap:"15px"}}>
-                 <PrintPDFButton transaction={transaction} />
-                 <DownloadPDFButton transaction={transaction} />
-            </div> 
+          
 
-            <button style={{justifyContent:"center", padding: ".25rem" }} className="btn btn-secondary" onClick={() => { setShowVoidConfirm(true) }}>
+            <button style={{justifyContent:"center", padding: ".25rem" }} type="button" className="btn btn-secondary" onClick={() => { setShowVoidConfirm(true) }}>
                 <X  />  Void
             </button>
-            <button style={{justifyContent:"center", padding: ".25rem" }} className="btn btn-secondary" onClick={() => { setShowRefundConfirm(true) }}>
+            <button style={{justifyContent:"center", padding: ".25rem" }} type="button" className="btn btn-secondary" onClick={() => { setShowRefundConfirm(true) }}>
                 <RotateCcw /> Refund
             </button>
             {
                 transaction.xCommand.includes('Wire') &&
-                <button style={{justifyContent:"center", padding: ".25rem" }} className="btn btn-secondary" onClick={() => { setShowConfirmWire(true) }}>
+                <button style={{justifyContent:"center", padding: ".25rem" }} type="button" className="btn btn-secondary" onClick={() => { setShowConfirmWire(true) }}>
                     <Check  /> Confirm Wire
                 </button>
             }
