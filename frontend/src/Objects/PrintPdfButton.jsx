@@ -67,7 +67,7 @@ export const DownloadPDFButton = ({ transaction }) => {
   return <ReceiptButton onClick={handleDownload} label={<><FontAwesomeIcon icon={faDownload} />Download</>}/>;
 }
 
-const ReceiptButton =({onClick, label})=>{
+export const ReceiptButton =({onClick, label})=>{
     return <button style={{flex:1, justifyContent: "center"}} className="btn btn-secondary" type="button" onClick={onClick}>{label}</button>;
 
 }

@@ -939,13 +939,14 @@ input[type="date"],
 .trd-drawer {
   margin-left: auto;
   height: 100%;
-  width: 400px;
+  width: 410px;
   background-color: #fff;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   position: relative;
-}
+  
+} 
 
 /* Header */
 .trd-header {
@@ -984,6 +985,7 @@ input[type="date"],
   flex-direction: column;
   gap: 24px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 /* Sections */
@@ -2002,7 +2004,10 @@ body {
   background: #dff2ff;
   color: #234770;
 }
-
+.hover-red:hover
+{
+  color : var(--danger) !important
+}
 /* Pagination */
 .pagination {
   display: flex;
@@ -2012,12 +2017,20 @@ body {
   border-top: 1px solid #e2e8f0;
   background: white;
 }
-
+.sorted {
+  color: var(--primary);
+}
 .pagination-info {
   color: #64748b;
   font-size: 0.875rem;
 }
-
+input.active-filter
+{
+    border-color: var(--primary);
+    background-color: #f0f9ff;
+    font-weight: 600;
+    color: var(--primary);
+}
 .pagination-controls {
   display: flex;
   gap: 0.5rem;

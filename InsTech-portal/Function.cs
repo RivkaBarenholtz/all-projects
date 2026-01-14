@@ -256,6 +256,12 @@ public class Function
             }
             else if (lastSegment == "email-receipt")
             {
+                var req = JsonConvert.DeserializeObject<EmailReceiptRequest>(request.Body);
+
+                SimpleEmail email = new SimpleEmail(req.EmailAddresses, "Payment Receipt", "Please see the attached payment receipt", new List<string>());
+                email.Attachment = await PdfReceiptGenerator.GenerateReceipt(req.Transaction, req.Transaction.RefNum, "", vendor);
+                await email.Send();
+                response.Body = response.Body = JsonConvert.SerializeObject(new { message = "Success" });
             }
             else if (lastSegment == "list-schedules")
             {
