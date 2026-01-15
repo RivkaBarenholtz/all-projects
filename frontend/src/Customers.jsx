@@ -146,7 +146,6 @@ export default function Customers() {
    return <>
    { customer !== null && <CustomerDetail customer={customer} onClose={()=>{setCustomer(null); getData(); }}/>}
       <div className="header">
-          <h2>Customers</h2>
           <div className="header-actions">
               {/* <button className="btn btn-secondary">
                   <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">

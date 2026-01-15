@@ -1100,7 +1100,6 @@ input[type="date"],
 
 .refund-large {
   font-family: 'Monaco', 'Menlo', monospace;
-  font-size: 1.2rem;
   color: #111111;
   font-weight: 750;
   /* vertical-align: top; */
@@ -1760,6 +1759,7 @@ body {
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 11px;
+  flex:1;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -2221,13 +2221,7 @@ input.active-filter
     font-size: 12px;
   }
 
-  /* Remove sticky first column on mobile */
-  .header-row th:first-child,
-  .filter-row td:first-child,
-  .data-row td:first-child {
-    position: static;
-    border-right: none;
-  }
+  
 }
 
 .column-manager {

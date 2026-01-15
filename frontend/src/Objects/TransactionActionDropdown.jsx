@@ -139,6 +139,11 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
                         <span className="amount trd-transaction-id">{FormatCurrency(transaction.xAmount)}</span>
                     </div>
                     <div className="trd-info-row">
+                        <span className="trd-label">Cardholder Name:</span>
+                        <span className="trd-value"> {transaction.xName}</span>
+                    </div>
+               
+                    <div className="trd-info-row">
                         <span className="trd-label">Ref #:</span>
                         <span className="trd-value"> {transaction.xRefNum}</span>
                     </div>
@@ -159,6 +164,11 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
                     </div>
                 }
                 <div>
+                    <div >
+                        <div style={{ fontSize: "14px" }}> Name
+                            <span className="refund-large">{transaction.xName}</span>
+                        </div>
+                    </div>
                     <div >
                         <div style={{ fontSize: "14px" }}>Original Amount
                             <span className="refund-large">{FormatCurrency(transaction.xAmount)}</span>

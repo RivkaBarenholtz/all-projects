@@ -55,14 +55,14 @@ export default function Header({ title,openNav, setOpenNav }) {
 
   return (
     <header className="app-header">
-      <div class="nav-left">
+      <div className="nav-left">
         {/* Hamburger button (only visible on mobile) */}
         <div className="hamburger" onClick={() => setOpenNav(!openNav)}>
           <div></div>
           <div></div>
           <div></div>
         </div>
-        <div class="page-title">{title}</div>
+        <div className="page-title">{title}</div>
       </div>
       <div className="user-account-container" ref={menuRef}>
         <div className="user-account-selector" onClick={toggleMenu}>
