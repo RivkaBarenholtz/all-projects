@@ -8,7 +8,7 @@ namespace InsTechClassesV2.TransactionRequests
 {
     public class SubmitWireRequest
     {
-        public string RefNumber { get; set; }
+        public string? RefNumber { get; set; }
         public string AccountName { get; set; }
         public string ConfNumber { get; set; }
         public DateTime? DateSent { get; set; }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../Styles/filterrow.css';
+import { set } from 'date-fns';
 
 export const FilterPopover = ({ 
   header, 
@@ -90,17 +91,16 @@ export const FilterPopover = ({
 
     return (
       <div className="filter-popover-content">
-        <div className="filter-popover-checkbox-actions">
-          <button
-            type="button"
-            onClick={() => setLocalFilter({ value: uniqueValues })}
-            className="filter-action-btn"
-          >
-            Select All
-          </button>
-         
-        </div>
+       
         <div className="filter-popover-checkbox-list">
+          <label className="filter-popover-checkbox-item">
+              <input
+                type="checkbox"
+                checked={selectedValues?.length == uniqueValues?.length}
+                onChange={() => { selectedValues?.length == uniqueValues?.length? setLocalFilter({value: []}): setLocalFilter({value:uniqueValues})}}
+              />
+              <span style={{textDecoration:"underline" , fontSize: "small"}}>Select All</span>
+            </label>
           {uniqueValues.map((value, index) => (
             <label key={index} className="filter-popover-checkbox-item">
               <input
@@ -126,19 +126,22 @@ export const FilterPopover = ({
       <div className="filter-popover-number">
         <input
           type="number"
-          placeholder="Min"
+          placeholder="0.00"
           value={localFilter.min || ''}
           onChange={(e) => setLocalFilter({ ...localFilter, min: e.target.value })}
           className="filter-popover-input"
         />
-        <span className="filter-range-separator">to</span>
         <input
           type="number"
-          placeholder="Max"
+          placeholder="No Limit"
           value={localFilter.max || ''}
           onChange={(e) => setLocalFilter({ ...localFilter, max: e.target.value })}
           className="filter-popover-input"
         />
+
+        <div style={{display:"flex" , justifyContent:"end"}}>
+          <button className='btn btn-secondary' type='button' onClick={()=> setLocalFilter({})}> Clear </button>
+        </div>
       </div>
     </div>
   );
@@ -184,7 +187,6 @@ export const FilterPopover = ({
       ref={popoverRef}
       className="filter-popover"
       style={{
-        position: 'absolute',
         top: position.top,
         left: position.left,
         zIndex: 1000

@@ -39,5 +39,11 @@ namespace InsTechClassesV2
         public string EpicSubdomain { get; set; }
         public string EpicUserName { get; set; }
         public string EpicPassword { get; set; }
+
+        public string CompanyName { get; set;  }
+        public string CompanyAddress { get; set; }
+        public string CompanyPhone { get; set; }
+        public string CompanyEmail { get; set; }
+        public string CompanyCityStateZip { get; set; }
     }
 }

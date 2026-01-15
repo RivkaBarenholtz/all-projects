@@ -18,16 +18,19 @@ function ContextLayout({ isAuthenticated, setIsAuthenticated }) {
   const { context } = useParams();
   const location = useLocation();
   const currentPath = location.pathname;
+  const [title, setTitle] = useState("Transactions");
+  const [open, setOpen] = useState(false); // for mobile menu
 
   return (
     <>
-      {isAuthenticated && !currentPath.includes("/pay") && <Navbar />}
-      {isAuthenticated && !currentPath.includes("/pay") && <Header />}
-
+      {isAuthenticated && !currentPath.includes("/pay") && <Navbar setTitle={setTitle} open={open} setOpen={setOpen} />}
+     
       <div className={isAuthenticated && !currentPath.includes("/pay")
         ? "main-content"
         : "main-content-no-auth"
       }>
+         {isAuthenticated && !currentPath.includes("/pay") && <Header title={title} openNav={open} setOpenNav={setOpen} />}
+
         <Routes>
           <Route path="pay" element={<PaymentForm subdomain={context} isPortal={false} />} />
           <Route path="thank-you" element={<ThankYouPage />} />

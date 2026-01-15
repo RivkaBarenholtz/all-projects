@@ -39,7 +39,7 @@ export const ReadOnlyScheduleInfo = ({ schedule, setSchedule})=>
                     </div>
                  <div className="trd-info-row">
                         <span className="trd-label">Created On:</span>
-                        <span className="trd-value">{schedule.CreatedDate.split(" ")[0]}</span>
+                        <span className="trd-value">{schedule.CreatedDate?.split(" ")[0]}</span>
                     </div>
                  <div className="trd-info-row">
                         <span className="trd-label">Last Run On:</span>
@@ -55,7 +55,7 @@ export const ReadOnlyScheduleInfo = ({ schedule, setSchedule})=>
                     </div>
                      <div className="trd-info-row">
                         <span className="trd-label">Start:</span>
-                        <span className="trd-value">{schedule.StartDate.split(" ")[0]}</span>
+                        <span className="trd-value">{schedule.StartDate?.split(" ")[0]}</span>
                     </div>
                    <div className="trd-info-row">
                         <span className="trd-label">End:</span>

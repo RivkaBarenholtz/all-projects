@@ -17,7 +17,8 @@ namespace AmazonUtilities
         public bool Disabled { get; set; } = false;
         public string Password { get; set; }
         public string FullName { get; set; }
-         public int VendorId { get; set; }   
+        public string AccountName { get; set; }
+        public int VendorId { get; set; }   
 
         public string Role { get; set; } = "user"; 
 

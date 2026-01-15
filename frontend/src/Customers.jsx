@@ -146,7 +146,6 @@ export default function Customers() {
    return <>
    { customer !== null && <CustomerDetail customer={customer} onClose={()=>{setCustomer(null); getData(); }}/>}
       <div className="header">
-          <h2>Customers</h2>
           <div className="header-actions">
               {/* <button className="btn btn-secondary">
                   <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -160,7 +159,7 @@ export default function Customers() {
                   </svg>
                   Print
               </button> */}
-              <button className="btn btn-primary" type="button" onClick={()=> setShowNewCustomer(true)}>
+              <button className="btn-new-tx" type="button" onClick={()=> setShowNewCustomer(true)}>
                   <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                   </svg>
@@ -174,7 +173,14 @@ export default function Customers() {
 
 
       }
-      <Grid enableFilters={false} rowClick={setCustomer} JsonObjectList={data} headerList={headers} SetHeaderList={setHeaders} Sort={sortData} footerObjects={<a className = "view-more" onClick={getData}> View More  </a>}/>
+      <Grid 
+         enableFilters={false} 
+         rowClick={setCustomer} 
+         JsonObjectList={data} 
+         headerList={headers} 
+         SetHeaderList={setHeaders} 
+         Sort={sortData} 
+         footerObjects={<a className = "view-more" onClick={getData}> View More  </a>}/>
       
       <SuccessModal/>
    </>

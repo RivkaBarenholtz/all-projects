@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { getUserInfo } from "../Services/api";
 
-const Navbar = () => {
+const Navbar = ({setTitle, open, setOpen}) => {
   const [user, setUser] = useState({});
-  const [open, setOpen] = useState(false); // for mobile menu
+
   const [vendor , setVendor] = useState("");
   const location = useLocation();
 
@@ -36,75 +36,47 @@ const Navbar = () => {
       setVendor(vend);
     }
   }, [user])
-  
-  
+
+
+    const NavBarLink= ({path, label})=>{
+     return  <li className="nav-item">
+       <Link
+              className={`nav-link ${getActiveClass(path)}`}
+              to={path}
+              onClick={() => setTitle(label)}
+            >
+              {label}
+      </Link>
+      </li>
+    }
 
 
   return (
+   
     <div>
-      {/* Hamburger button (only visible on mobile) */}
-      <div className="hamburger" onClick={() => setOpen(!open)}>
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
+    
 
       <nav className={`sidebar ${open ? "open" : ""}`} style={styles.nav}>
         <div className="logo-nav">
           <h1>
             <img
               src="https://insure-tech-vendor-data.s3.us-east-1.amazonaws.com/logos/InsTechLogo.png"
-              style={{ width: "200px" }}
+              style={{ width: "140px" }}
             />
           </h1>
         </div>
 
         <ul className="nav-menu">
-          <li className="nav-item">
-            <Link
-              className={`nav-link ${getActiveClass("/transactions")}`}
-              to="/transactions"
-            >
-              Transactions
-            </Link>
-          </li>
+          <NavBarLink path="/transactions" label="Transactions" />
 
-          <li className="nav-item">
-            <Link
-              className={`nav-link ${getActiveClass("/customers")}`}
-              to="/customers"
-            >
-              Customers
-            </Link>
-          </li>
+          <NavBarLink path="/customers" label="Customers" />
 
-          <li className="nav-item">
-            <Link
-              className={`nav-link ${getActiveClass("/schedules")}`}
-              to="/schedules"
-            >
-              Schedules
-            </Link>
-          </li>
+          <NavBarLink path="/schedules" label="Schedules" />
 
-          <li className="nav-item">
-            <Link
-              className={`nav-link ${getActiveClass("/dashboard")}`}
-              to="/dashboard"
-            >
-              Dashboard
-            </Link>
-          </li>
+          <NavBarLink path="/dashboard" label="Dashboard" />
 
           { Array.isArray(user) && user?.find(x=> x.VendorId == vendor)?.Role?.toLowerCase() === "admin" && (
-            <li className="nav-item">
-              <Link
-                className={`nav-link ${getActiveClass("/settings")}`}
-                to="/settings"
-              >
-                Settings
-              </Link>
-            </li>
+            <NavBarLink path="/settings" label="Settings" />
           )}
         </ul>
       </nav>

@@ -25,10 +25,9 @@ public class Function
     public async Task<string> FunctionHandler(string input, ILambdaContext context)
     {
         // for each vendor 
-        var s3 = new AmzS3Bucket("insure-tech-vendor-data", "VendorData.json");
-        string? vendorData = await s3.ReadS3File();
 
-        List<Vendor>? vendors = JsonConvert.DeserializeObject<List<Vendor>>(vendorData);
+
+        List<Vendor>? vendors = await Utilities.GetVendorListAsync();
         //vendors.Reverse();
         foreach (Vendor vendor in vendors)
         {

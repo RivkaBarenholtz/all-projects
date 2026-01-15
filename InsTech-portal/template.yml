@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - http://localhost:5173
+        AllowHeaders:
+          - authorization
+          - content-type
+          - user
+          - vendor
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+
+  ReceiptFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: dotnet8
+      Handler: InstechPortal::InsTech_portal.Function::FunctionHandler
+      CodeUri: .
+      MemorySize: 512
+      Timeout: 30
+      Events:
+        Proxy:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY

@@ -1,6 +1,6 @@
 import { refreshSession } from "./AuthContext";
 
-export const fetchWithAuth = async (url, options = {}, isText = false ) => {
+export const fetchWithAuth = async (url, options = {}, isText = false, isBlob = false) => {
   const token = localStorage.getItem('idToken');
   const userEmail = SafeParseJson(localStorage.getItem('User')).email;
   const vendor = localStorage.getItem("currentVendor");
@@ -46,6 +46,8 @@ export const fetchWithAuth = async (url, options = {}, isText = false ) => {
 
     if (isText)
       return await response.text();
+    if (isBlob)
+      return await response.blob();
     // Return parsed response
     //adding test comment to test git commit actions
     return await response.json()
@@ -93,8 +95,10 @@ export const Sort = ( data,  field, ascending = true) =>{
     export const BaseUrl=() =>{
       if (window.location.origin=="https://test.instechpay.co" )
         return 'https://test.instechpay.co/portal-v1';
+      if(window.location.origin.startsWith("http://localhost"))
+        return "http://127.0.0.1:3000"
      return import.meta.env.MODE === 'development'
-        ? 'https://ins-dev.instechpay.co'
+        ? 'https://test.instechpay.co/portal-v1'
         : window.location.origin.replace("pay.instechpay.co", "ins-dev.instechpay.co")
         .replace("portal.instechpay.co", "ins-dev.instechpay.co"); 
     }

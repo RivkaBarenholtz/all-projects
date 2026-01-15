@@ -90,28 +90,6 @@
   box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 
-/* Checkbox Filter in Popover */
-.filter-popover-checkbox-actions {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.filter-action-btn {
-  flex: 1;
-  padding: 6px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-color: white;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.filter-action-btn:hover {
-  background-color: #f0f0f0;
-  border-color: #4CAF50;
-}
 
 .filter-popover-checkbox-list {
   max-height: 250px;
@@ -150,12 +128,6 @@
   gap: 12px;
 }
 
-.filter-range-separator {
-  text-align: center;
-  color: #666;
-  font-size: 14px;
-  font-weight: 500;
-}
 
 /* Date Filter in Popover */
 .filter-popover-date {

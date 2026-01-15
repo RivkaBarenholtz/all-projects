@@ -46,14 +46,23 @@ public class Function
                 Headers = new Dictionary<string, string>
                 {
                     { "Access-Control-Allow-Origin", "*" },
-                    { "Access-Control-Allow-Headers", "Content-Type, user, Vendor" },
-                    { "Access-Control-Allow-Methods", "POST, OPTIONS, GET" },
+                    {"Access-Control-Allow-Headers", "Authorization, Content-Type, User, Vendor"},
+                    {"Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"},
                     { "Content-Type", "application/json" }
 
                 },
                 StatusCode = 200
-            }; 
-           string fullPath = request.RawPath ?? "";
+            };
+
+            if (string.Equals( request?.RequestContext?.Http?.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+            {
+                response.Body = "Success";
+                return response;
+            }
+            var caseInsensitiveHeaders = new Dictionary<string, string>(request.Headers, StringComparer.OrdinalIgnoreCase);
+
+
+            string fullPath = request.RawPath ?? "";
 
             string[] segments = fullPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
@@ -73,7 +82,7 @@ public class Function
                 secondToLastSegment = segments[0];
                 lastSegment = "";
             }
-            if (string.IsNullOrEmpty(lastSegment) )
+            if (string.IsNullOrEmpty(lastSegment))
             {
                 var a = request.Headers.TryGetValue("host", out string? fullDomain);
 
@@ -82,7 +91,7 @@ public class Function
                 .ToList();
 
                 var url = $"https://{fullDomain}/make-payment?{string.Join("&", query)}";
-                if (fullDomain.StartsWith ("portal"))
+                if (fullDomain.StartsWith("portal"))
                 {
                     url = $"https://{fullDomain}/app";
                 }
@@ -99,7 +108,9 @@ public class Function
             List<Cognito> user = new();
             Console.WriteLine(JsonConvert.SerializeObject(request));
 
-            if (!request.Headers.TryGetValue("authorization", out var authHeader) || !authHeader.StartsWith("Bearer "))
+
+
+            if (!caseInsensitiveHeaders.TryGetValue("authorization", out var authHeader) || !authHeader.StartsWith("Bearer "))
             {
                 Console.WriteLine("No proper authorization header. ");
 
@@ -107,7 +118,7 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(new { message = "Missing or invalid Authorization header" });
                 return response;
             }
-            if (!request.Headers.TryGetValue("user", out var userName) || userName == "")
+            if (!caseInsensitiveHeaders.TryGetValue("user", out var userName) || userName == "")
             {
                 response.StatusCode = 401;
                 response.Body = JsonConvert.SerializeObject(new { message = "Missing or invalid user header" });
@@ -116,7 +127,7 @@ public class Function
             else
             {
                 var username = userName;
-               
+
                 user = await User.GetUserAsync(username);
                 //Console.WriteLine(JsonConvert.SerializeObject(User));
             }
@@ -151,11 +162,9 @@ public class Function
                 return response;
             }
             Vendor vendor = null;
-            var caseInsensitiveHeaders = new Dictionary<string, string>(request.Headers, StringComparer.OrdinalIgnoreCase);
-
-            if (request.Headers != null && caseInsensitiveHeaders.TryGetValue("vendor", out string? vid) && int.TryParse(vid, out int value))
+             if (request.Headers != null && caseInsensitiveHeaders.TryGetValue("vendor", out string? vid) && int.TryParse(vid, out int value))
             {
-                    vendor = await Utilities.GetVendorByID(value);   
+                vendor = await Utilities.GetVendorByID(value);
             }
             else
             {
@@ -167,7 +176,7 @@ public class Function
                 else
                 { throw new Exception("Missing host header"); }
             }
-            if (user.FirstOrDefault(u => u.VendorId == vendor?.Id && !u.Disabled ) == null)
+            if (user.FirstOrDefault(u => u.VendorId == vendor?.Id && !u.Disabled) == null)
             {
                 response.StatusCode = 401;
                 response.Body = JsonConvert.SerializeObject(new { message = "Forbidden: You do not have access to this vendor." });
@@ -180,8 +189,8 @@ public class Function
                 await errorEmail.Send();
             }
 
-           
-        
+
+
             if (lastSegment == "transaction-report")
             {
                 var reportRequest = Newtonsoft.Json.JsonConvert.DeserializeObject<CardknoxReportRequest>(request.Body);
@@ -235,6 +244,24 @@ public class Function
                 var customerResponse = await customerListApiRequest.PostToCardknox(vendor);
                 response.Body = await customerResponse.Content.ReadAsStringAsync();
                 return response;
+            }
+            else if (lastSegment == "generate-receipt")
+            {
+                var transaction = JsonConvert.DeserializeObject<CardknoxReportItem>(request.Body);
+                var byteArray = await PdfReceiptGenerator.GenerateReceipt(transaction, transaction.RefNum, "", vendor);
+                string base64Pdf = Convert.ToBase64String(byteArray);
+                response.Body = base64Pdf;
+                response.IsBase64Encoded = true;
+                return response;
+            }
+            else if (lastSegment == "email-receipt")
+            {
+                var req = JsonConvert.DeserializeObject<EmailReceiptRequest>(request.Body);
+
+                SimpleEmail email = new SimpleEmail(req.EmailAddresses, "Payment Receipt", "Please see the attached payment receipt", new List<string>());
+                email.Attachment = await PdfReceiptGenerator.GenerateReceipt(req.Transaction, req.Transaction.RefNum, "", vendor);
+                await email.Send();
+                response.Body = response.Body = JsonConvert.SerializeObject(new { message = "Success" });
             }
             else if (lastSegment == "list-schedules")
             {
@@ -503,7 +530,7 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(responseBody);
                 return response;
             }
-           
+
             else if (lastSegment == "save-surcharge")
             {
                 try
@@ -545,11 +572,12 @@ public class Function
             }
             else if (lastSegment == "create-user")
             {
-                if (user?.FirstOrDefault(u=> u.VendorId == vendor.Id)?.Role == "admin")
+                if (user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Role == "admin")
                 {
                     var CognitoUser = JsonConvert.DeserializeObject<Cognito>(request.Body);
                     Console.WriteLine($"Creating user: {JsonConvert.SerializeObject(CognitoUser)}");
                     CognitoUser.AddedBy = userName;
+                    CognitoUser.AccountName = vendor.CardknoxAccountCode;
                     await User.CreateUserInCognitoAndDynamoDb(CognitoUser);
                     response.Body = JsonConvert.SerializeObject(new { message = "User created successfully" });
 
@@ -563,12 +591,12 @@ public class Function
             }
             else if (lastSegment == "update-user")
             {
-                if(user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Role == "admin")
+                if (user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Role == "admin")
                 {
                     var CognitoUser = JsonConvert.DeserializeObject<Cognito>(request.Body);
 
                     Console.WriteLine($"Disabling user: {JsonConvert.SerializeObject(CognitoUser)}");
-                    await User.UpdateUser (CognitoUser);
+                    await User.UpdateUser(CognitoUser);
                     response.Body = JsonConvert.SerializeObject(new { message = "User updated successfully" });
                 }
                 else
@@ -606,7 +634,7 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(rsp);
                 return response;
             }
-                return response; 
+            return response;
         }
         catch (Exception ex)
         {
@@ -619,14 +647,14 @@ public class Function
                     { "Access-Control-Allow-Headers", "Content-Type, user, Vendor" },
                     { "Access-Control-Allow-Methods", "POST, OPTIONS, GET" },
                     { "Content-Type", "application/json" }
-                    
+
 
                 },
                 StatusCode = 500,
                 Body = JsonConvert.SerializeObject(new { message = ex.Message })
 
-            };  
-            
+            };
+
         }
 
     }

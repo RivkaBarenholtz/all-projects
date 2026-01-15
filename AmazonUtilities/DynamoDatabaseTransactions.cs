@@ -1,6 +1,11 @@
 ﻿using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
-using System;
+using Amazon.Runtime.Internal;
+
+
+// If the package is not available or you do not intend to use it, you can remove the using directive and any related code that depends on it.
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.SymbolStore;
@@ -31,6 +36,66 @@ namespace AmazonUtilities
             var response = await client.GetItemAsync(request);
             return response.Item;
         }
+
+        //public static async Task<T?> GetItemInJsonAsync<T>(string pk, string sk) where T : class
+        //{
+        //    var request = new GetItemRequest
+        //    {
+        //        TableName = tableName,
+        //        Key = new Dictionary<string, AttributeValue>
+        //        {
+        //            { "PK", new AttributeValue { S = pk } },
+        //            { "SK", new AttributeValue { S = sk } }
+        //        }
+        //    };
+
+        //    var response = await client.GetItemAsync(request);
+
+        //    return DynamoSerializer.Deserialize<T>(response.Item);
+        //}
+
+    
+
+        public static async Task<List<T>> GetItemsInJsonAsync<T>(string pk, string sk) where T : class
+        {
+            var request = new QueryRequest
+            {
+                TableName = tableName,
+
+                KeyConditionExpression =
+                "PK = :pk AND begins_with(SK, :sk)",
+
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    [":pk"] = new AttributeValue { S = "VENDOR#INS" },
+                    [":sk"] = new AttributeValue { S = "VENDOR#" }
+                }
+            };
+
+            var result = new List<Dictionary<string, AttributeValue>>(); // Declare and initialize 'result'
+
+            QueryResponse response;
+            do
+            {
+                response = await client.QueryAsync(request);
+                result.AddRange(response.Items); // Use 'result' to store the items
+                request.ExclusiveStartKey = response.LastEvaluatedKey;
+
+            } while (response.LastEvaluatedKey != null && response.LastEvaluatedKey.Count > 0);
+
+            var context = new DynamoDBContext(new AmazonDynamoDBClient());
+            var jsonResult = new List<T>();
+
+            foreach (var item in result)
+            {
+                var doc = Document.FromAttributeMap(item);
+                var obj = context.FromDocument<T>(doc);
+                jsonResult.Add(obj);
+            }
+
+            return jsonResult;
+        }
+
         private static (string updateExpression,
                    Dictionary<string, string> exprAttrNames,
                    Dictionary<string, AttributeValue> exprAttrValues) BuildUpdateExpression(Dictionary<string, AttributeValue> updates)

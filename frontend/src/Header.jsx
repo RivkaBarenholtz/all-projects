@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { fetchWithAuth, SafeParseJson, handleUnauthorized } from "./Utilities";
-import  "./Styles/header.css"
+import "./Styles/header.css"
 
-export default function Header() {
+export default function Header({ title,openNav, setOpenNav }) {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState({});
   const [availableVendors, setAvailableVendors] = useState([]);
@@ -55,8 +55,17 @@ export default function Header() {
 
   return (
     <header className="app-header">
+      <div className="nav-left">
+        {/* Hamburger button (only visible on mobile) */}
+        <div className="hamburger" onClick={() => setOpenNav(!openNav)}>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <div className="page-title">{title}</div>
+      </div>
       <div className="user-account-container" ref={menuRef}>
-        <div className="user-account-selector"      onClick={toggleMenu}>
+        <div className="user-account-selector" onClick={toggleMenu}>
           <img
             src="https://www.gravatar.com/avatar/?d=mp"
             alt={user?.name || "User"}
@@ -65,28 +74,29 @@ export default function Header() {
           <div className="user-info">
             <button
               className={`account-selector ${open ? "open" : ""}`}
-         
+
             >
               <span className="account-name">
                 {currentVendor?.CardknoxAccountCode || "Select Account"}
               </span>
-             
-              <svg
-                className="dropdown-icon"
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-              >
-                <path
-                  d="M4 6l4 4 4-4"
-                  stroke="currentColor"
-                  fill="none"
-                  strokeWidth="2"
-                />
-              </svg>
+
+
             </button>
             <div className="user-name">{user?.name || "User"}</div>
           </div>
+          <svg
+            className="dropdown-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+          >
+            <path
+              d="M4 6l4 4 4-4"
+              stroke="currentColor"
+              fill="none"
+              strokeWidth="2"
+            />
+          </svg>
         </div>
 
         {open && (
@@ -97,9 +107,8 @@ export default function Header() {
               {availableVendors.map((vendor) => (
                 <div
                   key={vendor.Id}
-                  className={`account-item ${
-                    selectedVendor == vendor.Id ? "active" : ""
-                  }`}
+                  className={`account-item ${selectedVendor == vendor.Id ? "active" : ""
+                    }`}
                   onClick={() => setSelected(vendor.Id)}
                 >
                   <div className="account-item-info">
