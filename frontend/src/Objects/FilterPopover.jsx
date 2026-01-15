@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../Styles/filterrow.css';
 import { set } from 'date-fns';
+import { X } from 'lucide-react';
 
-export const FilterPopover = ({ 
-  header, 
-  data, 
-  filterValue, 
-  onFilterChange, 
+export const FilterPopover = ({
+  header,
+  data,
+  filterValue,
+  onFilterChange,
   onClose,
-  position 
+  position
 }) => {
   const popoverRef = useRef(null);
   const [localFilter, setLocalFilter] = useState(filterValue || {});
@@ -27,7 +28,7 @@ export const FilterPopover = ({
   // Get unique values for a column
   const getUniqueValues = () => {
     const values = data
-      .map(item => item[header.FilterValue??header.Value])
+      .map(item => item[header.FilterValue ?? header.Value])
       .filter(value => value !== null && value !== undefined && value !== '');
     return [...new Set(values)].sort();
   };
@@ -37,12 +38,12 @@ export const FilterPopover = ({
     if (header.FilterType) return header.FilterType;
 
     const uniqueValues = getUniqueValues();
-    
+
     if (uniqueValues.length > 0 && uniqueValues.length <= 10) {
       return 'checkbox';
     }
 
-    const field = header.FilterValue??header.Value;
+    const field = header.FilterValue ?? header.Value;
     const sampleValue = data.find(item => item[field] !== null && item[field] !== undefined)?.[field];
     if (typeof sampleValue === 'number' || !isNaN(parseFloat(sampleValue))) {
       return 'number';
@@ -63,13 +64,13 @@ export const FilterPopover = ({
   }, [localFilter]);
 
   const handleApply = () => {
-    onFilterChange(header.FilterValue??header.Value, localFilter, filterType);
+    onFilterChange(header.FilterValue ?? header.Value, localFilter, filterType);
   };
 
   const handleClear = () => {
     setLocalFilter({});
-    onFilterChange(header.FilterValue??header.Value, null, filterType);
-    
+    onFilterChange(header.FilterValue ?? header.Value, null, filterType);
+
   };
 
   const renderTextFilter = () => (
@@ -91,16 +92,13 @@ export const FilterPopover = ({
 
     return (
       <div className="filter-popover-content">
-       
+
         <div className="filter-popover-checkbox-list">
           <label className="filter-popover-checkbox-item">
-              <input
-                type="checkbox"
-                checked={selectedValues?.length == uniqueValues?.length}
-                onChange={() => { selectedValues?.length == uniqueValues?.length? setLocalFilter({value: []}): setLocalFilter({value:uniqueValues})}}
-              />
-              <span style={{textDecoration:"underline" , fontSize: "small"}}>Select All</span>
-            </label>
+
+            <span onClick={() => setLocalFilter({ value: uniqueValues })} style={{ textDecoration: "underline", fontSize: "11px" }}>Select All</span>
+            <span onClick={() => setLocalFilter({ value: [] })} style={{ textDecoration: "underline", fontSize: "11px" }}>Deselect All</span>
+          </label>
           {uniqueValues.map((value, index) => (
             <label key={index} className="filter-popover-checkbox-item">
               <input
@@ -139,8 +137,8 @@ export const FilterPopover = ({
           className="filter-popover-input"
         />
 
-        <div style={{display:"flex" , justifyContent:"end"}}>
-          <button className='btn btn-secondary' type='button' onClick={()=> setLocalFilter({})}> Clear </button>
+        <div style={{ display: "flex", justifyContent: "end" }}>
+          <button className='btn btn-secondary' type='button' onClick={() => setLocalFilter({})}> Clear </button>
         </div>
       </div>
     </div>
@@ -183,7 +181,7 @@ export const FilterPopover = ({
   };
 
   return (
-    <div 
+    <div
       ref={popoverRef}
       className="filter-popover"
       style={{
@@ -192,8 +190,18 @@ export const FilterPopover = ({
         zIndex: 1000
       }}
     >
-      <div className="filter-popover-header">
+      <div style={{
+        padding: "12px 16px",
+        backgroundColor: "#f8f9fa",
+        borderBottom: "1px solid #e0e0e0",
+        fontWeight: 600,
+        fontSize: "14px",
+        color: "#333",
+        display:"flex",
+        justifyContent:"space-between"
+      }}>
         <span>Filter: {header.DisplayValue}</span>
+        <span> <X size={18} onClick={onClose}/></span>
       </div>
       {renderFilterContent()}
       {/* <div className="filter-popover-footer">

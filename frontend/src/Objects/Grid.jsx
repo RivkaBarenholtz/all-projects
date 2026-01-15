@@ -506,11 +506,19 @@ export const Grid = (
                   className="footer-cell"
                 >
                   {index === 0 ? 'Count: ' + filteredData.length : ''}
-                  {index === 1 ? <span style={{ fontWeight: "bold" }}>Total:</span> : ''}
-                  {index > 1 && header.FilterType === 'number' ?
+                  {index > 0 && header.FilterType === 'number' ?
                     <span className='amount positive'>
                       {FormatCurrency(filteredData.reduce((sum, item) => {
-                        const value = parseFloat(item[header.FilterValue]);
+                        const value =
+                         item["StatusString"] ? 
+                          (
+                            item["StatusString"].startsWith("Approved") 
+                            || item["StatusString"]=="Confirmed" 
+                            || item["StatusString"]=="Unconfirmed"? 
+                            parseFloat(item[header.FilterValue??header.Value])
+                            : 0
+                          )  
+                          : parseFloat(item[header.FilterValue??header.Value]);
                         return isNaN(value) ? sum : sum + value;
                       }, 0))
                       }

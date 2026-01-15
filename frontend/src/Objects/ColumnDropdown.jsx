@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-
+import { Grip } from "lucide-react";
 export const ColumnDropdown = (
     {
         headerList,
@@ -9,7 +9,6 @@ export const ColumnDropdown = (
     const dropdownRef = useRef(null);
     const dragItem = useRef(null);
     const dragOverItem = useRef(null);
-    const [checkedItems, setCheckedItems] = useState([])
     const [showColumnDropdown, setShowColumnDropdown] = useState(false);
     const [draggedIndex, setDraggedIndex] = useState(null);
 
@@ -169,7 +168,7 @@ export const ColumnDropdown = (
                                     onDrop={(e) => handleDrop(e, index)}
                                 >
                                     {!isLocked && (
-                                        <span className="col-drag-handle" title="Drag to reorder">☰</span>
+                                        <span className="col-drag-handle" title="Drag to reorder"> <Grip size={18}/> </span>
                                     )}
                                     {isLocked && (
                                         <span className="col-lock-icon" title="Locked column">🔒</span>

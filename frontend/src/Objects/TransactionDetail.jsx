@@ -53,7 +53,11 @@ export default function TransactionDetail({ transaction, onClose, getTransaction
                   </button>
                 </div>
               </div>
-
+              <div style={{ display: "flex", width: "100%", gap: "12px", marginTop: "10px" , padding: "2px"}}>
+                  <PrintPDFButton transaction={transaction} />
+                  <ReceiptButton label={<> <FontAwesomeIcon icon={faEnvelope} />Email Receipt</>} onClick={() => { setShowEmailConfirm(true) }} />
+                  <DownloadPDFButton transaction={transaction} />
+                </div>
               {/* Body */}
               <div className="trd-body">
                 {/* Reference Info */}
@@ -68,7 +72,7 @@ export default function TransactionDetail({ transaction, onClose, getTransaction
 
                 {/* Status */}
 
-
+                
                 {/* General Info */}
                 <div className="trd-section">
                   <h3 className="trd-section-title">General Information</h3>
@@ -107,11 +111,7 @@ export default function TransactionDetail({ transaction, onClose, getTransaction
                 <div className="trd-section">
                   <h3 className="trd-section-title">Billing Information</h3>
 
-                  <div style={{ display: "flex", width: "100%", gap: "12px", marginBottom: "10px" }}>
-                    <PrintPDFButton transaction={transaction} />
-                    <ReceiptButton label={<> <FontAwesomeIcon icon={faEnvelope} />Email Receipt</>} onClick={() => { setShowEmailConfirm(true) }} />
-                    <DownloadPDFButton transaction={transaction} />
-                  </div>
+
                   <div className="trd-info-grid">
                     {
                       transaction.xName && transaction.xName != "" &&
