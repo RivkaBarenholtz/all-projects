@@ -76,7 +76,7 @@ const Navbar = ({setTitle, open, setOpen}) => {
           <NavBarLink path="/dashboard" label="Dashboard" />
 
           { Array.isArray(user) && user?.find(x=> x.VendorId == vendor)?.Role?.toLowerCase() === "admin" && (
-            <NavBarLink path="/settings" label="Settings" />
+            <NavBarLink path="/settings" label="Users" />
           )}
         </ul>
       </nav>

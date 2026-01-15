@@ -27,7 +27,7 @@ test.describe('eCheck Transaction Flow', () => {
     console.log('✓ Filled Account ID');
     
     // Fill Amount
-    await page.locator('input[placeholder="Enter amount"]').fill(testData.amount);
+    await page.locator('input[placeholder="$0.00"]').fill(testData.amount);
     console.log('✓ Filled Amount');
     
     // Select account type
