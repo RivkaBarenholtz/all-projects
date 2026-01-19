@@ -21,10 +21,21 @@ namespace InsTechClassesV2.Api
                 DecompressionMethods.Deflate |
                 DecompressionMethods.Brotli
                 };
+
+                bool isLocal = Environment.GetEnvironmentVariable("AWS_SAM_LOCAL") == "true";
+
+                if (isLocal)
+                {
+                    Console.WriteLine("DEBUG: Running locally. Bypassing SSL validation for external API.");
+                    handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+                }
                 using (HttpClient client = new HttpClient(handler))
                 {
                     using (HttpRequestMessage request = new HttpRequestMessage(method, url))
                     {
+                       
+                        Console.WriteLine("=====SECURITY PROTOCOL======");
+                        Console.WriteLine(System.Runtime.InteropServices.RuntimeInformation.OSDescription);
                         if (auth != null) request.Headers.Authorization = auth;
                         foreach (var header in headers)
                         {

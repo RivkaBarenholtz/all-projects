@@ -4,27 +4,38 @@ import { ApiService as Service } from '../services/apiService';
 export class ApiService {
   private subdomain: string;
   private onUnauthorized?: () => void;
+  private isDev: boolean = false;
+  protected svc: Service; // Declare but don't initialize here
 
-  constructor(subdomain: string, onUnauthorized?: () => void) {
+  constructor(isDev: boolean , subdomain: string, onUnauthorized?: () => void) {
     this.subdomain = subdomain;
     this.onUnauthorized = onUnauthorized;
+    this.isDev = isDev;
+    this.svc = new Service(this.onUnauthorized, this.isDev);
   }
 
-  protected svc = new Service( this.onUnauthorized );
+ 
+  
+  protected baseUrl =()=> 
+  {
+    if (this.isDev) return`http://127.0.0.1:3000/portal-v1/${this.subdomain}`;
+    return `https://${this.subdomain}.instechpay.co/portal-v1/${this.subdomain}`
+  }
 
+  
   async getClientFromEpic(clientId: string): Promise<Client> {
-    const url = `https://${this.subdomain}.instechpay.co/portal-v1/${this.subdomain}get-client-from-epic?ClientID=${clientId}`;
+    const url = `${this.baseUrl()}/get-client-from-epic?ClientID=${clientId}`;
     return  await this.svc.get(url);
     
    
   }
   async getClientFromEpicWithLookup(lookupCode: string): Promise<Client> {
-    const url = `https://${this.subdomain}.instechpay.co/portal-v1/${this.subdomain}/get-client-from-epic?LookupCode=${lookupCode}`;
+    const url = `${this.baseUrl()}/get-client-from-epic?LookupCode=${lookupCode}`;
     return await this.svc.get(url);
   }
 
   async getOpenInvoices(accountId: string| null, lookupCode: string): Promise<Invoice[]> {
-    const url = `https://${this.subdomain}.instechpay.co/portal-v1/${this.subdomain}/get-open-invoices`;
+    const url = `${this.baseUrl()}/get-open-invoices`;
     const body = {
       AccountId: accountId??-1,
       LookupCode: lookupCode
@@ -32,9 +43,13 @@ export class ApiService {
 
     return await this.svc.post<Invoice[]>(url, body);
   }
-
+  async getCardknoxAccounts(clientLookupCode:string ): Promise<{CardknoxAccountCode: string , Subdomain:string, AgencyCode:string}[]>
+  {
+      const url = `${this.baseUrl()}/get-cardknox-accounts?accountid=${clientLookupCode}`
+      return await this.svc.get(url);
+  }
   async getSurcharge(clientLookupCode: string): Promise<{ surcharge: number; vendorSurcharge: number }> {
-    const url = `https://${this.subdomain}.instechpay.co/portal-v1/${this.subdomain}/get-surcharge`;
+    const url = `${this.baseUrl()}/get-surcharge`;
     const body= { ClientLookupCode: clientLookupCode };
 
     return await this.svc.post<{ surcharge: number; vendorSurcharge: number }>(url, body);
@@ -45,12 +60,12 @@ export class ApiService {
        AccountCode: AccountCode
     };
 
-   return await this.svc.post(`https://${subdomain}.instechpay.co/portal-v1/${this.subdomain}/list-payment-methods-ext`, requestBody);
+   return await this.svc.post(`${this.baseUrl()}/list-payment-methods-ext`, requestBody);
 }
 
   async saveSurcharge(items: SurchargeItem[]): Promise<string> {
-    const url = `https://${this.subdomain}.instechpay.co/portal-v1/${this.subdomain}/save-surcharge`;
-    await this.svc.post(url, { items });
+    const url = `${this.baseUrl()}/save-surcharge`;
+    await this.svc.post(url,  items );
 
     return 'Success';
   }
@@ -62,7 +77,7 @@ export class ApiService {
   }
 
   async deletePaymentMethod(token: string): Promise<string> {
-    const url = `https://${this.subdomain}.instechpay.co/portal-v1/${this.subdomain}/delete-payment-method-ext`;
+    const url = `${this.baseUrl()}/delete-payment-method-ext`;
     const body = {
       Token: token
     };
@@ -70,7 +85,7 @@ export class ApiService {
   }
 
   async setDefaultPaymentMethod(token: string, accountCode:string): Promise<string> {
-    const url = `https://${this.subdomain}.instechpay.co/portal-v1/${this.subdomain}/make-method-default`;
+    const url = `${this.baseUrl()}/make-method-default`;
     const body = {
       Token: token,
       AccountId: accountCode

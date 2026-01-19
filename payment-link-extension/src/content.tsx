@@ -25,9 +25,9 @@ async function getSubdomain(): Promise<string> {
   
   const isDevelop = await isDeveloperMode();
 
-  if (isDevelop) {
-    return 'ins-dev';
-  }
+  // if (isDevelop) {
+  //   return 'ins-dev';
+  // }
 
   const hostname = window.location.hostname;
   const parts = hostname.split('.');
@@ -175,7 +175,7 @@ async function showModal() {
   if (modalRoot) {
     modalRoot.render(
       <React.StrictMode>
-        <MainPage onClose={hideModal} subdomain={subdomain} />
+        <MainPage onClose={hideModal} subdomain={subdomain} isDev = {isDeveloperMode()} />
       </React.StrictMode>
     );
   }

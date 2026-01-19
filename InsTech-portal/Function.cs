@@ -189,7 +189,7 @@ public class Function
                 await errorEmail.Send();
             }
 
-
+            
 
             if (lastSegment == "transaction-report")
             {
@@ -197,6 +197,13 @@ public class Function
                 var transactionList = await TransactionsService.GetTransactions(vendor.Id, reportRequest.FromDate, reportRequest.ToDate, reportRequest.RefNum, reportRequest.AccountID, reportRequest.PaymentMethods, reportRequest.Statuses, reportRequest.SortBy, reportRequest.PageNumber, reportRequest.TransactionsPerPage, reportRequest.IsAsc);
                 response.Body = JsonConvert.SerializeObject(transactionList);
 
+                return response;
+            }
+            else if (lastSegment == "get-cardknox-accounts")
+            {
+                string clientLookup = request.QueryStringParameters?["accountid"] ?? "";
+                var body =  await AppliedEpicDataService.GetCardknoxAccounts(vendor, clientLookup);
+                response.Body = JsonConvert.SerializeObject(body);
                 return response;
             }
             else if (lastSegment == "get-vendor")

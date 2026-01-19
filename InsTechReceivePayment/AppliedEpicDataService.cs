@@ -21,16 +21,41 @@ namespace InsTechReceivePayment
             {
                 try { 
                 var client = await AppliedGetClientRequest.Create(lookupCode, vendor, new GlobalLog());
-                var vendorFromClient = vendorList.FirstOrDefault(v => v.AgencyCode == client.AgencyCode || v.SecondaryAgencyCode == client.AgencyCode);
-                    if (!string.IsNullOrEmpty(vendorFromClient?.subdomain))
+                var vendorFromClient = vendorList.Where(v => client.AgencyCode.Contains(v.AgencyCode) || client.AgencyCode.Contains(v.SecondaryAgencyCode));
+                    if (vendorList.Count > 0 )
                     {
-                        return vendorFromClient.subdomain;
+                        return vendorFromClient.FirstOrDefault()?.subdomain??vendor.subdomain;
                     }
                 }
                 catch { }
             }
 
             return vendor.subdomain;  ;
+        }
+
+        public static async Task<List<dynamic>> GetCardknoxAccounts(Vendor vendor, string lookupCode)
+        {
+            try
+            {
+                var client = await AppliedGetClientRequest.Create(lookupCode, vendor, new GlobalLog());
+                var vendorList = await Utilities.GetVendorListAsync();
+                var vendorFromClient = vendorList.Where(v => client.AgencyCode.Contains(v.AgencyCode) || client.AgencyCode.Contains(v.SecondaryAgencyCode));
+
+                // Return a list of dynamic objects with the required property
+                return vendorFromClient.Select(v => new
+                {
+                    v.CardknoxAccountCode,
+                    Subdomain = v.subdomain, 
+                    AgencyCode = $"{v.AgencyCode}{(!string.IsNullOrEmpty(v.SecondaryAgencyCode)?$"/{v.SecondaryAgencyCode}":"")}"
+                }).Cast<dynamic>().ToList();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.StackTrace);
+                Console.WriteLine(ex.Message);
+                // Return an empty list in case of an exception
+                return new List<dynamic> { new {  vendor.CardknoxAccountCode, Subdomain = vendor.subdomain } };
+            }
         }
         public static async Task<List<Invoice>> GetInvoiceList(Vendor vendor , string requestBody)
         {
@@ -60,11 +85,25 @@ namespace InsTechReceivePayment
                 return new List<Invoice>(); 
             }
             var groups = EpicTransactions.GroupBy(x => x.InvoiceValue.SendInvoiceTos.SendInvoiceToItem?.InvoiceNumber??0);
-            var invoices = groups.Select(x => new Invoice() { AppliedEpicInvoiceNumber = x.Key, Balance = x.Sum(a => a.Balance) , InvoiceTotal = x.Sum(a => a.TransactionAmount)  }).ToList();
+            var invoices = groups.Select(x => new Invoice() 
+            { 
+                AppliedEpicInvoiceNumber = x.Key, 
+                Balance = x.Sum(a => a.Balance) , 
+                InvoiceTotal = x.Sum(a => a.TransactionAmount), 
+                AgencyCode = x.FirstOrDefault()?.BillingValue?.AgencyCode??vendor.AgencyCode   
+            }).ToList();
+
             var invoiceSurcharges = await  InvoiceSurcharge.LoadMany(vendor,  invoices.Select(x => x.AppliedEpicInvoiceNumber).ToList());
             var clientSurcharge = await  ClientSurcharge.Load(vendor, lookupCode);
-            invoices.ForEach(x => x.Surcharge = invoiceSurcharges.FirstOrDefault(y => y.InvoiceNumber == x.AppliedEpicInvoiceNumber)?.CustomSurcharge ?? clientSurcharge.CustomSurcharge??vendor.InsureTechFeePercentage);
-            invoices.ForEach(x => x.IsEditable = invoiceSurcharges.FirstOrDefault(y => y.InvoiceNumber == x.AppliedEpicInvoiceNumber)?.IsEditable ?? false);
+            var vendorList = await Utilities.GetVendorListAsync(); 
+            invoices.ForEach(x => 
+                {
+                    var associatedVendor = vendorList.FirstOrDefault(y => y.AgencyCode == x.AgencyCode || (y.SecondaryAgencyCode == x.AgencyCode && !string.IsNullOrEmpty(y.SecondaryAgencyCode)));
+                    x.AgencySubdomain = associatedVendor?.subdomain ?? "";
+                    x.AgencyCardknoxAcct = associatedVendor?.CardknoxAccountCode ?? "";
+                    x.Surcharge = invoiceSurcharges.FirstOrDefault(y => y.InvoiceNumber == x.AppliedEpicInvoiceNumber)?.CustomSurcharge ?? clientSurcharge.CustomSurcharge ?? vendor.InsureTechFeePercentage;
+                    x.IsEditable = invoiceSurcharges.FirstOrDefault(y => y.InvoiceNumber == x.AppliedEpicInvoiceNumber)?.IsEditable ?? false;
+                });
             return invoices;
         }
 

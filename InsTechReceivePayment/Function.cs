@@ -94,6 +94,7 @@ public class Function
                     
 
             }
+
             else if (lastSegment == "get-surcharge")
             {
                 var surcharge = await MakePaymentService.GetClientSurcharge(request.Body, vendor);
@@ -109,13 +110,6 @@ public class Function
                 return response;
             }
 
-            else if (lastSegment == "get-surcharge")
-            {
-                var surcharge = await MakePaymentService.GetClientSurcharge(request.Body, vendor);
-                var responseBody = new { surcharge = surcharge, vendorSurcharge = vendor.InsureTechFeePercentage };
-                response.Body = JsonConvert.SerializeObject(responseBody);
-                return response;
-            }
             else if (lastSegment == "save-surcharge")
             {
                 try

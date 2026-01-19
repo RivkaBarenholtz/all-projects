@@ -124,6 +124,7 @@ namespace InsTechClassesV2.AppliedEpic
             else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
             {
                 var json = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("Applied API Internal Server Error: " + json);
                 var error = JsonConvert.DeserializeObject<AppliedErrorResponse>(json);
                 return new HttpResponseMessage() { StatusCode = System.Net.HttpStatusCode.InternalServerError, Content = new StringContent(error.Envelope.Body.Fault.faultstring.Content) };
             }

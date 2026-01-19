@@ -5,6 +5,8 @@ export interface Invoice {
   Balance: number;
   Surcharge: number;
   IsEditable: boolean;
+  AgencyCode: string;
+  AgencySubdomain: string;
 }
 
 export interface Client {

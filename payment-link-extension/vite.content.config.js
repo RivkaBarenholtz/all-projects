@@ -15,6 +15,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    minify: false, 
     emptyOutDir: false, // Don't empty - we'll handle cleaning in build.js
     rollupOptions: {
       input: {

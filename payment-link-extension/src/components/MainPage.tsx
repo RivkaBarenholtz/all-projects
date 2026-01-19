@@ -6,9 +6,10 @@ import { cognitoService } from "../services/cognitoService";
 interface MainPageProps {
     onClose: () => void;
     subdomain: string;
+    isDev: boolean
 }
 
-export const MainPage: React.FC<MainPageProps> = ({ onClose, subdomain }) => {
+export const MainPage: React.FC<MainPageProps> = ({isDev,  onClose, subdomain }) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -72,7 +73,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onClose, subdomain }) => {
 
                 {/* Show Login or PaymentModal based on auth status */}
                 {isAuthenticated ? (
-                    <PaymentModal subdomain={subdomain}  setIsAuthenticated={setIsAuthenticated}/>
+                    <PaymentModal subdomain={subdomain} isDev={isDev} setIsAuthenticated={setIsAuthenticated}/>
                 ) : (
                     <Login onLoginSuccess={checkAuth} />
                 )}

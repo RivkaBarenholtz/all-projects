@@ -31,9 +31,11 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
   onSaveSurcharge
 }) => {
   const handleCopyMultiple = async () => {
+    const distinctSubdomain = ValidateCardknoxAccounts();
+    if(!distinctSubdomain) return;
     if (!client || selectedInvoices.size === 0) return;
 
-    const url = generatePaymentUrl(subdomain, client.LookupCode, accountId, {
+    const url = generatePaymentUrl(distinctSubdomain, client.LookupCode, accountId, {
       invoiceIds: Array.from(selectedInvoices)
     });
 
@@ -42,8 +44,10 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
   };
 
     const handleCollectPayment = () => {
-
-      const totalBalance = invoices.reduce((sum, item) => {
+    const distinctSubdomain = ValidateCardknoxAccounts();
+    if(!distinctSubdomain) return;
+    
+    const totalBalance = invoices.reduce((sum, item) => {
       return selectedInvoices.has(item.AppliedEpicInvoiceNumber) ? sum + item.Balance : sum;
     }, 0);
      chrome.runtime.sendMessage({
@@ -53,19 +57,22 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
       customerLookup: client?.LookupCode || "",
       accountId: accountId,
       clientName : client?.ClientName || "",
-      subdomain: subdomain,
+      subdomain: distinctSubdomain,
       surcharge: surcharge
     });
   }
 
   const handleEmailMultiple = () => {
+    const distinctSubdomain = ValidateCardknoxAccounts();
+    if(!distinctSubdomain) return;
+    
     if (!client || selectedInvoices.size === 0) return;
 
     const totalBalance = invoices.reduce((sum, item) => {
       return selectedInvoices.has(item.AppliedEpicInvoiceNumber) ? sum + item.Balance : sum;
     }, 0);
 
-    const url = generatePaymentUrl(subdomain, client.LookupCode, accountId, {
+    const url = generatePaymentUrl(distinctSubdomain, client.LookupCode, accountId, {
       invoiceIds: Array.from(selectedInvoices)
     });
 
@@ -91,6 +98,18 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
     onSelectionChange(newSelection);
   };
 
+  const ValidateCardknoxAccounts = () => {
+    const selectedInvoicesArray = invoices.filter(invoice => selectedInvoices.has(invoice.AppliedEpicInvoiceNumber));
+    const distinctSubdomains = [...new Set(selectedInvoicesArray.map(item => item.AgencySubdomain))];
+    if (distinctSubdomains.length > 1) {
+      alert('Selected invoices belong to different payment accounts. Please select invoices from the same account.');
+      return false;
+    }
+
+
+    return distinctSubdomains.length === 1? distinctSubdomains[0]: false;
+  }
+
   return (
     <div className="card">
       <div className="card-header">
@@ -107,7 +126,8 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
               <th>Invoice Amount</th>
               <th>Balance</th>
               <th>Surcharge</th>
-              <th>Allow Partial Payment</th>
+              <th>Partial Pymt</th>
+              <th> Agency Code</th>
             </tr>
           </thead>
           <tbody>

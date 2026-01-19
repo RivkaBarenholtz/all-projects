@@ -134,6 +134,9 @@ export const InvoiceRow: React.FC<InvoiceRowProps> = ({
           onChange={(e) => handleEditableChange(e.target.checked)}
         />
       </td>
+      <td>
+        {invoice.AgencyCode}
+      </td>
     </tr>
   );
 };

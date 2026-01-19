@@ -18,9 +18,10 @@ interface CollectPaymentModalProps {
     clientName?: string;
     amount: number,
     surchargePercent?: number;
+    isDev: boolean
 }
 
-export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ subdomain, lookupCode, clientName, amount, surchargePercent }) => {
+export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev, subdomain, lookupCode, clientName, amount, surchargePercent }) => {
 
 
     const [activeTab, setActiveTab] = useState("Credit Card")
@@ -52,7 +53,7 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ subdom
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
 
-    const service = new ApiService(subdomain);
+    const service = new ApiService(isDev,subdomain);
 
     async function getPaymentMethods(accountCode: string) {
         const methods = await service.listPaymentMethods(accountCode, subdomain);

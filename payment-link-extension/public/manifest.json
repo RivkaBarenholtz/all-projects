@@ -4,7 +4,9 @@
   "version": "1.09.01",
   "host_permissions": [
     "https://*.appliedepic.com/*",
-    "https://*.instechpay.co/*"
+    "https://*.instechpay.co/*",
+    "http://localhost:3000/*",
+    "http://127.0.0.1:3000/*"
   ],
   "background": {
     "service_worker": "background.js",
