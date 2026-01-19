@@ -99,17 +99,17 @@ export const CheckTab = (
             CaptchaToken: captchaToken,
             isDevelopment: import.meta.env.VITE_ENV === 'development'
         };
-
+         const clientid =
+            (context ?? "app") === "app"
+                ? BaseUrl().split('.')[0].split('//')[1]
+                : (context ?? "ins-dev");
         try {
             let responseBody = null;
             if (isPortal) {
                 responseBody = await fetchWithAuth("make-check-payment-to-cardknox", request);
             }
             else {
-            const clientid =
-            (context ?? "app") === "app"
-                ? BaseUrl().split('.')[0].split('//')[1]
-                : (context ?? "ins-dev");
+           
             const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/make-check-payment-to-cardknox`, {
                 method: 'POST',
                 body: JSON.stringify(request),
