@@ -20,6 +20,7 @@ namespace InsTechClassesV2
         public string AsiClientCorrelationId { get; set; }
         public int DepositBankAccountId { get; set; }
         public bool CreateNewReceipt { get; set; }
+        public bool Exclude { get; set;  }
         public string CardknoxApiKeySecretName { get; set; }
 
         public decimal InsureTechFeePercentage { get; set; } 

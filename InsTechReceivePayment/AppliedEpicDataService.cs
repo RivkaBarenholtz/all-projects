@@ -39,7 +39,7 @@ namespace InsTechReceivePayment
             {
                 var client = await AppliedGetClientRequest.Create(lookupCode, vendor, new GlobalLog());
                 var vendorList = await Utilities.GetVendorListAsync();
-                var vendorFromClient = vendorList.Where(v => client.AgencyCode.Contains(v.AgencyCode) || client.AgencyCode.Contains(v.SecondaryAgencyCode));
+                var vendorFromClient = vendorList.Where(v => !v.Exclude && (client.AgencyCode.Contains(v.AgencyCode) || client.AgencyCode.Contains(v.SecondaryAgencyCode))) ;
 
                 // Return a list of dynamic objects with the required property
                 return vendorFromClient.Select(v => new
@@ -47,7 +47,7 @@ namespace InsTechReceivePayment
                     v.CardknoxAccountCode,
                     Subdomain = v.subdomain, 
                     AgencyCode = $"{v.AgencyCode}{(!string.IsNullOrEmpty(v.SecondaryAgencyCode)?$"/{v.SecondaryAgencyCode}":"")}"
-                }).Cast<dynamic>().ToList();
+                }).Distinct().Cast<dynamic>().ToList();
             }
             catch(Exception ex)
             {

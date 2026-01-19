@@ -80,7 +80,7 @@ export const ClientInfo: React.FC<ClientInfoProps> = ({
       </div>
       <div className="card-body">
 
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+         { accountList.length && <div style={{ display: 'flex', alignItems: 'center' }}>
           Payment Account:
           <select
             value={paylinkSubdomain}
@@ -97,14 +97,14 @@ export const ClientInfo: React.FC<ClientInfoProps> = ({
               outline: 'none'
             }}
           >
-           {accountList.map((account, index) => (
+            {accountList.map((account, index) => (
               <option key={index} value={account.Subdomain}>
-                <span style={{fontWeight:"bold"}}>{account.CardknoxAccountCode}</span> - {account.AgencyCode}
+                <span style={{ fontWeight: "bold" }}>{account.CardknoxAccountCode}</span> - {account.AgencyCode}
               </option>
             ))}
           </select>
         </div>
-
+        }
         <div>
           Amount:
           <input
