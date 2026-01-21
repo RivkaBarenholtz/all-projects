@@ -34,7 +34,7 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain , 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = Array.from(e.target.files)
+    const file = Array.from(e.target.files || [])
         .filter(f => f.type === "application/pdf");
 
     if (file && file.length > 0) {
@@ -244,7 +244,7 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain , 
             {formData.file && (
               <div style={fileSelectedStyle}>
                 
-                {formData.file.name}
+                {formData.file.length} file(s) selected
               </div>
             )}
           </div>
