@@ -6,8 +6,9 @@ import { Grid } from './Objects/Grid';
 import PaymentForm from './PaymentPage/PaymentForm'
 import TransactionDetail from './Objects/TransactionDetail';
 import { ColumnDropdown } from './Objects/ColumnDropdown';
-import { X } from 'lucide-react';
+import { Car, X } from 'lucide-react';
 import cardknoxErrors from './Data/ErrorCodes.json';
+import { Card } from './Components/UI/card';
 
 function Transactions() {
  // const sixDaysAgo = new Date() - 6 
@@ -113,6 +114,15 @@ function Transactions() {
       FilterValue: "xMaskedAccountNumber",
       SortString : "MaskedAccountNumber",
       FilterType: "text",
+      SortAsc: true
+    },
+    
+    {
+      DisplayValue:"Payment Method", 
+      Show: false, 
+      Value:  "xPaymentMethodHtml",
+      FilterValue: "PaymentMethod",
+      SortString : "PaymentMethod",
       SortAsc: true
     },
     
@@ -339,6 +349,8 @@ function Transactions() {
           StatusString : GetStatusString(trans.xResponseResult, trans.xStatus, trans.xCommand),
           CreditCardFee:trans.xCustom09 * (trans.xAmount !=    0 ?trans.xAmount/ Math.abs(trans.xAmount): 1),
           ErrorDescription: paymentErrorMap[Number(trans.xErrorCode)]|| "", 
+          xPaymentMethodHtml: <>{CardImage( trans.xCardType, trans.xCommand)} <span className="card-last4"> {PaymentMethod(trans.xCardType, trans.xCommand)}</span></>,
+          PaymentMethod: PaymentMethod(trans.xCardType, trans.xCommand),
           className: trans.xResponseResult.toLowerCase()=="approved"? "": "not-counted"
         }
       })
@@ -405,6 +417,22 @@ const StatusHtml = (responseResult, achStatus, command) => {
 
 const CardHtml =(maskedNumber,  xCardType, xCommand)=>
 {
+  
+   return <div style={{display:"flex"}}>
+
+    {CardImage( xCardType, xCommand)}
+    <span className="card-last4">{`****${maskedNumber.replace(/x/gi, "")}`}</span>
+</div>
+}
+
+const PaymentMethod =(xCardType, xCommand)=>
+{
+  if (xCommand.startsWith("Check")) return "ACH";
+  if (xCommand.startsWith("Send Wire")) return "Wire";
+  return xCardType;
+}
+const CardImage =( xCardType, xCommand)=>
+{
   let  imgSrc="";
   if (xCommand.startsWith("Check")) imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/ach.svg";
   if (xCommand.startsWith("Send Wire")) imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/wire.svg";
@@ -413,12 +441,10 @@ const CardHtml =(maskedNumber,  xCardType, xCommand)=>
   if(xCardType === "Amex") imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/amex.svg";
   if(xCardType === "Discover") imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/discover.svg";
   
-   return <div style={{display:"flex"}}>
-
-    <img src={imgSrc} className="pm-logo"></img>
-    <span className="card-last4">{`****${maskedNumber.replace(/x/gi, "")}`}</span>
-</div>
+   return <img src={imgSrc} className="pm-logo"></img>
+    
 }
+
 
   const defaultSearch = async()=> 
   {

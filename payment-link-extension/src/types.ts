@@ -13,6 +13,7 @@ export interface Client {
   LookupCode: string;
   ClientName: string;
   EmailAddress?: string;
+  CSREmailAddress?: string;
   PhoneNumber?:string;
   BillingAddress?:string ;
   BillingCity?:string ; 

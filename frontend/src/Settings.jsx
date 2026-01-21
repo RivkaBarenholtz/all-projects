@@ -77,16 +77,17 @@ export const Settings = () => {
 
             }} />}
 
-            <div style={{ maxWidth: "670px" }}>
-                <Grid enableFilters={false} title={<div style={{
+            <div style={{ maxWidth: "970px" }}>
+                <div style={{
                     width: "100%",
-
+                    paddingBottom: "1rem",
                     display: "flex",
-                    justifyContent: "space-between"
+                    justifyContent: "end"
                 }}>
-                    <div>Users</div>
-                    <button className="btn btn-primary" onClick={() => setShowAddNewUserModal(true)}>Add New User</button>
-                </div>} hideColumnDropdown={true} headerList={[
+                    
+                    <button className="btn-new-tx" onClick={() => setShowAddNewUserModal(true)}>Add New User</button>
+                </div>
+                <Grid enableFilters={false}  hideColumnDropdown={true} headerList={[
                     { DisplayValue: "Email", Show: true, Value: "Email" },
                     { DisplayValue: "Full Name", Show: true, Value: "FullName" },
                     { DisplayValue: "Role", Show: true, Value: "Role" },

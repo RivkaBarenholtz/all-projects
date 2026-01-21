@@ -13,6 +13,9 @@ function fetchProxy(input: RequestInfo | URL, options: RequestInit = {}): Promis
   }
   
   return new Promise((resolve, reject) => {
+
+   
+
     chrome.runtime.sendMessage({
       action: 'proxyFetch',
       url: url,
@@ -124,6 +127,7 @@ export class ApiService {
     return this.handleResponse(response);
   }
 
+  
   async put<T>(url: string, data: any): Promise<T> {
     const headers = await this.getAuthHeaders();
     const fetchFn = this.isDev ? fetchProxy : window.fetch.bind(window);

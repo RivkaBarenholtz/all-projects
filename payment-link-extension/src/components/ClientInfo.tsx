@@ -80,7 +80,7 @@ export const ClientInfo: React.FC<ClientInfoProps> = ({
       </div>
       <div className="card-body">
 
-         { accountList.length && <div style={{ display: 'flex', alignItems: 'center' }}>
+         { accountList.length > 0  && <div style={{ display: 'flex', alignItems: 'center' }}>
           Payment Account:
           <select
             value={paylinkSubdomain}

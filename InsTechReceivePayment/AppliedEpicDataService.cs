@@ -16,7 +16,7 @@ namespace InsTechReceivePayment
         {
             // get vendor list 
             var vendorList = await Utilities.GetVendorListAsync();
-            var vendor = vendorList.FirstOrDefault(v => v.EpicSubdomain.Equals(epicSubdomain, StringComparison.OrdinalIgnoreCase));
+            var vendor = vendorList.FirstOrDefault(v => !v.Exclude &&  v.EpicSubdomain.Equals(epicSubdomain, StringComparison.OrdinalIgnoreCase));
             if (!string.IsNullOrEmpty(lookupCode))
             {
                 try { 
@@ -57,6 +57,7 @@ namespace InsTechReceivePayment
                 return new List<dynamic> { new {  vendor.CardknoxAccountCode, Subdomain = vendor.subdomain } };
             }
         }
+
         public static async Task<List<Invoice>> GetInvoiceList(Vendor vendor , string requestBody)
         {
             var InvoiceRequest =  Newtonsoft.Json.JsonConvert.DeserializeObject<InsTechClassesV2.TransactionRequests.InvoiceRequest> (requestBody);

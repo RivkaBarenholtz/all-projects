@@ -51,6 +51,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
         LookupCode: parts[0]?.trim() || 'UnknownID',
         ClientName: parts[1]?.trim() || 'UnknownName'
       };
+      setClient(clientData);
       if (accountId) {
         try {
           clientData = await apiService.getClientFromEpic(accountId) ?? clientData;
@@ -63,7 +64,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
           };
         }
       }
-
+      else 
+      {
+        try {
+          clientData = await apiService.getClientFromEpicWithLookup(lookupCode) ?? clientData;
+        } catch (error) {
+          console.error('Error fetching client by lookup code:', error);
+        }
+      }
       setClient(clientData);
       // setLookupCode(clientData.LookupCode);
 
@@ -142,7 +150,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
                 client={client}
                 accountId={accountId}
                 onInvoiceUpdate={loadData}
-
+                isDev={isDev}
                 onSelectionChange={setSelectedInvoices}
                 onShowCopied={() => {
                   setShowCopied(true);

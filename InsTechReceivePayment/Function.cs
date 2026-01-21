@@ -136,8 +136,21 @@ public class Function
             }
             else if (lastSegment == "get-client-from-epic")
             {
-                var id = int.Parse(request.QueryStringParameters["ClientID"] ?? "-1");
-                var clientResponse = await AppliedGetClientRequest.CreateFromID(id, vendor);
+                var id = int.Parse(request.QueryStringParameters != null &&
+                         request.QueryStringParameters.TryGetValue("ClientID", out var value)
+                ? value
+                : "-1");
+                string lookupCode = request.QueryStringParameters != null &&
+                request.QueryStringParameters.TryGetValue("LookupCode", out var lookup)
+                        ? lookup
+                        : "";
+                AppliedGetClientRequest clientResponse = new AppliedGetClientRequest();
+                if (id > 0)
+                    clientResponse = await AppliedGetClientRequest.CreateFromID(id, vendor);
+                else
+                    clientResponse = await AppliedGetClientRequest.Create(lookupCode, vendor, new GlobalLog());
+
+                if (!string.IsNullOrEmpty(clientResponse.CSRLookupCode)) clientResponse.CSREmailAddress = await AppliedEpicReceiptService.GetCSREmailAddress(clientResponse.CSRLookupCode, vendor);
                 response.Body = JsonConvert.SerializeObject(clientResponse);
                 return response;
             }

@@ -53,9 +53,10 @@ export function showCopiedNotification(
 export function generateEmailUrl(
   emailAddress: string,
   subject: string,
+  ccAddress: string,
   body: string
 ): string {
   const encodedBody = encodeURIComponent(body);
   const encodedSubject = encodeURIComponent(subject);
-  return `mailto:${emailAddress}?subject=${encodedSubject}&body=${encodedBody}`;
+  return `mailto:${emailAddress}?subject=${encodedSubject}&body=${encodedBody}${ccAddress ? `&cc=${ccAddress}` : ''}`;
 }

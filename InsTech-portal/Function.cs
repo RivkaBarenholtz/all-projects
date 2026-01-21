@@ -20,6 +20,7 @@ using System.ComponentModel.Design;
 using System.Globalization;
 using System.Numerics;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
@@ -224,6 +225,30 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(pamntResponse);
 
                 return response;
+            }
+            else if (lastSegment== "send-invoice-email")
+            {
+                var emailRequest = JsonConvert.DeserializeObject<EmailInvoiceRequest>(request.Body);
+                var email = new SimpleEmail(emailRequest.recipients, emailRequest.Subject, emailRequest.Body, vendor.defaultEmail);
+
+                if (emailRequest?.Attachment?.Data != null)
+                {
+                    // 2. Remove the Data URL prefix using Regex or Split
+                    // Format: "data:application/pdf;base64,JVBERi0xLjQK..."
+                    var base64Data = Regex.Replace(emailRequest.Attachment.Data, @"^data:.*?;base64,", "");
+
+                    // 3. Convert Base64 string to Byte Array
+                    byte[] fileBytes = Convert.FromBase64String(base64Data);
+                    email.Attachment = fileBytes;
+
+                    // Now you can use fileBytes with your Email Service (SES, SendGrid, etc.)
+                    context.Logger.LogLine($"Received file: {emailRequest.Attachment.Name}, Size: {fileBytes.Length} bytes");
+
+                   
+                }
+                await email.Send();
+                response.Body = JsonConvert.SerializeObject(new { message = "Success" });
+
             }
             else if (lastSegment == "void-transaction")
             {
@@ -564,8 +589,21 @@ public class Function
             }
             else if (lastSegment == "get-client-from-epic")
             {
-                var id = int.Parse(request.QueryStringParameters["ClientID"] ?? "-1");
-                var clientResponse = await AppliedGetClientRequest.CreateFromID(id, vendor);
+                var id = int.Parse(request.QueryStringParameters != null &&
+                         request.QueryStringParameters.TryGetValue("ClientID", out var val)
+                ? val
+                : "-1");
+                string lookupCode = request.QueryStringParameters != null &&
+                request.QueryStringParameters.TryGetValue("LookupCode", out var lookup)
+                        ? lookup
+                        : "";
+                AppliedGetClientRequest clientResponse = new AppliedGetClientRequest();
+                if (id > 0)
+                    clientResponse = await AppliedGetClientRequest.CreateFromID(id, vendor);
+                else
+                    clientResponse = await AppliedGetClientRequest.Create(lookupCode, vendor, new GlobalLog());
+
+                if (!string.IsNullOrEmpty(clientResponse.CSRLookupCode) ) clientResponse.CSREmailAddress = await AppliedEpicReceiptService.GetCSREmailAddress(clientResponse.CSRLookupCode, vendor);
                 response.Body = JsonConvert.SerializeObject(clientResponse);
                 return response;
             }

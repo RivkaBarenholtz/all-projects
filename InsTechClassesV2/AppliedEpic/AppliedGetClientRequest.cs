@@ -77,14 +77,30 @@ namespace InsTechClassesV2.AppliedEpic
         private void SetPropertiesFromAppliedResponse(dynamic EpicClient, string vendorAgencyCode)
         {
             ClientID = EpicClient["ClientID"] ?? 0;
+            EmailAddress = "";
             var agencyStructure = EpicClient["AccountValue"]["Structure"]["AgencyStructureItem"];
+            var accountEmail = EpicClient["AccountValue"]?["AccountEmail"];
+            if (accountEmail is JArray)
+            {
+                List<string> emailList = new List<string>();
+                foreach (var item in accountEmail)
+                {
+                   emailList.Add(item.ToString());
+                }
+                EmailAddress = string.Join(",", emailList);
+                
+            }
+            else
+            {
+                EmailAddress = accountEmail.ToString(); 
+            }
             if (agencyStructure is JArray)
             {
                 foreach (var item in agencyStructure)
                 {
                     AgencyCode.Add(item["AgencyCode"].ToString() ?? "");
                     BranchCode = item["BranchCode"];
-                        
+
                 }
             }
             if (agencyStructure is JObject)
@@ -139,6 +155,7 @@ namespace InsTechClassesV2.AppliedEpic
         public string ClientName { get; set; }
         public int ClientID { get; set; }
         public string EmailAddress { get; set; }
+        public string CSREmailAddress { get; set; }
         public string CSRLookupCode { get; set; }
         private static string _url = "https://api.myappliedproducts.com/sdk/v1/clients";
         public async Task<HttpResponseMessage> GetFromApplied(Vendor vendor)

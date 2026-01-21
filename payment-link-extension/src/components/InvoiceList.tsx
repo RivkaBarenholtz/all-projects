@@ -1,7 +1,9 @@
-import React from 'react';
+import React  from 'react';
 import { Invoice, Client } from '../types';
 import { InvoiceRow } from './InvoiceRow';
 import { generatePaymentUrl, copyToClipboard, generateEmailUrl } from '../utils/helpers';
+import { EmailForm } from './EmailModal';
+import { useState } from 'react';
 
 interface InvoiceListProps {
   invoices: Invoice[];
@@ -15,6 +17,7 @@ interface InvoiceListProps {
   onSelectionChange: (selected: Set<string>) => void;
   onShowCopied: () => void;
   onSaveSurcharge: (items: any[]) => Promise<void>;
+  isDev: boolean;
 }
 
 export const InvoiceList: React.FC<InvoiceListProps> = ({
@@ -28,8 +31,11 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
   onInvoiceUpdate,
   onSelectionChange,
   onShowCopied,
-  onSaveSurcharge
+  onSaveSurcharge, 
+  isDev
 }) => {
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [mail , setMail] = useState<string>("");
   const handleCopyMultiple = async () => {
     const distinctSubdomain = ValidateCardknoxAccounts();
     if(!distinctSubdomain) return;
@@ -62,13 +68,20 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
     });
   }
 
-  const handleEmailMultiple = () => {
+  const handleBackendEmail = () => {
     const distinctSubdomain = ValidateCardknoxAccounts();
     if(!distinctSubdomain) return;
-    
-    if (!client || selectedInvoices.size === 0) return;
+    setMail(mailBody());
+    setIsEmailModalOpen(true);
+  }
 
-    const totalBalance = invoices.reduce((sum, item) => {
+  const mailBody =():string => {
+    const distinctSubdomain = ValidateCardknoxAccounts();
+    if(!distinctSubdomain) return "";
+    
+    if (!client || selectedInvoices.size === 0) return "";
+
+     const totalBalance = invoices.reduce((sum, item) => {
       return selectedInvoices.has(item.AppliedEpicInvoiceNumber) ? sum + item.Balance : sum;
     }, 0);
 
@@ -77,12 +90,26 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
     });
 
     const invoiceText = selectedInvoices.size > 1 ? 's' : '';
-    const mailBody = `Hi, you have open invoice #${invoiceText} ${Array.from(selectedInvoices).join(',')} for a total balance of $${totalBalance.toFixed(2)}. Your prompt payment would be very much appreciated. To pay please click here: ${url}`;
+    const mailBody = `Hi,
+
+Please find below the payment information for Invoice #${invoiceText}${Array.from(selectedInvoices).join(',')}, with a total balance of $${totalBalance.toFixed(2)}. We kindly request that you submit payment at your earliest convenience.
+
+You may pay securely using the link below:
+Payment Link: ${url}
+
+If you have any questions or need assistance, please let us know`;
+    return mailBody
+  }
+
+  const handleEmailMultiple = () => {
+    if (!client || selectedInvoices.size === 0) return;
+    const mail  = mailBody();
 
     const mailtoUrl = generateEmailUrl(
       client.EmailAddress || '',
-      'Invoice Reminder',
-      mailBody
+      'Invoice Reminder for ' + client.ClientName,
+      client.CSREmailAddress || '',
+      mail
     );
 
     window.open(mailtoUrl, '_blank');
@@ -110,7 +137,15 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
     return distinctSubdomains.length === 1? distinctSubdomains[0]: false;
   }
 
-  return (
+  return (<>
+  {isEmailModalOpen  && <EmailForm 
+    text={mail}
+    isDev={isDev}
+    client={client}
+    subdomain={ValidateCardknoxAccounts() as string}
+    onClose={() => setIsEmailModalOpen(false)}
+    onSuccess={() => setIsEmailModalOpen(false)}
+  />}
     <div className="card">
       <div className="card-header">
         <h3>
@@ -163,11 +198,11 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
       </div>
 
       <div style={{ margin: '12px', display: 'flex' }}>
-        <button className="btn btn-icon link-btn" onClick={handleEmailMultiple}>
+        <button className="btn btn-icon link-btn" onClick={handleBackendEmail}>
           <i className="fa-regular fa-envelope"></i>
         </button>
         Email payment link for selected invoices
       </div>
-    </div>
+    </div></>
   );
 };
