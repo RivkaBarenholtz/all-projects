@@ -5,7 +5,7 @@ import { Client } from '../types';
 
 interface FormData {
   message: string;
-  file: File | null;
+  file: File[] | [];
 }
 
 interface EmailModalProps {
@@ -27,15 +27,17 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain , 
   const service = new ApiService(isDev, subdomain);
   const [formData, setFormData] = useState<FormData>({
     message: text,
-    file: null
+    file: []
     
   });
   const [status, setStatus] = useState<Status>({ type: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
+    const file = Array.from(e.target.files)
+        .filter(f => f.type === "application/pdf");
+
+    if (file && file.length > 0) {
       setFormData({ ...formData, file });
       setStatus({ type: '', message: '' });
     } else {
@@ -68,6 +70,8 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain , 
     background: '#ffffff',
     zIndex: 1000,
     position: 'absolute',
+    left: '100px',
+    top: '100px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -128,7 +132,7 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain , 
 
   const fileSelectedStyle: React.CSSProperties = {
     fontSize: '14px',
-    color: '#7cffcb',
+    color: '#378867ff',
     marginTop: '10px',
     display: 'flex',
     alignItems: 'center'
@@ -142,7 +146,7 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain , 
     ...(status.type === 'success' ? {
       background: 'rgba(124, 255, 203, 0.15)',
       border: '1px solid rgba(124, 255, 203, 0.3)',
-      color: '#7cffcb'
+      color: '#378867ff'
     } : {
       background: 'rgba(233, 69, 96, 0.15)',
       border: '1px solid rgba(233, 69, 96, 0.3)',
@@ -191,10 +195,11 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain , 
           {/* Message Text Area */}
           <div style={inputGroupStyle}>
             <div style = {{display: 'flex', justifyContent: 'space-between', alignItems: 'center'   }}>
-                <X onClick={onClose}/>
                 <label htmlFor="message" style={labelStyle}>
                     Message
                 </label>
+                <X onClick={onClose}/>
+                
             </div>
             
             <textarea
@@ -224,6 +229,7 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain , 
               type="file"
               id="file"
               accept=".pdf"
+              multiple={true}
               onChange={handleFileChange}
               style={fileInputStyle}
               onFocus={(e) => {
@@ -237,14 +243,11 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain , 
             />
             {formData.file && (
               <div style={fileSelectedStyle}>
-                <svg style={checkIconStyle} fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
+                
                 {formData.file.name}
               </div>
             )}
           </div>
-
           {/* Status Message */}
           {status.message && (
             <div style={statusBoxStyle}>
