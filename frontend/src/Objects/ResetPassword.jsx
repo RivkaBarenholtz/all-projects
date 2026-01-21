@@ -1,6 +1,6 @@
  import { useState } from "react";
  
- export const ResetPassword = ({ updatePassword, newPassword , setNewPassword}) => {
+ export const ResetPassword = ({ updatePassword, newPassword , setNewPassword, showPassword}) => {
     
     
   
