@@ -149,6 +149,7 @@ namespace InsTechClassesV2.Services
             apiRequest.xName = request?.CardHolderName ?? "";
             apiRequest.xEmail = request?.Email ?? "";
             apiRequest.xToken = request?.Token;
+            apiRequest.xInvoice = request?.InvoiceNumber ?? "";
 
             var rsp = await apiRequest.SendRequest(vendor);
             if (request.SavePaymentMethod && rsp.xResult != "E")
@@ -255,6 +256,7 @@ namespace InsTechClassesV2.Services
             apiRequest.xName = request?.CardHolderName ?? "";
             apiRequest.xEmail = request?.Email ?? "";
             apiRequest.xToken = request?.Token;
+            apiRequest.xInvoice = request?.InvoiceNumber?? "";
 
 
             if (vendor.IsInstructional)

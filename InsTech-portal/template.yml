@@ -28,7 +28,7 @@ Resources:
       Runtime: dotnet8
       Handler: InstechPortal::InsTech_portal.Function::FunctionHandler
       CodeUri: .
-      MemorySize: 512
+      MemorySize: 2048
       Timeout: 30
       Environment:
         Variables:
