@@ -164,6 +164,10 @@ export const CreditCardTab = (
                         ? BaseUrl().split('.')[0].split('//')[1]
                         : (context ?? "ins-dev");
 
+        const clientid =
+                    (context ?? "app") === "app"
+                        ? BaseUrl().split('.')[0].split('//')[1]
+                        : (context ?? "ins-dev");
         try {
             let responseBody = null;
             if (isPortal) {

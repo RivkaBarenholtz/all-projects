@@ -99,7 +99,7 @@ export const CheckTab = (
             CaptchaToken: captchaToken,
             isDevelopment: import.meta.env.VITE_ENV === 'development'
         };
-        const clientid =
+         const clientid =
             (context ?? "app") === "app"
                 ? BaseUrl().split('.')[0].split('//')[1]
                 : (context ?? "ins-dev");

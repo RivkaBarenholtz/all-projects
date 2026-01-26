@@ -161,7 +161,7 @@ export default function Login({ setIsAuthenticated }) {
   
   if (requireNewPassword) {
     return (
-        <ResetPassword newPassword={newPassword} setNewPassword={setNewPassword} updatePassword={handleNewPasswordSubmit}/>
+        <ResetPassword newPassword={newPassword} setNewPassword={setNewPassword} updatePassword={handleNewPasswordSubmit} showPassword={showPassword}/>
       
     );
   }
