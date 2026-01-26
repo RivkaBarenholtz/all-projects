@@ -44,7 +44,7 @@ export const MainPage: React.FC<MainPageProps> = ({isDev,  onClose, subdomain })
     return (
         <div className="modal-overlay">
             <div className="body-class">
-                <div className="header">
+                <div className="header-ins">
                     <div className="logo">
                         <img src="https://insure-tech-vendor-data.s3.us-east-1.amazonaws.com/logos/InsTechLogo.png" style={{ height: '100px' }} alt="Logo" />
                     </div>

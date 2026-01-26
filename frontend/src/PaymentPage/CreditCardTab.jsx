@@ -159,11 +159,7 @@ export const CreditCardTab = (
             CaptchaToken: captchaToken,
             isDevelopment: import.meta.env.VITE_ENV === 'development'
         };
-        const clientid =
-                    (context ?? "app") === "app"
-                        ? BaseUrl().split('.')[0].split('//')[1]
-                        : (context ?? "ins-dev");
-
+       
         const clientid =
                     (context ?? "app") === "app"
                         ? BaseUrl().split('.')[0].split('//')[1]
