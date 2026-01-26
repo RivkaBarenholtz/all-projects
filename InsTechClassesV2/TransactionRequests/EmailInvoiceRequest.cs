@@ -10,7 +10,7 @@ namespace InsTechClassesV2.TransactionRequests
     public class EmailInvoiceRequest
     {
         public string Body { get; set; }
-        public AttachmentInfo Attachment { get; set; }
+        public List< AttachmentInfo> Attachment { get; set; }
         public List<string> recipients { get; set; } = new List<string>();
 
         public string Subject { get; set; }

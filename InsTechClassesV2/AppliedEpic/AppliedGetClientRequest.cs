@@ -92,7 +92,8 @@ namespace InsTechClassesV2.AppliedEpic
             }
             else
             {
-                EmailAddress = accountEmail.ToString(); 
+
+                EmailAddress =( accountEmail?.Type == JTokenType.String?  accountEmail?.Value<string>() : string.Empty)??"" ; 
             }
             if (agencyStructure is JArray)
             {

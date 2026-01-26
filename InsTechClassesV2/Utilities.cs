@@ -38,7 +38,7 @@ namespace InsTechClassesV2
         {
             //var subdomain = GetSubdomain(host);
             var vendors = await GetVendorListAsync();
-            return vendors?.FirstOrDefault(v => v.subdomain == param);
+            return vendors?.FirstOrDefault(v => v.subdomain == param || v.SecondaryDomain == param);
 
         }
         public async static Task<Vendor?> GetVendorByID(int vendorID)

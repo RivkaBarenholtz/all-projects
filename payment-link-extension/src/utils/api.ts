@@ -32,26 +32,23 @@ export class ApiService {
   }
   async sendInvoiceEmail(body: string, attachment: File[], subject: string, recipients: string[]): Promise<string> {
     const url = `${this.baseUrl()}/send-invoice-email`;
-    const attachments:{ name: string, type: string, data: string }[] = [];
-    attachment.forEach(async(file) => {
-      // 1. Convert File to Base64
+    const attachments: { name: string, type: string, data: string }[] = [];
+    for (const file of attachment) {
       const base64Data = await this.fileToBase64(file);
-      const attach   = {
-            name: file.name,
-            type: file.type,
-            data: base64Data // This will be the full Data URL (data:application/pdf;base64,...)
-          }
-        attachments.push(attach);
-      }
-      
-    )
+      attachments.push({
+        name: file.name,
+        type: file.type,
+        data: base64Data
+      });
+    }
 
     // 2. Create a plain JSON payload
     const payload = {
       body: body,
       subject: subject,
       recipients: recipients,
-      
+      attachment: attachments
+
     };
 
     // 3. Use a standard POST instead of postFormData

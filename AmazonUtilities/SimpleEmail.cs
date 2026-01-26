@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Amazon;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Net.Mail;
 
 namespace AmazonUtilities
 {
@@ -20,6 +21,12 @@ namespace AmazonUtilities
         private string body = "This is a test email from your webhook.";
         public byte[] Attachment;
 
+        public List<AttachmentFile> attachmentFiles = new List<AttachmentFile>();
+        public class AttachmentFile
+        {
+            public string FileName { get; set; }
+            public byte[] FileContent { get; set; }
+        }
         public SimpleEmail(List<string> recipientEmail, string subject, string body, List<string> defaultEmail)
         {
             this.recipientEmail = recipientEmail;
@@ -72,7 +79,7 @@ namespace AmazonUtilities
                 await Send();
             }
         }
-        public async Task Send()
+        public async Task Send(Boolean ishtml = true)
         {
             List<string> emailListEnumerator = new List<string>();
             emailListEnumerator.AddRange(recipientEmail);
@@ -109,7 +116,8 @@ namespace AmazonUtilities
             // Email body (HTML + Text)
             // -------------------------
             message.AppendLine("--" + boundary);
-            message.AppendLine("Content-Type: text/html; charset=\"UTF-8\"");
+            if (ishtml) message.AppendLine("Content-Type: text/html; charset=\"UTF-8\"");
+            else message.AppendLine("Content-Type: text/plain; charset=\"UTF-8\"");
             message.AppendLine("Content-Transfer-Encoding: 7bit");
             message.AppendLine();
             message.AppendLine(body);
@@ -132,6 +140,20 @@ namespace AmazonUtilities
                 message.AppendLine();
             }
 
+            if (attachmentFiles.Count > 0)
+            {
+                foreach (var file in attachmentFiles)
+                {
+                    message.AppendLine("--" + boundary);
+                    message.AppendLine("Content-Type: application/octet-stream; name=\"" + file.FileName + "\"");
+                    message.AppendLine("Content-Description: " + file.FileName);
+                    message.AppendLine("Content-Disposition: attachment; filename=\"" + file.FileName + "\"; size=" + file.FileContent.Length + ";");
+                    message.AppendLine("Content-Transfer-Encoding: base64");
+                    message.AppendLine();
+                    message.AppendLine(Convert.ToBase64String(file.FileContent));
+                    message.AppendLine();
+                }
+            }
             message.AppendLine("--" + boundary + "--");
 
             var rawMessage = new RawMessage

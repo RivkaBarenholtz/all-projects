@@ -229,24 +229,33 @@ public class Function
             else if (lastSegment== "send-invoice-email")
             {
                 var emailRequest = JsonConvert.DeserializeObject<EmailInvoiceRequest>(request.Body);
+                
                 var email = new SimpleEmail(emailRequest.recipients, emailRequest.Subject, emailRequest.Body, vendor.defaultEmail);
 
-                if (emailRequest?.Attachment?.Data != null)
+                if (emailRequest?.Attachment?.Count > 0 )
                 {
-                    // 2. Remove the Data URL prefix using Regex or Split
-                    // Format: "data:application/pdf;base64,JVBERi0xLjQK..."
-                    var base64Data = Regex.Replace(emailRequest.Attachment.Data, @"^data:.*?;base64,", "");
+                    foreach ( var attachment in emailRequest.Attachment )
+                    {
+                        var base64Data = Regex.Replace(attachment.Data, @"^data:.*?;base64,", "");
 
-                    // 3. Convert Base64 string to Byte Array
-                    byte[] fileBytes = Convert.FromBase64String(base64Data);
-                    email.Attachment = fileBytes;
+                        // 3. Convert Base64 string to Byte Array
+                        byte[] fileBytes = Convert.FromBase64String(base64Data);
+                        email.attachmentFiles.Add(new SimpleEmail.AttachmentFile
+                        {
+                            FileName = attachment.Name,
+                            FileContent = fileBytes
+                        });
 
-                    // Now you can use fileBytes with your Email Service (SES, SendGrid, etc.)
-                    context.Logger.LogLine($"Received file: {emailRequest.Attachment.Name}, Size: {fileBytes.Length} bytes");
+
+                        // Now you can use fileBytes with your Email Service (SES, SendGrid, etc.)
+                        context.Logger.LogLine($"Received file: {attachment.Name}, Size: {fileBytes.Length} bytes");
+                    }
+
+                   
 
                    
                 }
-                await email.Send();
+                await email.Send(false);
                 response.Body = JsonConvert.SerializeObject(new { message = "Success" });
 
             }
