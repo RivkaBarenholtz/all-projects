@@ -48,8 +48,7 @@ export default function Login({ setIsAuthenticated }) {
 
     user.authenticateUser(authDetails, {
       onSuccess: (session) => {
-        setMessage(`Welcome, ${username}!`);
-        // tokens available here: result.getIdToken(), result.getAccessToken(), etc.
+         // tokens available here: result.getIdToken(), result.getAccessToken(), etc.
 
         const idToken = session.getIdToken().getJwtToken();
         const accessToken = session.getAccessToken().getJwtToken();

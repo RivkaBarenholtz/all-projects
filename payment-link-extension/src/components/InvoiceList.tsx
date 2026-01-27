@@ -1,4 +1,4 @@
-import React  from 'react';
+import React from 'react';
 import { Invoice, Client } from '../types';
 import { InvoiceRow } from './InvoiceRow';
 import { generatePaymentUrl, copyToClipboard, generateEmailUrl } from '../utils/helpers';
@@ -31,14 +31,14 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
   onInvoiceUpdate,
   onSelectionChange,
   onShowCopied,
-  onSaveSurcharge, 
+  onSaveSurcharge,
   isDev
 }) => {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const [mail , setMail] = useState<string>("");
+  const [mail, setMail] = useState<string>("");
   const handleCopyMultiple = async () => {
     const distinctSubdomain = ValidateCardknoxAccounts();
-    if(!distinctSubdomain) return;
+    if (!distinctSubdomain) return;
     if (!client || selectedInvoices.size === 0) return;
 
     const url = generatePaymentUrl(distinctSubdomain, client.LookupCode, accountId, {
@@ -49,20 +49,20 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
     onShowCopied();
   };
 
-    const handleCollectPayment = () => {
+  const handleCollectPayment = () => {
     const distinctSubdomain = ValidateCardknoxAccounts();
-    if(!distinctSubdomain) return;
-    
+    if (!distinctSubdomain) return;
+
     const totalBalance = invoices.reduce((sum, item) => {
       return selectedInvoices.has(item.AppliedEpicInvoiceNumber) ? sum + item.Balance : sum;
     }, 0);
-     chrome.runtime.sendMessage({
+    chrome.runtime.sendMessage({
       action: "OPEN_PAYMENT_WINDOW",
       invoiceId: Array.from(selectedInvoices).join(','),
       amount: totalBalance,
       customerLookup: client?.LookupCode || "",
       accountId: accountId,
-      clientName : client?.ClientName || "",
+      clientName: client?.ClientName || "",
       subdomain: distinctSubdomain,
       surcharge: surcharge
     });
@@ -70,18 +70,18 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
 
   const handleBackendEmail = () => {
     const distinctSubdomain = ValidateCardknoxAccounts();
-    if(!distinctSubdomain) return;
+    if (!distinctSubdomain) return;
     setMail(mailBody());
     setIsEmailModalOpen(true);
   }
 
-  const mailBody =():string => {
+  const mailBody = (): string => {
     const distinctSubdomain = ValidateCardknoxAccounts();
-    if(!distinctSubdomain) return "";
-    
+    if (!distinctSubdomain) return "";
+
     if (!client || selectedInvoices.size === 0) return "";
 
-     const totalBalance = invoices.reduce((sum, item) => {
+    const totalBalance = invoices.reduce((sum, item) => {
       return selectedInvoices.has(item.AppliedEpicInvoiceNumber) ? sum + item.Balance : sum;
     }, 0);
 
@@ -103,7 +103,7 @@ If you have any questions or need assistance, please let us know`;
 
   const handleEmailMultiple = () => {
     if (!client || selectedInvoices.size === 0) return;
-    const mail  = mailBody();
+    const mail = mailBody();
 
     const mailtoUrl = generateEmailUrl(
       client.EmailAddress || '',
@@ -134,18 +134,27 @@ If you have any questions or need assistance, please let us know`;
     }
 
 
-    return distinctSubdomains.length === 1? distinctSubdomains[0]: false;
+    return distinctSubdomains.length === 1 ? distinctSubdomains[0] : false;
   }
 
+  const ActionButtonStyles = {
+    color: '#22845a99',
+    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+    display: 'inline-flex',
+    alignItems: 'center',
+    width: '11.5rem',
+    borderRadius: 'var(--radius)'
+  };
+
   return (<>
-  {isEmailModalOpen  && <EmailForm 
-    text={mail}
-    isDev={isDev}
-    client={client}
-    subdomain={ValidateCardknoxAccounts() as string}
-    onClose={() => setIsEmailModalOpen(false)}
-    onSuccess={() => setIsEmailModalOpen(false)}
-  />}
+    {isEmailModalOpen && <EmailForm
+      text={mail}
+      isDev={isDev}
+      client={client}
+      subdomain={ValidateCardknoxAccounts() as string}
+      onClose={() => setIsEmailModalOpen(false)}
+      onSuccess={() => setIsEmailModalOpen(false)}
+    />}
     <div className="card">
       <div className="card-header">
         <h3>
@@ -183,26 +192,29 @@ If you have any questions or need assistance, please let us know`;
         </table>
       </div>
 
-      <div style={{ margin: '12px', display: 'flex' }}>
-        <button className="btn btn-icon link-btn" onClick={handleCopyMultiple}>
-          <i className="fas fa-link"></i>
-        </button>
-        Copy payment link for selected invoices
+      <div style={{ marginLeft: '5px', marginTop: '20px', textDecoration: 'underline', display: 'flex' }}>
+        Selected Invoice Actions
       </div>
 
-      <div style={{ margin: '12px', display: 'flex' }}>
-        <button className="btn btn-icon link-btn" onClick={handleCollectPayment}>
-          <i className="fa-solid fa-file-invoice-dollar"></i>
+      <div style={{ margin: '5px', display: 'flex', gap: '6px' }}>
+        
+
+        <button style={ActionButtonStyles} onClick={handleCollectPayment}>
+          <i className="fa-solid fa-file-invoice-dollar"></i> Take Payment
         </button>
-        Take payment for selected invoices
+
+         <button className="btn btn-icon link-btn" onClick={handleBackendEmail}>
+          <i className="fa-regular fa-envelope"></i> Email Payment Link
+        </button>
+
+        <button style={ActionButtonStyles} onClick={handleCopyMultiple}>
+          <i className="fas fa-link"></i> Copy payment link
+        </button>
+         
       </div>
 
-      <div style={{ margin: '12px', display: 'flex' }}>
-        <button className="btn btn-icon link-btn" onClick={handleBackendEmail}>
-          <i className="fa-regular fa-envelope"></i>
-        </button>
-        Email payment link for selected invoices
-      </div>
+      
+     
     </div></>
   );
 };

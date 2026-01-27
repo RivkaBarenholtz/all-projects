@@ -39,7 +39,7 @@ export const PrintPDFButton = ({ transaction }) => {
   };
 
 
-  return <ReceiptButton onClick={handlePrint} label={<><FontAwesomeIcon icon={faPrint} />Print Receipt</>}/>;;
+  return <ReceiptButton onClick={handlePrint} label={<><FontAwesomeIcon icon={faPrint} />Print</>}/>;;
 };
 
 export const DownloadPDFButton = ({ transaction }) => {
@@ -68,6 +68,20 @@ export const DownloadPDFButton = ({ transaction }) => {
 }
 
 export const ReceiptButton =({onClick, label})=>{
-    return <button style={{flex:1, justifyContent: "center"}} className="btn btn-secondary" type="button" onClick={onClick}>{label}</button>;
+    return <button style={{...{flex:1, justifyContent: "center"}, ... {
+  background: '#148DC2',
+  color: '#fff',
+  padding: '10px',
+  border: 'none',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  fontSize: '15px',
+  fontWeight: 200,
+  width: '20px',
+  borderRadius: '7px',
+  height: 'fit-content',
+}}}  type="button" onClick={onClick}>{label}</button>;
 
 }

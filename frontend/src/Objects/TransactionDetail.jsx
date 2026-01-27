@@ -53,13 +53,18 @@ export default function TransactionDetail({ transaction, onClose, getTransaction
                   </button>
                 </div>
               </div>
-              <div style={{ display: "flex", width: "100%", gap: "12px", marginTop: "10px" , padding: "2px"}}>
-                  <PrintPDFButton transaction={transaction} />
-                  <ReceiptButton label={<> <FontAwesomeIcon icon={faEnvelope} />Email Receipt</>} onClick={() => { setShowEmailConfirm(true) }} />
-                  <DownloadPDFButton transaction={transaction} />
-                </div>
+              
               {/* Body */}
               <div className="trd-body">
+              <div className="trd-section">
+                <h3 className="trd-section-title">Receipt Actions</h3>
+                  
+              <div style={{ display: "flex", width: "100%", gap: "12px", marginTop: "10px" , padding: "2px"}}>
+                  <PrintPDFButton transaction={transaction} />
+                  <ReceiptButton label={<> <FontAwesomeIcon icon={faEnvelope} />Email</>} onClick={() => { setShowEmailConfirm(true) }} />
+                  <DownloadPDFButton transaction={transaction} />
+                </div>
+                </div>
                 {/* Reference Info */}
                 <div className="trd-section">
                   <p className="trd-label">Ref #</p>
