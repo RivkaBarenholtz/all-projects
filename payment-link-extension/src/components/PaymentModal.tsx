@@ -23,6 +23,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
   const [showSettings, setShowSettings] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [paylinkSubdomain , setPaylinkSubdomain] = useState<string>(subdomain);
   
   const [updateModalConfig, setUpdateModalConfig] = useState<{
     title: string;
@@ -133,6 +134,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
               surcharge={surcharge}
               isDev={isDev}
               subdomain={subdomain}
+              paylinkSubdomain={paylinkSubdomain}
+              setPaylinkSubdomain={setPaylinkSubdomain}
               onShowCopied={() => {
                 setShowCopied(true);
                 setTimeout(() => setShowCopied(false), 3000);
@@ -140,7 +143,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
             />
 
 
-            {invoices.length > 0 && (
+            {invoices.filter(a=> a.AgencySubdomain == paylinkSubdomain && a.Balance != 0).length > 0 && (
               <InvoiceList
                 invoices={invoices}
                 subdomain={subdomain}
@@ -150,6 +153,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
                 client={client}
                 accountId={accountId}
                 onInvoiceUpdate={loadData}
+                paylinkSubdomain={paylinkSubdomain}
                 isDev={isDev}
                 onSelectionChange={setSelectedInvoices}
                 onShowCopied={() => {

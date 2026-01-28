@@ -12,6 +12,7 @@ import { WireTab } from './WireTab.jsx';
 import { CheckTab } from './CheckTab.jsx';
 import Loader from './Loader.jsx';
 import { set } from 'date-fns';
+import { ConfirmationModal } from '../Objects/ConfimationModal.jsx';
 
 
 
@@ -87,7 +88,8 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const [activeTab, setActiveTab] = useState("Credit Card");
 
   const [refNum, setRefNum] = useState("");
-
+  const [showModal, setShowModal] = useState(false);
+  const [message , setMessage] = useState("");
 
 
   const setEverythingFocused = () => {
@@ -109,6 +111,12 @@ export default function PaymentForm({ isPortal, onSuccess }) {
     updated[index].AmountDisplay = Number(raw);
     setInvoice(updated);
   };
+
+  
+  const onError =(message) => {
+    setMessage(message);
+    setShowModal(true);
+  }
 
 
   const [accountValid, setAccountValid] = useState(true);
@@ -215,6 +223,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         selectCustomStyles={customStyles}
         isPortal={isPortal}
         onFinish={onSuccess}
+        onError={onError}
 
       />,
     "eCheck":
@@ -235,6 +244,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         setEverythingFocused={setEverythingFocused}
         isPortal={isPortal}
         onFinish={onSuccess}
+        onError={onError}
         ifieldsKey={vendor.CardknoxIFeildsKey}
       />,
     ...(vendor.BankInfo && !isPortal &&  {
@@ -444,6 +454,8 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   )
 
 
+
+
   const verify3DS = (verifyData) => {
     window.ck3DS.verifyTrans(verifyData);
   }
@@ -515,8 +527,11 @@ export default function PaymentForm({ isPortal, onSuccess }) {
     }
   }, []);
 
-  return (
-    <div>
+  return (<>
+    {showModal && <ConfirmationModal onClose={()=> setShowModal(false)} showButton={false} > 
+       <div style={{margin:'5px'}}>{message}</div>  
+      </ConfirmationModal>}   <div>
+      
       {
         !isPortal &&
         <div className='logo-header'>
@@ -776,5 +791,5 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         </div>
       </div>
       {(isLoading || isInvLoading) && <Loader />}
-    </div>);
+    </div>   </>);
 }

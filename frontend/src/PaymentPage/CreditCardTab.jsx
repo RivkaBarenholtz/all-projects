@@ -14,6 +14,7 @@ import { fetchWithAuth } from "../Utilities";
 
 
 
+
 export const CreditCardTab = (
     {
         amount,
@@ -37,6 +38,7 @@ export const CreditCardTab = (
         selectCustomStyles,
         isPortal,
         onFinish,
+        onError,
         showProcess = true
     }) => {
 
@@ -183,21 +185,14 @@ export const CreditCardTab = (
                 else onFinish();
             }
             else {
-                const currentUrl = window.location.origin + window.location.pathname;;
-                const params = new URLSearchParams({
-                    account: accountCode,
-                    amount: amount,
-                    invoiceid: invoiceID,
-                    error: `Error proccessing transaction. ${responseBody.xError} Please try again.`
-                });
-                window.location.href = `${currentUrl}?${params.toString()}`;
-
+                
+                 onError(`❌ ${responseBody.xMessage || "Payment was not approved." }`);
 
             }
             if (responseBody.xResult === 'V')
                 verify3DS(responseBody);
         } catch (error) {
-            console.error(error);
+            onError("❌ An error occurred while processing the payment. Please try again.");
             //setGatewayResponse(error);
         }
     }

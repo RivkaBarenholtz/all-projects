@@ -726,11 +726,13 @@ input[type="date"],
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
+   right: 0;
+  bottom: 0;
 }
 
 .modal-overlay.dark {
-  background: rgb(1 45 82 / 85%);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 /* Modal container */
@@ -2067,19 +2069,6 @@ input.active-filter
   color: var(--text);
 }
 
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
 
 .modal {
   background: white;

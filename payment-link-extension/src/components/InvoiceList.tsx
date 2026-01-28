@@ -17,6 +17,7 @@ interface InvoiceListProps {
   onSelectionChange: (selected: Set<string>) => void;
   onShowCopied: () => void;
   onSaveSurcharge: (items: any[]) => Promise<void>;
+  paylinkSubdomain: string;
   isDev: boolean;
 }
 
@@ -32,16 +33,16 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
   onSelectionChange,
   onShowCopied,
   onSaveSurcharge,
+  paylinkSubdomain, 
   isDev
 }) => {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [mail, setMail] = useState<string>("");
   const handleCopyMultiple = async () => {
-    const distinctSubdomain = ValidateCardknoxAccounts();
-    if (!distinctSubdomain) return;
+    
     if (!client || selectedInvoices.size === 0) return;
 
-    const url = generatePaymentUrl(distinctSubdomain, client.LookupCode, accountId, {
+    const url = generatePaymentUrl(paylinkSubdomain, client.LookupCode, accountId, {
       invoiceIds: Array.from(selectedInvoices)
     });
 
@@ -50,8 +51,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
   };
 
   const handleCollectPayment = () => {
-    const distinctSubdomain = ValidateCardknoxAccounts();
-    if (!distinctSubdomain) return;
+    
 
     const totalBalance = invoices.reduce((sum, item) => {
       return selectedInvoices.has(item.AppliedEpicInvoiceNumber) ? sum + item.Balance : sum;
@@ -63,29 +63,25 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
       customerLookup: client?.LookupCode || "",
       accountId: accountId,
       clientName: client?.ClientName || "",
-      subdomain: distinctSubdomain,
+      subdomain: paylinkSubdomain,
       surcharge: surcharge
     });
   }
 
   const handleBackendEmail = () => {
-    const distinctSubdomain = ValidateCardknoxAccounts();
-    if (!distinctSubdomain) return;
     setMail(mailBody());
     setIsEmailModalOpen(true);
   }
 
   const mailBody = (): string => {
-    const distinctSubdomain = ValidateCardknoxAccounts();
-    if (!distinctSubdomain) return "";
-
+   
     if (!client || selectedInvoices.size === 0) return "";
 
     const totalBalance = invoices.reduce((sum, item) => {
       return selectedInvoices.has(item.AppliedEpicInvoiceNumber) ? sum + item.Balance : sum;
     }, 0);
 
-    const url = generatePaymentUrl(distinctSubdomain, client.LookupCode, accountId, {
+    const url = generatePaymentUrl(paylinkSubdomain, client.LookupCode, accountId, {
       invoiceIds: Array.from(selectedInvoices)
     });
 
@@ -125,17 +121,7 @@ If you have any questions or need assistance, please let us know`;
     onSelectionChange(newSelection);
   };
 
-  const ValidateCardknoxAccounts = () => {
-    const selectedInvoicesArray = invoices.filter(invoice => selectedInvoices.has(invoice.AppliedEpicInvoiceNumber));
-    const distinctSubdomains = [...new Set(selectedInvoicesArray.map(item => item.AgencySubdomain))];
-    if (distinctSubdomains.length > 1) {
-      alert('Selected invoices belong to different payment accounts. Please select invoices from the same account.');
-      return false;
-    }
-
-
-    return distinctSubdomains.length === 1 ? distinctSubdomains[0] : false;
-  }
+  
 
   const ActionButtonStyles = {
     color: '#22845a99',
@@ -143,6 +129,9 @@ If you have any questions or need assistance, please let us know`;
     display: 'inline-flex',
     alignItems: 'center',
     width: '11.5rem',
+    border: '1px solid', 
+    padding: '5px',
+    justifycontent: 'center',
     borderRadius: 'var(--radius)'
   };
 
@@ -151,7 +140,7 @@ If you have any questions or need assistance, please let us know`;
       text={mail}
       isDev={isDev}
       client={client}
-      subdomain={ValidateCardknoxAccounts() as string}
+      subdomain={paylinkSubdomain}
       onClose={() => setIsEmailModalOpen(false)}
       onSuccess={() => setIsEmailModalOpen(false)}
     />}
@@ -175,8 +164,8 @@ If you have any questions or need assistance, please let us know`;
             </tr>
           </thead>
           <tbody>
-            {invoices.map((invoice) => (
-              <InvoiceRow
+            {invoices.filter(i => i.AgencySubdomain == paylinkSubdomain && i.Balance != 0).map((invoice) => (
+               <InvoiceRow
                 key={invoice.id}
                 invoice={invoice}
                 isSelected={selectedInvoices.has(invoice.AppliedEpicInvoiceNumber)}
@@ -203,7 +192,7 @@ If you have any questions or need assistance, please let us know`;
           <i className="fa-solid fa-file-invoice-dollar"></i> Take Payment
         </button>
 
-         <button className="btn btn-icon link-btn" onClick={handleBackendEmail}>
+         <button  style={ActionButtonStyles} onClick={handleBackendEmail}>
           <i className="fa-regular fa-envelope"></i> Email Payment Link
         </button>
 

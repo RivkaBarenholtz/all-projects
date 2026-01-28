@@ -484,6 +484,7 @@ namespace InsTechClassesV2.AppliedEpic
                     {
                         Status = "Success";
                         Console.WriteLine($"We successfully applied payment detail {detail.DetailItemID} to invoice {invoiceNumber} in Applied Epic for receipt {receiptId}.");
+                        log.InvoiceMessage = $"Payment applied to invoice # {invoiceNumber} ";
                     }
                     else
                     {
