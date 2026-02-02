@@ -177,7 +177,7 @@ If you have any questions or need assistance, please let us know`;
         </div>
 
         <div style={{ marginLeft: '5px', marginTop: '20px', textDecoration: 'underline', display: 'flex' }}>
-          Actions
+          
         </div>
 
         <div style={{ margin: '5px', display: 'flex', gap: '6px' }}>
