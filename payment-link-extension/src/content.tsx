@@ -22,7 +22,7 @@ async function waitForDOM(): Promise<void> {
   });
 }
 async function getSubdomain(): Promise<string> {
-  
+
   const isDevelop = await isDeveloperMode();
 
   // if (isDevelop) {
@@ -37,7 +37,7 @@ async function getSubdomain(): Promise<string> {
   const response = await fetch(
     `https://ins-dev.instechpay.co/pay/get-subdomain?subdomain=${epicSubdomain}&accountid=${lookupCode}`
   );
-  
+
   return await response.text();
 }
 
@@ -94,39 +94,38 @@ const isDeveloperMode = (): boolean => {
 async function injectButton(targetParent: HTMLElement) {
   addCustomSidebarButton();
 
-  
-  
+
+
 }
 
-async function CreateModal()
-{
-    const modal = document.createElement('div');
-    modal.id = 'customModalOverlay';
-    // const htmlFontSize = getComputedStyle(document.documentElement).fontSize;
-    // modal.style.fontSize = htmlFontSize;
-    
-    document.body.appendChild(modal);
+async function CreateModal() {
+  const modal = document.createElement('div');
+  modal.id = 'customModalOverlay';
+  // const htmlFontSize = getComputedStyle(document.documentElement).fontSize;
+  // modal.style.fontSize = htmlFontSize;
 
-    const shadow = modal.attachShadow({ mode: 'open' });
-    
+  document.body.appendChild(modal);
 
-    const cssUrl = chrome.runtime.getURL('styles/fonts.css');
-    const response = await fetch(cssUrl);
-    const cssText = await response.text();
+  const shadow = modal.attachShadow({ mode: 'open' });
 
-    const style = document.createElement('style');
-    style.textContent = cssText;
-    shadow.appendChild(style);
 
-    const fontAwesomeCssUrl = chrome.runtime.getURL('styles/all.min.css');
-    const fontAwesomeCssResponse = await fetch(fontAwesomeCssUrl);
-    const fontAwesomeCssText = await fontAwesomeCssResponse.text();
+  const cssUrl = chrome.runtime.getURL('styles/fonts.css');
+  const response = await fetch(cssUrl);
+  const cssText = await response.text();
 
-    const fontAwesomeStyle = document.createElement('style');
-    fontAwesomeStyle.textContent = fontAwesomeCssText;
-    shadow.appendChild(fontAwesomeStyle);
+  const style = document.createElement('style');
+  style.textContent = cssText;
+  shadow.appendChild(style);
 
-    modal.style.cssText = `
+  const fontAwesomeCssUrl = chrome.runtime.getURL('styles/all.min.css');
+  const fontAwesomeCssResponse = await fetch(fontAwesomeCssUrl);
+  const fontAwesomeCssText = await fontAwesomeCssResponse.text();
+
+  const fontAwesomeStyle = document.createElement('style');
+  fontAwesomeStyle.textContent = fontAwesomeCssText;
+  shadow.appendChild(fontAwesomeStyle);
+
+  modal.style.cssText = `
           position: fixed;
           top: 0; left: 0;
           width: 100vw;
@@ -139,11 +138,13 @@ async function CreateModal()
           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         `;
 
-    return shadow;
+  return shadow;
 }
 
 
 async function showModal() {
+
+
 
   //  let externalFieldRoot = null;
   //   const fieldContainer = document.createElement("div");
@@ -161,67 +162,14 @@ async function showModal() {
     subdomain = await getSubdomain();
   }
 
-  const shadow = await  CreateModal()
-
-    // element where React renders
-    const mountPoint = document.createElement("div");
-    shadow.appendChild(mountPoint);
-
-    // create root inside shadow
-    modalRoot = ReactDOM.createRoot(mountPoint);
-  
-   
-
-  if (modalRoot) {
-    modalRoot.render(
-      <React.StrictMode>
-        <MainPage onClose={hideModal} subdomain={subdomain} isDev = {isDeveloperMode()} />
-      </React.StrictMode>
-    );
-  }
-}
-
-function hideModal() {
-  if (modalRoot) {
-    const modalContainer = document.getElementById('customModalOverlay');
-    
-    if (modalContainer) {
-      modalRoot.render(<></>);
-    }
-     const overlay = document.getElementById('customModalOverlay');
-    if (overlay) overlay.remove();
-
-  }
-}
-
-async function waitForDivWithFallback(timeout = 10000) {
-  const observer = new MutationObserver(async () => {
-    const targetDiv = document.querySelector('div[data-automation-id="fraAccount"]');
-    if (targetDiv) {
-      await injectButton(targetDiv as HTMLElement);
-      clearTimeout(fallbackTimer);
-      
-    }
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  const fallbackTimer = setTimeout(async () => {
-    
-    await injectButton(document.body);
-  }, timeout);
-}
+  const shadow = await CreateModal()
 
 
-// Initialize
-async function initializeExtension(epicData: any) {
-
-  
-if (!document.getElementById('font-style')) {
+  if (!document.getElementById('font-style')) {
 
     const style = document.createElement('style');
-    style.id='font-style';
-        style.textContent = `
+    style.id = 'font-style';
+    style.textContent = `
         @font-face {
             font-family: 'Inter';
             font-style: normal;
@@ -291,9 +239,64 @@ if (!document.getElementById('font-style')) {
 
         `;
 
-// Append to shadow root
-document.head.appendChild(style);
+    // Append to shadow root
+    shadow.appendChild(style);
+  }
+
+  // element where React renders
+  const mountPoint = document.createElement("div");
+  shadow.appendChild(mountPoint);
+
+  // create root inside shadow
+  modalRoot = ReactDOM.createRoot(mountPoint);
+
+
+
+  if (modalRoot) {
+    modalRoot.render(
+      <React.StrictMode>
+        <MainPage onClose={hideModal} subdomain={subdomain} isDev={isDeveloperMode()} />
+      </React.StrictMode>
+    );
+  }
 }
+
+function hideModal() {
+  if (modalRoot) {
+    const modalContainer = document.getElementById('customModalOverlay');
+
+    if (modalContainer) {
+      modalRoot.render(<></>);
+    }
+    const overlay = document.getElementById('customModalOverlay');
+    if (overlay) overlay.remove();
+
+  }
+}
+
+async function waitForDivWithFallback(timeout = 10000) {
+  const observer = new MutationObserver(async () => {
+    const targetDiv = document.querySelector('div[data-automation-id="fraAccount"]');
+    if (targetDiv) {
+      await injectButton(targetDiv as HTMLElement);
+      clearTimeout(fallbackTimer);
+
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  const fallbackTimer = setTimeout(async () => {
+
+    await injectButton(document.body);
+  }, timeout);
+}
+
+
+// Initialize
+async function initializeExtension(epicData: any) {
+
+
 
   console.log("Initializing InsureTech content script…", epicData);
 
