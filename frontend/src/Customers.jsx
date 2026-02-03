@@ -14,13 +14,7 @@ export default function Customers() {
 
 
    const [headers, setHeaders] = useState([
-      {
-         DisplayValue: "Customer ID",
-         Show: true,
-         Value: "CustomerId",
-         SortString: "CustomerId",
-         SortAsc: true
-      },
+      
       {
          DisplayValue: "First Name",
          Show: true,
@@ -88,14 +82,13 @@ export default function Customers() {
       //    SortAsc: true
       //  },
 
-
-      //  {
-      //    DisplayValue:"CSR Email", 
-      //    Show: false, 
-      //    Value:  "xCustom03",
-      //    SortString : "CsrEmail",
-      //    SortAsc: true
-      //  }
+   {
+         DisplayValue: "Customer ID",
+         Show: true,
+         Value: "CustomerId",
+         SortString: "CustomerId",
+         SortAsc: true
+      }
 
    ])
 
@@ -104,7 +97,7 @@ export default function Customers() {
    async function getData() {
       const req = {
          NextToken: nextToken,
-         PageSize: 10
+         PageSize: 100
       }
 
       const response = await fetchWithAuth("list-customers", req)
@@ -125,13 +118,15 @@ export default function Customers() {
 
    useEffect(() => {
 
-    
-      getData()
+      if (data.length === 0 || (nextToken != null && nextToken !== undefined && nextToken !== "")) {
+         getData()
+      }
 
 
    }
 
-      , [])
+      , [nextToken])
+
 
    function sortData( field, ascending = true) {
        const sortedData = Sort (data, field, ascending)
@@ -180,7 +175,7 @@ export default function Customers() {
          headerList={headers} 
          SetHeaderList={setHeaders} 
          Sort={sortData} 
-         footerObjects={<a className = "view-more" onClick={getData}> View More  </a>}/>
+         />
       
       <SuccessModal/>
    </>

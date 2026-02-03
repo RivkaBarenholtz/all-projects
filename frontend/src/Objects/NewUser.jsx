@@ -61,6 +61,9 @@ export const NewUser = ({ CloseNewUser, OnSuccess }) => {
                 <select value={role} onChange={(e) => setRole(e.target.value)}>
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
+                    <option value="sales">Sales Only</option>
+                    <option value="viewer">Viewer</option>
+                   
                 </select>
             </div>
         </div>
