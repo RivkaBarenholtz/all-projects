@@ -8,6 +8,7 @@ import TransactionDetail from './Objects/TransactionDetail';
 import { ColumnDropdown } from './Objects/ColumnDropdown';
 import { Car, X } from 'lucide-react';
 import cardknoxErrors from './Data/ErrorCodes.json';
+import { ConfirmationModal } from './Objects/ConfimationModal';
 import { Card } from './Components/UI/card';
 
 function Transactions({ user }) {
@@ -24,6 +25,7 @@ function Transactions({ user }) {
   const [customBeginDate, setCustomBeginDate] = useState(new Date());
   const [customEndDate, setCustomEndDate] = useState(new Date());
   const [accountID, setAccountID] = useState("")
+  const [showSuccess , setShowSuccess] = useState(false);
 
 
 
@@ -626,6 +628,16 @@ function Transactions({ user }) {
           role={user?.Role?.toLowerCase()}
         />
       }
+      {
+        showSuccess && <ConfirmationModal 
+        
+        onClose={() => {setShowSuccess(false); search(getFilters());}} 
+        showButton = {false}>
+          <div>
+            <h2> Transaction Successful</h2>
+          </div>
+        </ConfirmationModal>
+      }
 
       <div className="transactions-page">
         {showNewTransScreen && (
@@ -641,10 +653,10 @@ function Transactions({ user }) {
               <PaymentForm
                 isPortal={true}
                 onSuccess={() => {
-                  setTimeout(() => {
+                 
                     setShowNewTransScreen(false);
-                    search(getFilters());
-                  }, 4000)
+                    setShowSuccess(true);
+                   
                 }}
               />
             </div>
