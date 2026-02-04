@@ -50,10 +50,10 @@ namespace InsTechClassesV2
 
         }
 
-        public static async Task<List<Cognito>> GetUsersAsync(int VendorId)//probably very bad performance wise - if it takes too long think of a better way 
+        public static async Task<List<Cognito>> GetUsersAsync(int VendorId)
         {
             var s3 = new AmzS3Bucket("insure-tech-vendor-data", "Users.jsonl");
-            List<Cognito> users = await s3.QueryJsonLinesAsync<Cognito>($"s.vendorId={VendorId}");
+            List<Cognito> users = await s3.QueryJsonLinesAsync<Cognito>($"s.vendorId={VendorId} ");
        
             return users;
         }

@@ -14,6 +14,7 @@ namespace AmazonUtilities
         private string userPoolId = "us-east-1_guWlEt63Z";
         public string Email { get; set; }
         public string AddedBy { get; set; }
+        public bool Hide { get; set; } = false;
         public bool Disabled { get; set; } = false;
         public string Password { get; set; }
         public string FullName { get; set; }
