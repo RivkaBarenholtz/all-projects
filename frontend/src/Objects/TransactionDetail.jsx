@@ -7,7 +7,7 @@ import { PrintPDFButton, DownloadPDFButton, ReceiptButton } from "./PrintPdfButt
 import { EmailModal } from "./EmailModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
-export default function TransactionDetail({ transaction, onClose, getTransactions }) {
+export default function TransactionDetail({ transaction, onClose, getTransactions, role }) {
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -165,11 +165,15 @@ export default function TransactionDetail({ transaction, onClose, getTransaction
                       </div>
                     }
                   </div>
-                  <div className="trd-section">
+                  
+                 { role === "admin" || role == "user" && <>
+                 
+                 <div className="trd-section">
                     <h3 className="trd-section-title">Transaction Actions</h3>
                   </div>
                   <TransactionActionDropdown getTransactions={() => { getTransactions(); onClose(); }} transaction={transaction} />
-                </div>
+                 </>}
+             </div>
 
 
               </div>

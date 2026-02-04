@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { fetchWithAuth, FormatCurrency } from './Utilities'; 
+import { fetchWithAuth, FormatCurrency } from './Utilities';
 import { Grid } from './Objects/Grid';
 
 import PaymentForm from './PaymentPage/PaymentForm'
@@ -10,206 +10,206 @@ import { Car, X } from 'lucide-react';
 import cardknoxErrors from './Data/ErrorCodes.json';
 import { Card } from './Components/UI/card';
 
-function Transactions() {
- // const sixDaysAgo = new Date() - 6 
-  const [beginDate, setBeginDate]= useState(new Date(new Date().setDate(new Date().getDate() - 6)))
-  const [endDate, setEndDate]= useState(new Date)
+function Transactions({ user }) {
+  // const sixDaysAgo = new Date() - 6 
+  const [beginDate, setBeginDate] = useState(new Date(new Date().setDate(new Date().getDate() - 6)))
+  const [endDate, setEndDate] = useState(new Date)
   const [showError, setShowError] = useState(false)
-  const [activePage, setActivePage] = useState (1);
-   const [filters, setFilters] = useState({});
-  const [totalResults , setTotalResults] =useState(0);
-  const [total, setTotal ]= useState(0);
-  const [selectedTransaction, setSelectedTransaction ] = useState(null);
-  const [showCustomDateRange,setShowCustomDateRange]= useState(false); 
-  const [customBeginDate,setCustomBeginDate]= useState(new Date()); 
-  const [customEndDate,setCustomEndDate]= useState(new Date()); 
-  const [accountID , setAccountID ]= useState("")
-  
+  const [activePage, setActivePage] = useState(1);
+  const [filters, setFilters] = useState({});
+  const [totalResults, setTotalResults] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [showCustomDateRange, setShowCustomDateRange] = useState(false);
+  const [customBeginDate, setCustomBeginDate] = useState(new Date());
+  const [customEndDate, setCustomEndDate] = useState(new Date());
+  const [accountID, setAccountID] = useState("")
+
 
 
 
   const [headers, setHeaders] = useState([
     {
-      DisplayValue:"Ref #", 
-      Show: true, 
-      Value:  "xRefNumHtml",
+      DisplayValue: "Ref #",
+      Show: true,
+      Value: "xRefNumHtml",
       FilterValue: "xRefNum",
-      SortString : "RefNumber", 
+      SortString: "RefNumber",
       FilterType: "text",
       SortAsc: true
     },
-   {
-      DisplayValue:"Date", 
-      Show: true, 
-      Value:  "EnteredDateFormatted",
+    {
+      DisplayValue: "Date",
+      Show: true,
+      Value: "EnteredDateFormatted",
       FilterValue: "xEnteredDate",
-      SortString :"Date",
+      SortString: "Date",
       FilterType: "none",
       SortAsc: false
     },
     {
-      DisplayValue:"Status", 
-      Show: true, 
-      Value:  "StatusHtml",
-      SortString : "Status", 
+      DisplayValue: "Status",
+      Show: true,
+      Value: "StatusHtml",
+      SortString: "Status",
       FilterValue: "StatusString",
       SortAsc: true
     },
 
     {
-      DisplayValue:"Funded", 
-      Show: false, 
-      Value:  "AmountFundedFormatted",
-      SortString : "FundedAmount", 
+      DisplayValue: "Funded",
+      Show: false,
+      Value: "AmountFundedFormatted",
+      SortString: "FundedAmount",
       FilterValue: "AmountFunded",
       FilterType: "number",
       SortAsc: true
     },
-    
-    
+
+
     {
-      DisplayValue:"Fee", 
-      Show: false, 
-      Value:  "CreditCardFormatted",
+      DisplayValue: "Fee",
+      Show: false,
+      Value: "CreditCardFormatted",
       FilterValue: "CreditCardFee",
       FilterType: "number",
       SortString: "TransactionFee",
       SortAsc: true
     },
-    
-    
+
+
     {
-      DisplayValue:"Total", 
-      Show: true, 
-      Value:  "AmountFormatted",
+      DisplayValue: "Total",
+      Show: true,
+      Value: "AmountFormatted",
       FilterValue: "xAmount",
-      SortString : "Amount",
+      SortString: "Amount",
       FilterType: "number",
       SortAsc: true
     },
-    
+
 
     {
-      DisplayValue:"Cardholder", 
-      Show: true, 
-      Value:  "xName",
+      DisplayValue: "Cardholder",
+      Show: true,
+      Value: "xName",
       FilterValue: "xName",
-      SortString:"Name",
+      SortString: "Name",
       FilterType: "text",
       SortAsc: true
     },
     {
-      DisplayValue:"Account ID", 
-      Show: true, 
-      Value:  "xBillLastName",
-      SortString : "xBillLastName",
+      DisplayValue: "Account ID",
+      Show: true,
+      Value: "xBillLastName",
+      SortString: "xBillLastName",
       FilterValue: "xBillLastName",
       FilterType: "text",
       SortAsc: true
     },
     {
-      DisplayValue:"Account #", 
-      Show: true, 
-      Value:  "xMaskedAccountNumberHtml",
+      DisplayValue: "Account #",
+      Show: true,
+      Value: "xMaskedAccountNumberHtml",
       FilterValue: "xMaskedAccountNumber",
-      SortString : "MaskedAccountNumber",
+      SortString: "MaskedAccountNumber",
       FilterType: "text",
       SortAsc: true
     },
-    
+
     {
-      DisplayValue:"Payment Method", 
-      Show: false, 
-      Value:  "xPaymentMethodHtml",
+      DisplayValue: "Payment Method",
+      Show: false,
+      Value: "xPaymentMethodHtml",
       FilterValue: "PaymentMethod",
-      SortString : "PaymentMethod",
+      SortString: "PaymentMethod",
       SortAsc: true
     },
-    
+
     {
-      DisplayValue:"Command", 
-      Show: true, 
-      Value:  "xCommand",
+      DisplayValue: "Command",
+      Show: true,
+      Value: "xCommand",
       FilterValue: "xCommand",
       SortString: "Command",
       SortAsc: true
     },
-    
-  
+
+
 
     {
-      DisplayValue:"Error",
+      DisplayValue: "Error",
       Show: true,
-      Value:  "ErrorDescription",
+      Value: "ErrorDescription",
       FilterValue: "ErrorDescription",
-      SortString : "ResponseCode",
+      SortString: "ResponseCode",
     },
-    
+
     {
-      DisplayValue:"Description", 
-      Show: false, 
-      Value:  "xDescription",
+      DisplayValue: "Description",
+      Show: false,
+      Value: "xDescription",
       FilterValue: "xDescription",
-      SortString : "Description",
+      SortString: "Description",
       FilterType: "text",
       SortAsc: true
     },
-    
-    
+
+
     {
-      DisplayValue:"Customer ID", 
-      Show: false, 
-      Value:  "xCustom01",
+      DisplayValue: "Customer ID",
+      Show: false,
+      Value: "xCustom01",
       FilterValue: "xCustom01",
       SortString: "CardknoxCustomer",
       FilterType: "text",
       SortAsc: true
     },
-    
-    
+
+
     {
-      DisplayValue:"CSR Code", 
-      Show: false, 
-      Value:  "xCustom02",
-      SortString : "CsrCode",
+      DisplayValue: "CSR Code",
+      Show: false,
+      Value: "xCustom02",
+      SortString: "CsrCode",
       FilterType: "text",
       SortAsc: true
     },
-    
-    
+
+
     {
-      DisplayValue:"CSR Email", 
-      Show: false, 
-      Value:  "xCustom03",
-      SortString : "CsrEmail",
+      DisplayValue: "CSR Email",
+      Show: false,
+      Value: "xCustom03",
+      SortString: "CsrEmail",
       FilterType: "text",
       SortAsc: true
     }
-    
+
   ])
-  const [transactions , setTransactions] = useState([])
-  const [previousOption , setPreviousOption ]= useState ({})
-  const [selectedOption , setSelectedOption] = useState( {
-      label: "Last 7 Days",
-      value: 'Last7'
-    });
-  const [showNewTransScreen , setShowNewTransScreen] = useState(false); 
-  const [refNum , setRefNum ]= useState("")
+  const [transactions, setTransactions] = useState([])
+  const [previousOption, setPreviousOption] = useState({})
+  const [selectedOption, setSelectedOption] = useState({
+    label: "Last 7 Days",
+    value: 'Last7'
+  });
+  const [showNewTransScreen, setShowNewTransScreen] = useState(false);
+  const [refNum, setRefNum] = useState("")
 
   const customDateRef = useRef()
 
-   useEffect(() => {
-   // setShowCustomDateRange(false);
+  useEffect(() => {
+    // setShowCustomDateRange(false);
     function handleClickOutside(event) {
-        if (customDateRef.current && !customDateRef.current.contains(event.target)) {
-            setSelectedOption(previousOption);
-            setShowCustomDateRange(false);
-        }
+      if (customDateRef.current && !customDateRef.current.contains(event.target)) {
+        setSelectedOption(previousOption);
+        setShowCustomDateRange(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-}, [previousOption]);
-        
+  }, [previousOption]);
+
 
   const dateRangeOptions = [
     {
@@ -245,229 +245,223 @@ function Transactions() {
       value: 'Last90'
     },
     {
-      label: "Custom Range", 
-      value : "Custom"
+      label: "Custom Range",
+      value: "Custom"
     }
   ]
 
   const [pmntMethodOptions, setPaymentMethodOptions] = useState([
 
     {
-      label:"Wire",
-      value: "Wire", 
+      label: "Wire",
+      value: "Wire",
       isSelected: true
 
     },
     {
-      label:"Credit Card",
-      value: "CC", 
+      label: "Credit Card",
+      value: "CC",
       isSelected: true
 
     },
     {
-      label : "Check",
-      value: "Check", 
+      label: "Check",
+      value: "Check",
       isSelected: true
     }
   ]);
 
   const [statusOptions, setStatusOptions] = useState([
     {
-      label:"Approved",
-      value:"21", 
+      label: "Approved",
+      value: "21",
       isSelected: true
-    }, 
+    },
     {
       label: "Approved-Pending",
-      value: "22", 
-      isSelected : true
-    }, 
+      value: "22",
+      isSelected: true
+    },
     {
       label: "ACH Returned",
-      value: "23", 
-      isSelected : true
-    }, 
+      value: "23",
+      isSelected: true
+    },
     {
       label: "Declined",
       value: "24",
-      isSelected : true
-    }, 
+      isSelected: true
+    },
     {
       label: "Error",
-      value: "25", 
-      isSelected:true
+      value: "25",
+      isSelected: true
     }
 
 
   ]
   )
- 
-  const getFilters = ()=> 
-  {
-    const filteredOption = statusOptions.filter(a=>a.isSelected);
-    const filteredPmntMethods = pmntMethodOptions.filter(a=> a.isSelected);
-    return  {
-      TransactionsPerPage: 100000, 
+
+  const getFilters = () => {
+    const filteredOption = statusOptions.filter(a => a.isSelected);
+    const filteredPmntMethods = pmntMethodOptions.filter(a => a.isSelected);
+    return {
+      TransactionsPerPage: 100000,
       PageNumber: activePage,
-      SortBy : "Date", 
-      isAsc:false, 
-      FromDate : beginDate, 
-      ToDate: endDate, 
+      SortBy: "Date",
+      isAsc: false,
+      FromDate: beginDate,
+      ToDate: endDate,
       IncludeError: showError,
-      RefNum :refNum, 
-      Statuses : filteredOption.length == statusOptions.length?[-1]:statusOptions.filter(a=>a.isSelected).map(f=> f.value), 
-      PaymentMethods : filteredPmntMethods.length == pmntMethodOptions.length?["ALL"]:pmntMethodOptions.filter(a=>a.isSelected).map(f=> f.value),
+      RefNum: refNum,
+      Statuses: filteredOption.length == statusOptions.length ? [-1] : statusOptions.filter(a => a.isSelected).map(f => f.value),
+      PaymentMethods: filteredPmntMethods.length == pmntMethodOptions.length ? ["ALL"] : pmntMethodOptions.filter(a => a.isSelected).map(f => f.value),
       AccountID: accountID
 
 
     }
 
-  } 
+  }
 
   const paymentErrorMap = Object.fromEntries(
     cardknoxErrors.map(e => [e.code, e.message])
   );
 
-  const search = async (filters)=>{
-      const response = await fetchWithAuth("transaction-report", filters);
-      var responseFormatted = response.xReportData.map((trans)=> 
-      {
-        
-        const date = new Date(trans.xEnteredDate);
-        const localDateString = date.toLocaleDateString('en-US');
+  const search = async (filters) => {
+    const response = await fetchWithAuth("transaction-report", filters);
+    var responseFormatted = response.xReportData.map((trans) => {
+
+      const date = new Date(trans.xEnteredDate);
+      const localDateString = date.toLocaleDateString('en-US');
 
 
-        return {... trans, 
-          xRefNumHtml : <div style={{display:"flex"}}><span className='transaction-id'> {trans.xRefNum}</span> {trans.xVoid == 1  && <span className='void-span'>Void</span>} </div>,
-          EnteredDateFormatted: localDateString, 
-          xMaskedAccountNumberHtml: CardHtml(trans.xMaskedAccountNumber, trans.xCardType, trans.xCommand),
-          CreditCardFormatted: <span className={`'amount ' ${trans.xVoid == 1 ? "void": ""}`}> {FormatCurrency(trans.xCustom09 * (trans.xAmount != 0 ?trans.xAmount/ Math.abs(trans.xAmount): 1))??'$0.00' }</span>,
-          AmountFundedFormatted: trans.xCustom10 == 0 || trans.xCustom10 == null?AmountHtml(trans.xAmount, trans.xVoid == 1 ): AmountHtml(trans.xCustom10 * (trans.xAmount != 0 ?trans.xAmount/ Math.abs(trans.xAmount): 1), trans.xVoid == 1 ) ,
-          StatusHtml: StatusHtml(trans.xResponseResult, trans.xStatus, trans.xCommand) ,
-          AmountFormatted:AmountHtml(trans.xAmount, trans.xVoid == 1 ), 
-          AmountFunded : trans.xCustom10 && trans.xCustom10 > 0 ? trans.xCustom10 * (trans.xAmount != 0 ?trans.xAmount/ Math.abs(trans.xAmount): 1) : trans.xAmount,
-          StatusString : GetStatusString(trans.xResponseResult, trans.xStatus, trans.xCommand),
-          CreditCardFee:trans.xCustom09 * (trans.xAmount !=    0 ?trans.xAmount/ Math.abs(trans.xAmount): 1),
-          ErrorDescription: paymentErrorMap[Number(trans.xErrorCode)]|| "", 
-          xPaymentMethodHtml: <>{CardImage( trans.xCardType, trans.xCommand)} <span className="card-last4"> {PaymentMethod(trans.xCardType, trans.xCommand)}</span></>,
-          PaymentMethod: PaymentMethod(trans.xCardType, trans.xCommand),
-          className: trans.xResponseResult.toLowerCase()=="approved"? "": "not-counted"
-        }
-      })
+      return {
+        ...trans,
+        xRefNumHtml: <div style={{ display: "flex" }}><span className='transaction-id'> {trans.xRefNum}</span> {trans.xVoid == 1 && <span className='void-span'>Void</span>} </div>,
+        EnteredDateFormatted: localDateString,
+        xMaskedAccountNumberHtml: CardHtml(trans.xMaskedAccountNumber, trans.xCardType, trans.xCommand),
+        CreditCardFormatted: <span className={`'amount ' ${trans.xVoid == 1 ? "void" : ""}`}> {FormatCurrency(trans.xCustom09 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1)) ?? '$0.00'}</span>,
+        AmountFundedFormatted: trans.xCustom10 == 0 || trans.xCustom10 == null ? AmountHtml(trans.xAmount, trans.xVoid == 1) : AmountHtml(trans.xCustom10 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1), trans.xVoid == 1),
+        StatusHtml: StatusHtml(trans.xResponseResult, trans.xStatus, trans.xCommand),
+        AmountFormatted: AmountHtml(trans.xAmount, trans.xVoid == 1),
+        AmountFunded: trans.xCustom10 && trans.xCustom10 > 0 ? trans.xCustom10 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1) : trans.xAmount,
+        StatusString: GetStatusString(trans.xResponseResult, trans.xStatus, trans.xCommand),
+        CreditCardFee: trans.xCustom09 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1),
+        ErrorDescription: paymentErrorMap[Number(trans.xErrorCode)] || "",
+        xPaymentMethodHtml: <>{CardImage(trans.xCardType, trans.xCommand)} <span className="card-last4"> {PaymentMethod(trans.xCardType, trans.xCommand)}</span></>,
+        PaymentMethod: PaymentMethod(trans.xCardType, trans.xCommand),
+        className: trans.xResponseResult.toLowerCase() == "approved" ? "" : "not-counted"
+      }
+    })
     setTransactions(responseFormatted);
     setTotalResults(response.xRecordsReturned);
     setTotal(response.xResult);
   }
-  const AmountHtml = (amt, isVoided ) =>{
-    if(isVoided) return  <span className='amount void'>{FormatCurrency(amt)}</span>
-   return amt>= 0 ?  <span className='amount positive'>{FormatCurrency(amt)}</span>:
-   <span className='amount negative'>{FormatCurrency(amt)}</span>
+  const AmountHtml = (amt, isVoided) => {
+    if (isVoided) return <span className='amount void'>{FormatCurrency(amt)}</span>
+    return amt >= 0 ? <span className='amount positive'>{FormatCurrency(amt)}</span> :
+      <span className='amount negative'>{FormatCurrency(amt)}</span>
   }
 
-const GetStatusString = (responseResult, achStatus, command) => {
+  const GetStatusString = (responseResult, achStatus, command) => {
     const ach =
-    responseResult === "Approved"
-      ? achStatus === "14"
-        ? "Approved-Chargeback"
-        : achStatus === "16"
-        ? "Approved-Settled"
-        : "Approved-Pending"
-      : responseResult;
+      responseResult === "Approved"
+        ? achStatus === "14"
+          ? "Approved-Chargeback"
+          : achStatus === "16"
+            ? "Approved-Settled"
+            : "Approved-Pending"
+        : responseResult;
 
-  const isAch = command === "Check:Sale";
-  const isWire = command === "Send Wire";
+    const isAch = command === "Check:Sale";
+    const isWire = command === "Send Wire";
 
-  const statusString = isAch ? ach : isWire? achStatus :responseResult;
-  return statusString;
+    const statusString = isAch ? ach : isWire ? achStatus : responseResult;
+    return statusString;
 
-}
-
-const StatusHtml = (responseResult, achStatus, command) => {
-
-
-  const statusString = GetStatusString  (responseResult, achStatus, command);
-
-  let classes = "status ";
-
-  switch (statusString.toLowerCase()) {
-    case "approved":
-    case "approved-settled": // ✅ stack case labels
-    case "confirmed":
-      classes += "approved";
-      break;
-
-    case "approved-chargeback":
-      classes += "chargeback";
-      break;
-
-    case "approved-pending":
-    case "unconfirmed":
-      classes += "pending";
-      break;
-    
-
-
-    default:
-      classes += "error";
-      break;
   }
 
-  return <span className={classes}>{statusString}</span>;
-};
-
-const CardHtml =(maskedNumber,  xCardType, xCommand)=>
-{
-  
-   return <div style={{display:"flex"}}>
-
-    {CardImage( xCardType, xCommand)}
-    <span className="card-last4">{`****${maskedNumber.replace(/x/gi, "")}`}</span>
-</div>
-}
-
-const PaymentMethod =(xCardType, xCommand)=>
-{
-  if (xCommand.startsWith("Check")) return "ACH";
-  if (xCommand.startsWith("Send Wire")) return "Wire";
-  return xCardType;
-}
-const CardImage =( xCardType, xCommand)=>
-{
-  let  imgSrc="";
-  if (xCommand.startsWith("Check")) imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/ach.svg";
-  if (xCommand.startsWith("Send Wire")) imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/wire.svg";
-  if (xCardType === "Visa") imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/visa.svg";
-  if(xCardType === "MasterCard") imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/mastercard.svg";
-  if(xCardType === "Amex") imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/amex.svg";
-  if(xCardType === "Discover") imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/discover.svg";
-  
-   return <img src={imgSrc} className="pm-logo"></img>
-    
-}
+  const StatusHtml = (responseResult, achStatus, command) => {
 
 
-  const defaultSearch = async()=> 
-  {
+    const statusString = GetStatusString(responseResult, achStatus, command);
+
+    let classes = "status ";
+
+    switch (statusString.toLowerCase()) {
+      case "approved":
+      case "approved-settled": // ✅ stack case labels
+      case "confirmed":
+        classes += "approved";
+        break;
+
+      case "approved-chargeback":
+        classes += "chargeback";
+        break;
+
+      case "approved-pending":
+      case "unconfirmed":
+        classes += "pending";
+        break;
+
+
+
+      default:
+        classes += "error";
+        break;
+    }
+
+    return <span className={classes}>{statusString}</span>;
+  };
+
+  const CardHtml = (maskedNumber, xCardType, xCommand) => {
+
+    return <div style={{ display: "flex" }}>
+
+      {CardImage(xCardType, xCommand)}
+      <span className="card-last4">{`****${maskedNumber.replace(/x/gi, "")}`}</span>
+    </div>
+  }
+
+  const PaymentMethod = (xCardType, xCommand) => {
+    if (xCommand.startsWith("Check")) return "ACH";
+    if (xCommand.startsWith("Send Wire")) return "Wire";
+    return xCardType;
+  }
+  const CardImage = (xCardType, xCommand) => {
+    let imgSrc = "";
+    if (xCommand.startsWith("Check")) imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/ach.svg";
+    if (xCommand.startsWith("Send Wire")) imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/wire.svg";
+    if (xCardType === "Visa") imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/visa.svg";
+    if (xCardType === "MasterCard") imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/mastercard.svg";
+    if (xCardType === "Amex") imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/amex.svg";
+    if (xCardType === "Discover") imgSrc = "https://bz-sandbox.s3.us-east-1.amazonaws.com/discover.svg";
+
+    return <img src={imgSrc} className="pm-logo"></img>
+
+  }
+
+
+  const defaultSearch = async () => {
     const filters = getFilters();
 
     await search(filters)
   }
 
- const ApplyFilters = async ()=> 
- {
-  setActivePage(1);
-  const filters = {
-    ...getFilters(),
-    PageNumber:1 
+  const ApplyFilters = async () => {
+    setActivePage(1);
+    const filters = {
+      ...getFilters(),
+      PageNumber: 1
+    }
+    await search(filters)
   }
-  await search(filters)
- }
 
   const setCustomDateRange = () => {
-   
+
     const diffMs = customEndDate - customBeginDate;
 
-  // Convert to days
+    // Convert to days
     const diffDays = diffMs / (1000 * 60 * 60 * 24);
 
     // Update dropdown label dynamically
@@ -487,44 +481,41 @@ const CardImage =( xCardType, xCommand)=>
   }
 
 
- const ExportToCsv= async () => 
- {  
-   const filters = {
-    ...getFilters(), 
-    TransactionsPerPage : 1000000, 
-    PageNumber : 1 
-   }
-   const responseText = await fetchWithAuth("export-transactions-to-csv", filters, true);
-   const blob = new Blob([responseText], { type: "text/csv" });
-   const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "transactions.csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      // Clean up the object URL
-      URL.revokeObjectURL(link.href);
- 
- }
-
-  useEffect(()=>
-    {
-
-      async function getData(){
-        await defaultSearch()
-      }
-      getData()
+  const ExportToCsv = async () => {
+    const filters = {
+      ...getFilters(),
+      TransactionsPerPage: 1000000,
+      PageNumber: 1
     }
-   
-  ,[activePage])
+    const responseText = await fetchWithAuth("export-transactions-to-csv", filters, true);
+    const blob = new Blob([responseText], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "transactions.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
-  const ChangeOption = (option)=> {
-    
-    if(option == "Custom")
-    {
-      setPreviousOption({...selectedOption});
-      setShowCustomDateRange(true); 
+    // Clean up the object URL
+    URL.revokeObjectURL(link.href);
+
+  }
+
+  useEffect(() => {
+
+    async function getData() {
+      await defaultSearch()
+    }
+    getData()
+  }
+
+    , [activePage])
+
+  const ChangeOption = (option) => {
+
+    if (option == "Custom") {
+      setPreviousOption({ ...selectedOption });
+      setShowCustomDateRange(true);
     }
 
     const optionObj = dateRangeOptions.find((o) => o.value === option);
@@ -536,7 +527,7 @@ const CardImage =( xCardType, xCommand)=>
         setEndDate(new Date());
         break;
       }
-    
+
       case "Yesterday": {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
@@ -544,7 +535,7 @@ const CardImage =( xCardType, xCommand)=>
         setEndDate(new Date(yesterday.setHours(23, 59, 59, 999)));
         break;
       }
-    
+
       case "ThisMonth": {
         const today = new Date();
         const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -552,7 +543,7 @@ const CardImage =( xCardType, xCommand)=>
         setEndDate(new Date());
         break;
       }
-    
+
       case "LastMonth": {
         const today = new Date();
         const firstOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -563,7 +554,7 @@ const CardImage =( xCardType, xCommand)=>
         setEndDate(lastOfLastMonth);
         break;
       }
-    
+
       case "Last7": {
         const today = new Date();
         const start = new Date();
@@ -572,7 +563,7 @@ const CardImage =( xCardType, xCommand)=>
         setEndDate(new Date());
         break;
       }
-    
+
       case "Last30": {
         const today = new Date();
         const start = new Date();
@@ -581,7 +572,7 @@ const CardImage =( xCardType, xCommand)=>
         setEndDate(new Date());
         break;
       }
-    
+
       case "Last60": {
         const today = new Date();
         const start = new Date();
@@ -590,7 +581,7 @@ const CardImage =( xCardType, xCommand)=>
         setEndDate(new Date());
         break;
       }
-    
+
       case "Last90": {
         const today = new Date();
         const start = new Date();
@@ -600,25 +591,22 @@ const CardImage =( xCardType, xCommand)=>
         break;
       }
     }
-  } 
+  }
 
-  useEffect(()=>
-  {
-    if(!showCustomDateRange)
-    {
+  useEffect(() => {
+    if (!showCustomDateRange) {
       ApplyFilters();
     }
-  }, [beginDate, endDate] )
-  
-  
-  const Sort = async (sortBy, 
-    isAsc 
-  )=> 
-  {
+  }, [beginDate, endDate])
+
+
+  const Sort = async (sortBy,
+    isAsc
+  ) => {
     const filters = {
-      ...getFilters(), 
-      SortBy:sortBy,
-      IsAsc : isAsc
+      ...getFilters(),
+      SortBy: sortBy,
+      IsAsc: isAsc
     }
     search(filters);
   }
@@ -630,46 +618,47 @@ const CardImage =( xCardType, xCommand)=>
 
   return (
     <form>
-      {selectedTransaction && 
-        <TransactionDetail 
-          onClose={() => setSelectedTransaction(null)} 
-          transaction={selectedTransaction} 
-          getTransactions={defaultSearch} 
+      {selectedTransaction &&
+        <TransactionDetail
+          onClose={() => setSelectedTransaction(null)}
+          transaction={selectedTransaction}
+          getTransactions={defaultSearch}
+          role={user?.Role?.toLowerCase()}
         />
-   }
-      
+      }
+
       <div className="transactions-page">
         {showNewTransScreen && (
           <div className="modal-overlay">
-        <div className="modal">
-              <button 
-                onClick={() => setShowNewTransScreen(false)} 
-                type='button' 
+            <div className="modal">
+              <button
+                onClick={() => setShowNewTransScreen(false)}
+                type='button'
                 className="modal-close"
               >
                 &times;
               </button>
-              <PaymentForm 
-                isPortal={true} 
-                onSuccess={() => { 
-                  setShowNewTransScreen(false); 
+              <PaymentForm
+                isPortal={true}
+                onSuccess={() => {
+                  setShowNewTransScreen(false);
                   search(getFilters());
                 }}
               />
-        </div>
-      </div>
+            </div>
+          </div>
         )}
-        
-       
+
+
 
         {/* Dashboard Header */}
-      <div className="dashboard-header">
+        <div className="dashboard-header">
           <div className="header-left">
             <div className="date-section">
               <div className="date-controls">
                 <label>Date Range:</label>
-                <select 
-                  value={selectedOption.value} 
+                <select
+                  value={selectedOption.value}
                   onChange={(e) => ChangeOption(e.target.value)}
                   className="date-select"
                 >
@@ -679,18 +668,18 @@ const CardImage =( xCardType, xCommand)=>
                 </select>
                 {showCustomDateRange && (
                   <div className="custom-date-inputs" ref={customDateRef}>
-                    <input 
-                      type="date" 
-                      value={customBeginDate.toISOString().split('T')[0]} 
+                    <input
+                      type="date"
+                      value={customBeginDate.toISOString().split('T')[0]}
                       onChange={(e) => setCustomBeginDate(new Date(e.target.value))}
                     />
-                    <span style={{color: '#6b7280'}}>to</span>
-                    <input 
-                      type="date" 
-                      value={customEndDate.toISOString().split('T')[0]} 
+                    <span style={{ color: '#6b7280' }}>to</span>
+                    <input
+                      type="date"
+                      value={customEndDate.toISOString().split('T')[0]}
                       onChange={(e) => setCustomEndDate(new Date(e.target.value))}
                     />
-                    <button 
+                    <button
                       type='button'
                       className='btn-apply-date'
                       onClick={setCustomDateRange}
@@ -718,64 +707,67 @@ const CardImage =( xCardType, xCommand)=>
           </div>
 
           <div className="header-right">
-            <button 
-              className="btn-new-tx" 
-              type="button" 
+            { user?.Role?.toLowerCase() != "viewer" &&
+              
+              <button
+              className="btn-new-tx"
+              type="button"
               onClick={() => setShowNewTransScreen(true)}
             >
-                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
               </svg>
               New Transaction
             </button>
-            
+            }
+
             <div className="secondary-actions">
-              <button 
-                className="action-btn" 
-                onClick={ExportToCsv} 
+              <button
+                className="action-btn"
+                onClick={ExportToCsv}
                 type='button'
               >
                 <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                  </svg>
-                  Export
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Export
               </button>
               <button className="action-btn" type="button">
                 <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                  </svg>
-                  Print
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                </svg>
+                Print
               </button>
 
-              <ColumnDropdown 
-                headerList={headers} 
-                setHeaderList={setHeaders} 
+              <ColumnDropdown
+                headerList={headers}
+                setHeaderList={setHeaders}
               />
             </div>
           </div>
-      </div>
+        </div>
 
 
         {/* Grid */}
         <div className="table-wrapper-main">
-        <Grid 
-          headerList={headers} 
-          SetHeaderList={setHeaders}
-          JsonObjectList={transactions} 
-          filters={filters}
-          setFilters={setFilters}
-          isSelectable={false} 
-          title={'Recent Transactions'} 
-          numberOfItems={totalResults} 
-          itemsPerPage={100000} 
-          activePage={activePage}
-          setActivePage={setActivePage}
-          Sort={Sort}
-          rowClick={setSelectedTransaction}
-          showTotals={true}
+          <Grid
+            headerList={headers}
+            SetHeaderList={setHeaders}
+            JsonObjectList={transactions}
+            filters={filters}
+            setFilters={setFilters}
+            isSelectable={false}
+            title={'Recent Transactions'}
+            numberOfItems={totalResults}
+            itemsPerPage={100000}
+            activePage={activePage}
+            setActivePage={setActivePage}
+            Sort={Sort}
+            rowClick={setSelectedTransaction}
+            showTotals={true}
           />
+        </div>
       </div>
-    </div>
     </form>
   );
 };

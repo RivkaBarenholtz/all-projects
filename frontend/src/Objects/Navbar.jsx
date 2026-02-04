@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { getUserInfo } from "../Services/api";
 
-const Navbar = ({setTitle, open, setOpen}) => {
-  const [user, setUser] = useState({});
-
+const Navbar = ({setTitle, open, setOpen, user, setUser}) => {
+  const [userObjects, setUserObjects] = useState({});
   const [vendor , setVendor] = useState("");
   const location = useLocation();
 
@@ -19,7 +18,7 @@ const Navbar = ({setTitle, open, setOpen}) => {
     async function fetchUser() {
       try {
         const userInfo = await getUserInfo();
-        setUser(userInfo);
+        setUserObjects(userInfo);
       } catch (error) {
         console.error("Error fetching user info:", error);
       }
@@ -30,12 +29,23 @@ const Navbar = ({setTitle, open, setOpen}) => {
   useEffect(() => setOpen(false), [location.pathname])
 
   useEffect (()=>{ 
-    if(user.length > 0)
+    if(userObjects.length > 0)
     {
-      const vend =   localStorage.getItem("currentVendor")?? user[0].VendorId;
+      const vend =   localStorage.getItem("currentVendor")?? userObjects[0].VendorId;
+      
       setVendor(vend);
+
+      const currentUser = userObjects.find(x => x.VendorId == vend);
+      if (!currentUser)
+      {
+        setUser(userObjects[0]);
+        localStorage.setItem("currentVendor", userObjects[0].VendorId);
+        setVendor( userObjects[0].VendorId);
+        return; 
+      }
+      setUser(currentUser);
     }
-  }, [user])
+  }, [userObjects])
 
 
     const NavBarLink= ({path, label})=>{
@@ -69,13 +79,19 @@ const Navbar = ({setTitle, open, setOpen}) => {
         <ul className="nav-menu">
           <NavBarLink path="/transactions" label="Transactions" />
 
-          <NavBarLink path="/customers" label="Customers" />
+          {(user?.Role?.toLowerCase() === "admin"|| user?.Role?.toLowerCase() === "user" ) && (
+           <>
 
-          <NavBarLink path="/schedules" label="Schedules" />
+            <NavBarLink path="/customers" label="Customers" />
+          
+            <NavBarLink path="/schedules" label="Schedules" />
 
+            
+           </>
+          )}
           <NavBarLink path="/dashboard" label="Dashboard" />
 
-          { Array.isArray(user) && user?.find(x=> x.VendorId == vendor)?.Role?.toLowerCase() === "admin" && (
+          { (user?.Role?.toLowerCase() === "admin" ) && (
             <NavBarLink path="/settings" label="Users" />
           )}
         </ul>

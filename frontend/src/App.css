@@ -1826,8 +1826,7 @@ body {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 1200px;
-  font-size: 14px;
+ font-size: 14px;
 }
 
 /* Sticky Headers */

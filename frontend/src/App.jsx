@@ -3,7 +3,7 @@ import { useLocation, Routes, Route, useParams } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
-import Navbar from "./Objects/Navbar";
+import Navbar from "./Objects/NavBar";
 import Header from "./Header";
 import "./App.css";
 import Schedules from "./Schedules";
@@ -19,11 +19,12 @@ function ContextLayout({ isAuthenticated, setIsAuthenticated }) {
   const location = useLocation();
   const currentPath = location.pathname;
   const [title, setTitle] = useState("Transactions");
+  const [user, setUser] = useState({});
   const [open, setOpen] = useState(false); // for mobile menu
 
   return (
     <>
-      {isAuthenticated && !currentPath.includes("/pay") && <Navbar setTitle={setTitle} open={open} setOpen={setOpen} />}
+      {isAuthenticated && !currentPath.includes("/pay") && <Navbar setTitle={setTitle} open={open} setOpen={setOpen} user={user} setUser={setUser}/>}
      
       <div className={isAuthenticated && !currentPath.includes("/pay")
         ? "main-content"
@@ -37,9 +38,14 @@ function ContextLayout({ isAuthenticated, setIsAuthenticated }) {
           <Route path="login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
 
           <Route path="dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-          <Route path="transactions" element={<PrivateRoute><Transactions /></PrivateRoute>} />
+          <Route path="transactions" element={<PrivateRoute><Transactions user={user} /></PrivateRoute>} />
+          
+          {user?.Role?.toLowerCase() === "admin" || user?.Role?.toLowerCase() === "user" && 
+          <>
           <Route path="customers" element={<PrivateRoute><Customers /></PrivateRoute>} />
           <Route path="schedules" element={<PrivateRoute><Schedules /></PrivateRoute>} />
+          </>
+}
           <Route path="settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
 
           <Route path="*" element={<PrivateRoute><Transactions /></PrivateRoute>} />
