@@ -239,6 +239,8 @@ namespace InsTechClassesV2.Services
 
             ReceiveCCPaymentRequest? request = JsonConvert.DeserializeObject<ReceiveCCPaymentRequest>(requestBody);
             CardknoxCCTransactionApiRequest apiRequest = new CardknoxCCTransactionApiRequest();
+            if (request.isAuthOnly) apiRequest.xCommand = "cc:authonly";
+            
             apiRequest.xAmount = (request?.Surcharge ?? 0) + (request?.Subtotal ?? 0);
             apiRequest.xCustom09 = request?.Surcharge ?? 0;
             apiRequest.xCustom10 = request?.Subtotal ?? 0;

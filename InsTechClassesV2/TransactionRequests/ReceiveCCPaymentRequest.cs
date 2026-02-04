@@ -10,7 +10,8 @@ namespace InsTechClassesV2.TransactionRequests
     {
         public decimal Subtotal { get; set; }
         public decimal Surcharge { get; set; }
-        
+        public bool isAuthOnly { get; set; } = false;
+
         public string CardNumber { get; set; }
         public string ExpDate { get; set; }
         public string CVV { get; set; } 

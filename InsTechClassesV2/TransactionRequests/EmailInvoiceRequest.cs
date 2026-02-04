@@ -17,6 +17,12 @@ namespace InsTechClassesV2.TransactionRequests
 
     }
 
+    public class GetAvailableAttachments
+    {
+        public string PolicyId { get; set; }
+        
+    }
+
     public class AttachmentInfo
     {
         public string Name { get; set; }

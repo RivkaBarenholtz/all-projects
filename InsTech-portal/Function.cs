@@ -683,6 +683,14 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(new { message = "Success" });
                 return response;
             }
+            else if (lastSegment == "get-invoice-attachments")
+            {
+                //get policy id GUID
+                //get account id api 
+                // get attachments for these two values 
+                
+                // return list of attachments 
+            }
             else if (lastSegment == "make-method-default")
             {
                 var req = JsonConvert.DeserializeObject<MakePaymentMethodDefaultRequest>(request.Body);
