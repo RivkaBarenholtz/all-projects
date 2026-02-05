@@ -8,6 +8,7 @@ import TransactionDetail from './Objects/TransactionDetail';
 import { ColumnDropdown } from './Objects/ColumnDropdown';
 import { Car, X } from 'lucide-react';
 import cardknoxErrors from './Data/ErrorCodes.json';
+import { ConfirmationModal } from './Objects/ConfimationModal';
 import { Card } from './Components/UI/card';
 
 function Transactions({ user }) {
@@ -24,6 +25,7 @@ function Transactions({ user }) {
   const [customBeginDate, setCustomBeginDate] = useState(new Date());
   const [customEndDate, setCustomEndDate] = useState(new Date());
   const [accountID, setAccountID] = useState("")
+  const [showSuccess , setShowSuccess] = useState(false);
 
 
 
@@ -343,7 +345,7 @@ function Transactions({ user }) {
         CreditCardFormatted: <span className={`'amount ' ${trans.xVoid == 1 ? "void" : ""}`}> {FormatCurrency(trans.xCustom09 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1)) ?? '$0.00'}</span>,
         AmountFundedFormatted: trans.xCustom10 == 0 || trans.xCustom10 == null ? AmountHtml(trans.xAmount, trans.xVoid == 1) : AmountHtml(trans.xCustom10 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1), trans.xVoid == 1),
         StatusHtml: StatusHtml(trans.xResponseResult, trans.xStatus, trans.xCommand),
-        AmountFormatted: AmountHtml(trans.xAmount, trans.xVoid == 1),
+        AmountFormatted: AmountHtml(trans.xAmount, trans.xRequestAmount, trans.xVoid == 1),
         AmountFunded: trans.xCustom10 && trans.xCustom10 > 0 ? trans.xCustom10 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1) : trans.xAmount,
         StatusString: GetStatusString(trans.xResponseResult, trans.xStatus, trans.xCommand),
         CreditCardFee: trans.xCustom09 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1),
@@ -357,8 +359,8 @@ function Transactions({ user }) {
     setTotalResults(response.xRecordsReturned);
     setTotal(response.xResult);
   }
-  const AmountHtml = (amt, isVoided) => {
-    if (isVoided) return <span className='amount void'>{FormatCurrency(amt)}</span>
+  const AmountHtml = (amt, origAmt, isVoided) => {
+    if (isVoided) return <span className='amount void'>{FormatCurrency(origAmt)}</span>
     return amt >= 0 ? <span className='amount positive'>{FormatCurrency(amt)}</span> :
       <span className='amount negative'>{FormatCurrency(amt)}</span>
   }
@@ -626,6 +628,16 @@ function Transactions({ user }) {
           role={user?.Role?.toLowerCase()}
         />
       }
+      {
+        showSuccess && <ConfirmationModal 
+        
+        onClose={() => {setShowSuccess(false); search(getFilters());}} 
+        showButton = {false}>
+          <div>
+            <h2> Transaction Successful</h2>
+          </div>
+        </ConfirmationModal>
+      }
 
       <div className="transactions-page">
         {showNewTransScreen && (
@@ -641,8 +653,10 @@ function Transactions({ user }) {
               <PaymentForm
                 isPortal={true}
                 onSuccess={() => {
-                  setShowNewTransScreen(false);
-                  search(getFilters());
+                 
+                    setShowNewTransScreen(false);
+                    setShowSuccess(true);
+                   
                 }}
               />
             </div>
@@ -707,18 +721,18 @@ function Transactions({ user }) {
           </div>
 
           <div className="header-right">
-            { user?.Role?.toLowerCase() != "viewer" &&
-              
+            {user?.Role?.toLowerCase() != "viewer" &&
+
               <button
-              className="btn-new-tx"
-              type="button"
-              onClick={() => setShowNewTransScreen(true)}
-            >
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-              </svg>
-              New Transaction
-            </button>
+                className="btn-new-tx"
+                type="button"
+                onClick={() => setShowNewTransScreen(true)}
+              >
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                New Transaction
+              </button>
             }
 
             <div className="secondary-actions">
