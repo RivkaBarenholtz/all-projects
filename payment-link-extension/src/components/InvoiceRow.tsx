@@ -112,7 +112,7 @@ export const InvoiceRow: React.FC<InvoiceRowProps> = ({
         ) : (
           <>
             <span className="surcharge-value" style={{ color: colorStyle }}>
-              {invoice.Surcharge * 100}%
+              {(invoice.Surcharge * 100).toFixed(2)}%
             </span>
             <div className="btn-group">
               <button

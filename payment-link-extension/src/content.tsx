@@ -240,7 +240,7 @@ async function showModal() {
         `;
 
     // Append to shadow root
-    shadow.appendChild(style);
+    document.head.appendChild(style);
   }
 
   // element where React renders
