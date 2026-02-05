@@ -77,6 +77,7 @@ namespace InsTechClassesV2.AppliedEpic
         private void SetPropertiesFromAppliedResponse(dynamic EpicClient, string vendorAgencyCode)
         {
             ClientID = EpicClient["ClientID"] ?? 0;
+            GUID = EpicClient["ClientGUID"] ?? "";
             EmailAddress = "";
             var agencyStructure = EpicClient["AccountValue"]["Structure"]["AgencyStructureItem"];
             var accountEmail = EpicClient["AccountValue"]?["AccountEmail"];
@@ -157,6 +158,7 @@ namespace InsTechClassesV2.AppliedEpic
         public int ClientID { get; set; }
         public string EmailAddress { get; set; }
         public string CSREmailAddress { get; set; }
+        public string GUID { get; set; }
         public string CSRLookupCode { get; set; }
         private static string _url = "https://api.myappliedproducts.com/sdk/v1/clients";
         public async Task<HttpResponseMessage> GetFromApplied(Vendor vendor)
