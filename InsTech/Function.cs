@@ -99,6 +99,11 @@ public class Function
             string? xSubtotalStr = queryParams["xCustom10"];
             decimal xSubtotal = decimal.TryParse(xSubtotalStr, out decimal parsedSubtotal) ? parsedSubtotal : 0m;
 
+            if (paymentMethod == PaymentMethod.Check)
+            {
+                xSubtotal = xAmount; 
+            }
+
             string xBillLastName = queryParams["xBillLastName"] ?? "";
             string xEmail = queryParams["xCustom03"] ?? "N/A";
             string xCSRLookupCode = queryParams["xCustom02"] ?? "";

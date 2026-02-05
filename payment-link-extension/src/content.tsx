@@ -87,9 +87,9 @@ async function getSubdomain(): Promise<string> {
 
   const isDevelop = await isDeveloperMode();
 
-  if (isDevelop) {
-    return 'ins-dev';
-  }
+  // if (isDevelop) {
+  //   return 'ins-dev';
+  // }
 
   const hostname = window.location.hostname;
   const parts = hostname.split('.');
