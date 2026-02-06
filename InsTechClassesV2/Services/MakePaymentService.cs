@@ -121,12 +121,12 @@ namespace InsTechClassesV2.Services
 
         }
 
-        public async static Task<CardknoxResponse> MakeCheckPaymentToCardknox(string requestBody, Vendor vendor)
+        public async static Task<CardknoxResponse> MakeCheckPaymentToCardknox(string requestBody, Vendor vendor, Boolean userVerified = false)
         {
             ReceiveACHPaymentRequest? request = JsonConvert.DeserializeObject<ReceiveACHPaymentRequest>(requestBody);
             if (request == null) throw new Exception("Invalid request");
 
-            if (!await VerifyCapthca(request.CaptchaToken, request.isDevelopment))
+            if (!await VerifyCapthca(request.CaptchaToken, request.isDevelopment)  &&  !userVerified)
             {
                 return new CardknoxResponse() { xError = "Error verifying Captcha" };
 
