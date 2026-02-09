@@ -40,11 +40,11 @@ export const ClientInfo: React.FC<ClientInfoProps> = ({
 
   useEffect(() => {
 
-    async function getClients() {
+    async function getAccounts() {
       const accounts = await apiService.getCardknoxAccounts(client?.LookupCode ?? "")
       setAccountList(accounts)
     }
-    getClients();
+     if(client?.LookupCode ?? "" != "") getAccounts();
 
   }, [client]
 
