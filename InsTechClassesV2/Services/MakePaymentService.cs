@@ -126,11 +126,11 @@ namespace InsTechClassesV2.Services
             ReceiveACHPaymentRequest? request = JsonConvert.DeserializeObject<ReceiveACHPaymentRequest>(requestBody);
             if (request == null) throw new Exception("Invalid request");
 
-            if (!await VerifyCapthca(request.CaptchaToken, request.isDevelopment)  &&  !userVerified)
-            {
-                return new CardknoxResponse() { xError = "Error verifying Captcha" };
+            //if (!await VerifyCapthca(request.CaptchaToken, request.isDevelopment)  &&  !userVerified)
+            //{
+            //    return new CardknoxResponse() { xError = "Error verifying Captcha" };
 
-            }
+            //}
 
             CardknoxCheckTransactionApiRequest apiRequest = new CardknoxCheckTransactionApiRequest();
             apiRequest.xAmount = request?.Amount ?? 0;
