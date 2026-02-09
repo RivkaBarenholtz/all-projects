@@ -115,20 +115,11 @@ jobs:
         uses: mnao305/chrome-extension-upload@v5.0.0
         with:
           file-path: extension-${{ steps.bump_version.outputs.version }}.zip
-          extension-id: ${{ 
-            steps.credentials.outputs.environment == 'stable' && 'fbiedoaipmbihdemabhjelogmmcjdglf' ||
-            steps.credentials.outputs.environment == 'alpha' && 'lonabadkkfpogfnbkfnogedhimifcfba' ||
-            'maeagoifaocelglikalfbhjmeeecndgd'
+          extension-id: ${{steps.credentials.outputs.environment == 'stable' && 'fbiedoaipmbihdemabhjelogmmcjdglf' || steps.credentials.outputs.environment == 'alpha' && 'lonabadkkfpogfnbkfnogedhimifcfba' ||'maeagoifaocelglikalfbhjmeeecndgd'
           }}
-          client-id: ${{ 
-            secrets.CHROME_CLIENT_ID
-          }}
-          client-secret: ${{ 
-            secrets.CHROME_CLIENT_SECRET
-          }}
-          refresh-token: ${{ 
-            secrets.CHROME_REFRESH_TOKEN
-          }}
+          client-id: ${{ secrets.CHROME_CLIENT_ID}}
+          client-secret: ${{ secrets.CHROME_CLIENT_SECRET}}
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN}}
       
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
