@@ -76,9 +76,9 @@ jobs:
           # Update manifest.json
           node -e "
             const fs = require('fs');
-            const manifest = require('./public/manifest.json');
+            const manifest = require('./payment-link-extension/public/manifest.json');
             manifest.version = '$NEW_VERSION';
-            fs.writeFileSync('./public/manifest.json', JSON.stringify(manifest, null, 2) + '\n');
+            fs.writeFileSync('./payment-link-extension/public/manifest.json', JSON.stringify(manifest, null, 2) + '\n');
           "
           
           # Also update package.json version
@@ -90,7 +90,7 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add public/manifest.json package.json package-lock.json
+          git add ./payment-link-extension/public/manifest.json package.json package-lock.json
           git commit -m "chore: bump version to ${{ steps.bump_version.outputs.version }} [skip ci]" || echo "No changes to commit"
           git push || echo "No changes to push"
       
