@@ -50,7 +50,7 @@ jobs:
         id: bump_version
         run: |
           # Read current version from manifest.json
-          CURRENT_VERSION=$(node -p "require('./public/payment-link-extension/manifest.json').version")
+          CURRENT_VERSION=$(node -p "require('./payment-link-extension/public/manifest.json').version")
           echo "Current version: $CURRENT_VERSION"
           
           # Extract major and minor from current version
