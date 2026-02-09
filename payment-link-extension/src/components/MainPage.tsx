@@ -59,8 +59,7 @@ export const MainPage: React.FC<MainPageProps> = ({isDev,  onClose, subdomain })
                                     width: "100px",
                                     textDecoration: "underline"
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#d1d5db'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
+                              
                             >
                                 Sign Out
                             </button>
