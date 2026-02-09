@@ -116,24 +116,18 @@ jobs:
         with:
           file-path: extension-${{ steps.bump_version.outputs.version }}.zip
           extension-id: ${{ 
-            steps.credentials.outputs.environment == 'stable' && secrets.CHROME_EXTENSION_ID_STABLE ||
-            steps.credentials.outputs.environment == 'alpha' && secrets.CHROME_EXTENSION_ID_ALPHA ||
-            secrets.CHROME_EXTENSION_ID_BETA
+            steps.credentials.outputs.environment == 'stable' && 'fbiedoaipmbihdemabhjelogmmcjdglf' ||
+            steps.credentials.outputs.environment == 'alpha' && 'lonabadkkfpogfnbkfnogedhimifcfba' ||
+            'maeagoifaocelglikalfbhjmeeecndgd'
           }}
           client-id: ${{ 
-            steps.credentials.outputs.environment == 'stable' && secrets.CHROME_CLIENT_ID_STABLE ||
-            steps.credentials.outputs.environment == 'alpha' && secrets.CHROME_CLIENT_ID_ALPHA ||
-            secrets.CHROME_CLIENT_ID_BETA
+            secrets.CHROME_CLIENT_ID
           }}
           client-secret: ${{ 
-            steps.credentials.outputs.environment == 'stable' && secrets.CHROME_CLIENT_SECRET_STABLE ||
-            steps.credentials.outputs.environment == 'alpha' && secrets.CHROME_CLIENT_SECRET_ALPHA ||
-            secrets.CHROME_CLIENT_SECRET_BETA
+            secrets.CHROME_CLIENT_SECRET
           }}
           refresh-token: ${{ 
-            steps.credentials.outputs.environment == 'stable' && secrets.CHROME_REFRESH_TOKEN_STABLE ||
-            steps.credentials.outputs.environment == 'alpha' && secrets.CHROME_REFRESH_TOKEN_ALPHA ||
-            secrets.CHROME_REFRESH_TOKEN_BETA
+            secrets.CHROME_REFRESH_TOKEN
           }}
       
       - name: Create GitHub Release
