@@ -110,12 +110,26 @@ jobs:
         with:
           name: extension-${{ steps.bump_version.outputs.version }}
           path: extension-${{ steps.bump_version.outputs.version }}.zip
+      - name: Set Extension ID
+        id: set-extension-id
+        run: |
+          if [ "${{ steps.credentials.outputs.environment }}" == "stable" ]; then
+            echo "extension_id=fbiedoaipmbihdemabhjelogmmcjdglf" >> $GITHUB_OUTPUT
+          elif [ "${{ steps.credentials.outputs.environment }}" == "alpha" ]; then
+            echo "extension_id=lonabadkkfpogfnbkfnogedhimifcfba" >> $GITHUB_OUTPUT
+          else
+            echo "extension_id=maeagoifaocelglikalfbhjmeeecndgd" >> $GITHUB_OUTPUT
+          fi
+
+
+ 
       
       - name: Upload to Chrome Web Store
         uses: mnao305/chrome-extension-upload@v5.0.0
 
         env:
-          EXTENSION_ID: "${{ steps.credentials.outputs.environment == 'stable' ? 'fbiedoaipmbihdemabhjelogmmcjdglf' : steps.credentials.outputs.environment == 'alpha' ? 'lonabadkkfpogfnbkfnogedhimifcfba' : 'maeagoifaocelglikalfbhjmeeecndgd' }}"
+          EXTENSION_ID: ${{ steps.set-extension-id.outputs.extension_id }}
+
         with:
           file-path: extension-${{ steps.bump_version.outputs.version }}.zip
           extension-id: ${{env.EXTENSION_ID}}
