@@ -40,7 +40,7 @@ function ContextLayout({ isAuthenticated, setIsAuthenticated }) {
           <Route path="dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="transactions" element={<PrivateRoute><Transactions user={user} /></PrivateRoute>} />
           
-          {user?.Role?.toLowerCase() === "admin" || user?.Role?.toLowerCase() === "user" && 
+          {(user?.Role?.toLowerCase() === "admin" || user?.Role?.toLowerCase() === "user") && 
           <>
           <Route path="customers" element={<PrivateRoute><Customers /></PrivateRoute>} />
           <Route path="schedules" element={<PrivateRoute><Schedules /></PrivateRoute>} />
@@ -48,7 +48,7 @@ function ContextLayout({ isAuthenticated, setIsAuthenticated }) {
 }
           <Route path="settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
 
-          <Route path="*" element={<PrivateRoute><Transactions /></PrivateRoute>} />
+          <Route path="*" element={<PrivateRoute><Transactions user={user} /></PrivateRoute>} />
         </Routes>
       </div>
     </>
