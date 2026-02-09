@@ -166,7 +166,7 @@ export default function TransactionDetail({ transaction, onClose, getTransaction
                     }
                   </div>
                   
-                 { role === "admin" || role == "user" && <>
+                 {( role === "admin" || role == "user") && <>
                  
                  <div className="trd-section">
                     <h3 className="trd-section-title">Transaction Actions</h3>

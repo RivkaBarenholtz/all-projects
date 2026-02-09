@@ -90,12 +90,15 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
         const response = await createTransaction(paymentInfo, subdomain, (activeTab == "eCheck" && selectedMethod.value == "new") || selectedMethod.CardType == "ACH");
 
         if (response) {
-            if (response.xStatus != "E")
+            if (response.xStatus == "Approved")
                 setPaymentSuccess(true);
             else {
-                alert("Payment Failed")
+                alert("Payment Failed " + response.xError)
             }
         }
+        else 
+            alert("Payment Failed")
+        
     }
 
     const isCheck: () => boolean = () => {
@@ -124,7 +127,8 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
                     AccountId: lookupCode,
                     Amount: paymentAmount,
                     AccountType: accountType,
-                    SavePaymentMethod: saveMethod
+                    SavePaymentMethod: saveMethod,
+                    IsDevelopment : true
                 }
             }
         } else {

@@ -5,9 +5,71 @@ import { getAccountLookupCode } from './utils/api';
 
 import './styles.css';
 
+
+
+
 let modalRoot: ReactDOM.Root | null = null;
 let subdomain: string = '';
+// 1️⃣ The selector of the button you want to watch
+const TARGET_SELECTOR = 'a.sidebar-button[data-automation-id^="sidebar-button"]';
 
+
+function isClickable(el: HTMLElement) {
+  const style = getComputedStyle(el);
+  const rect = el.getBoundingClientRect();
+
+  return (
+    rect.width > 0 &&
+    rect.height > 0 &&
+    style.pointerEvents !== 'none' &&
+    style.display !== 'none' &&
+    style.visibility !== 'hidden' &&
+    !el.hasAttribute('disabled')
+  );
+}
+
+
+function hasText(el: HTMLElement, text: string) {
+  return el.textContent?.trim() === text;
+}
+
+function onDomReady(callback: () => void) {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', callback, { once: true });
+  } else {
+    callback();
+  }
+}
+
+onDomReady(() => {
+  // Create the observer
+  const observer = new MutationObserver(() => {
+    const el = document.querySelector<HTMLElement>(TARGET_SELECTOR);
+    if (el && isClickable(el) && hasText(el, 'Account Detail')) {
+      injectButton(el);
+      observer.disconnect(); // stop observing once done
+    }
+  });
+
+  // Determine a safe observe target
+  const target = document.body || document.documentElement;
+  if (!target) return;
+
+  // Start observing
+  observer.observe(target, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    characterData: true
+  });
+
+  // Immediate check in case element already exists
+  const el = document.querySelector<HTMLElement>(TARGET_SELECTOR);
+  if (el && isClickable(el) && hasText(el, 'Account Detail')) {
+    injectButton(el);
+    observer.disconnect();
+  }
+});
 async function waitForDOM(): Promise<void> {
   if (document.body && document.head) return;
 
@@ -240,7 +302,7 @@ async function showModal() {
         `;
 
     // Append to shadow root
-    shadow.appendChild(style);
+    document.head.appendChild(style);
   }
 
   // element where React renders
