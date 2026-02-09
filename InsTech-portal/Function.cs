@@ -214,7 +214,7 @@ public class Function
             }
             else if (lastSegment == "make-check-payment-to-cardknox")
             {
-                var cardknoxResponse = await MakePaymentService.MakeCheckPaymentToCardknox(request.Body, vendor);
+                var cardknoxResponse = await MakePaymentService.MakeCheckPaymentToCardknox(request.Body, vendor, true);
                 response.Body = JsonConvert.SerializeObject(cardknoxResponse);
                 return response;
             }

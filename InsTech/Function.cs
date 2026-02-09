@@ -94,8 +94,7 @@ public class Function
             {
                 fundedAmount = Math.Round(xAmount - (xAmount * vendor.CardknoxFeePercentage), 2);
             }
-            decimal swallowedAmount = 0;
-
+           
             string? xSubtotalStr = queryParams["xCustom10"];
             decimal xSubtotal = decimal.TryParse(xSubtotalStr, out decimal parsedSubtotal) ? parsedSubtotal : 0m;
 

@@ -25,7 +25,8 @@ function Transactions({ user }) {
   const [customBeginDate, setCustomBeginDate] = useState(new Date());
   const [customEndDate, setCustomEndDate] = useState(new Date());
   const [accountID, setAccountID] = useState("")
-  const [showSuccess , setShowSuccess] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [dateRangeOption, setDateRangeOption] = useState("last7Days");
 
 
 
@@ -213,6 +214,12 @@ function Transactions({ user }) {
   }, [previousOption]);
 
 
+  function formatDateLocal(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // months are 0-based
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
   const dateRangeOptions = [
     {
       label: "Today",
@@ -461,18 +468,6 @@ function Transactions({ user }) {
 
   const setCustomDateRange = () => {
 
-    const diffMs = customEndDate - customBeginDate;
-
-    // Convert to days
-    const diffDays = diffMs / (1000 * 60 * 60 * 24);
-
-    // Update dropdown label dynamically
-    const customLabel = `${Math.round(diffDays)} Days`;
-
-    setSelectedOption({
-      value: "Custom",
-      label: customLabel,
-    });
 
     // Hide the custom date picker
     setShowCustomDateRange(false);
@@ -514,6 +509,8 @@ function Transactions({ user }) {
     , [activePage])
 
   const ChangeOption = (option) => {
+
+    setDateRangeOption(option);
 
     if (option == "Custom") {
       setPreviousOption({ ...selectedOption });
@@ -629,10 +626,10 @@ function Transactions({ user }) {
         />
       }
       {
-        showSuccess && <ConfirmationModal 
-        
-        onClose={() => {setShowSuccess(false); search(getFilters());}} 
-        showButton = {false}>
+        showSuccess && <ConfirmationModal
+
+          onClose={() => { setShowSuccess(false); search(getFilters()); }}
+          showButton={false}>
           <div>
             <h2> Transaction Successful</h2>
           </div>
@@ -653,10 +650,10 @@ function Transactions({ user }) {
               <PaymentForm
                 isPortal={true}
                 onSuccess={() => {
-                 
-                    setShowNewTransScreen(false);
-                    setShowSuccess(true);
-                   
+
+                  setShowNewTransScreen(false);
+                  setShowSuccess(true);
+
                 }}
               />
             </div>
@@ -684,14 +681,22 @@ function Transactions({ user }) {
                   <div className="custom-date-inputs" ref={customDateRef}>
                     <input
                       type="date"
-                      value={customBeginDate.toISOString().split('T')[0]}
-                      onChange={(e) => setCustomBeginDate(new Date(e.target.value))}
+                      value={formatDateLocal(customBeginDate)}
+                      onChange={(e) => {
+                        const [year, month, day] = e.target.value.split('-').map(Number);
+                        setCustomBeginDate(new Date(year, month - 1, day))
+                      }}
                     />
                     <span style={{ color: '#6b7280' }}>to</span>
                     <input
                       type="date"
-                      value={customEndDate.toISOString().split('T')[0]}
-                      onChange={(e) => setCustomEndDate(new Date(e.target.value))}
+                      value={formatDateLocal(customEndDate)}
+                      onChange={(e) => {
+                        const [year, month, day] = e.target.value.split('-').map(Number);
+                        const end = new Date(year, month - 1, day)
+                        end.setHours(23, 59, 59, 999)
+                        setCustomEndDate(end)
+                      }}
                     />
                     <button
                       type='button'
@@ -704,7 +709,19 @@ function Transactions({ user }) {
                 )}
               </div>
               {!showCustomDateRange && (
-                <div className="date-text-display">{formatDateDisplay()}</div>
+                <div className="date-text-display">{formatDateDisplay()}
+
+                  {
+                    dateRangeOption == "Custom" && <a
+                      style={{
+                        color: "blue",
+                        textDecoration: "underline",
+                        margin: "10px",
+                      }}
+                      onClick={() => setShowCustomDateRange(true)}>Edit</a>
+                  }
+
+                </div>
               )}
             </div>
 
