@@ -115,7 +115,7 @@ jobs:
         uses: mnao305/chrome-extension-upload@v5.0.0
 
         env:
-          EXTENSION_ID: EXTENSION_ID: ${{ steps.credentials.outputs.environment == 'stable' ? 'fbiedoaipmbihdemabhjelogmmcjdglf' : steps.credentials.outputs.environment == 'alpha' ? 'lonabadkkfpogfnbkfnogedhimifcfba' : 'maeagoifaocelglikalfbhjmeeecndgd' }}
+          EXTENSION_ID: ${{ steps.credentials.outputs.environment == 'stable' ? 'fbiedoaipmbihdemabhjelogmmcjdglf' : steps.credentials.outputs.environment == 'alpha' ? 'lonabadkkfpogfnbkfnogedhimifcfba' : 'maeagoifaocelglikalfbhjmeeecndgd' }}
         with:
           file-path: extension-${{ steps.bump_version.outputs.version }}.zip
           extension-id: ${{env.EXTENSION_ID}}
