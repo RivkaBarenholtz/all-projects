@@ -136,7 +136,7 @@ jobs:
           EXTENSION_ID: ${{ steps.set-extension-id.outputs.extension_id }}
 
         with:
-          file-path: extension-${{ steps.bump_version.outputs.version }}.zip
+          file-path: payment-link-extension/extension-${{ steps.bump_version.outputs.version }}.zip
           extension-id: ${{env.EXTENSION_ID}}
           client-id: ${{ secrets.CHROME_CLIENT_ID}}
           client-secret: ${{ secrets.CHROME_CLIENT_SECRET}}
