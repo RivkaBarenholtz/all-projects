@@ -62,6 +62,11 @@ export class ApiService {
 
 
   }
+
+  async getAttachmentsForInvoice(clientGUID: string, policyId: number): Promise<any> {
+    const url = `${this.baseUrl()}/get-invoice-attachments?accountid=${clientGUID}&policyid=${policyId}`;
+    return await this.svc.get(url);
+  }
   async getClientFromEpicWithLookup(lookupCode: string): Promise<Client> {
     const url = `${this.baseUrl()}/get-client-from-epic?LookupCode=${lookupCode}`;
     return await this.svc.get(url);

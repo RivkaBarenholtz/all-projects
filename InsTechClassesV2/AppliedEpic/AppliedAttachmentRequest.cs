@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace InsTechClassesV2.AppliedEpic
 {
-   public class AppliedAttachmentRequest
+    public class AppliedAttachmentRequest
     {
         private static string _url = "https://api.myappliedproducts.com/epic/attachment/v2/attachments";
 
@@ -17,13 +17,13 @@ namespace InsTechClassesV2.AppliedEpic
             AccountGUID = accountGUID;
         }
 
-        
-        public string  PolicyGUID { get; set; }
+
+        public string PolicyGUID { get; set; }
         public string AccountGUID { get; set; }
 
         public async Task<HttpResponseMessage> GetAttachmentsAsync(Vendor vendor)
         {
-           
+
             var queryParams = new Dictionary<string, string>
             {
                 { "policy", PolicyGUID },
@@ -32,4 +32,5 @@ namespace InsTechClassesV2.AppliedEpic
             return await AppliedApiClient.GetObject(_url, queryParams, vendor);
 
         }
+    }
 }

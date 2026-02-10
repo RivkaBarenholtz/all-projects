@@ -1,7 +1,8 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent , useEffect} from 'react';
 import { ApiService } from '../utils/api';
 import { X } from 'lucide-react';
-import { Client } from '../types';
+import { Client, Invoice } from '../types';
+
 
 interface FormData {
     message: string;
@@ -13,6 +14,7 @@ interface EmailModalProps {
     isDev: boolean,
     subdomain: string,
     client: Client | null,
+    invoices? : Invoice[] | [],
     onClose: () => void,
     onSuccess: () => void
 }
@@ -22,7 +24,7 @@ interface Status {
     message: string;
 }
 
-export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain, onClose, onSuccess, client }) => {
+export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain, onClose, onSuccess, client, invoices }) => {
 
     const service = new ApiService(isDev, subdomain);
     const [formData, setFormData] = useState<FormData>({
@@ -34,6 +36,18 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain, o
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [emailAddresses, setEmailAddresses] = useState([client?.EmailAddress || '', client?.CSREmailAddress || ''].filter(email => email !== ''));
     const [error, setErrors] = useState<(string | null)[]>([]);
+
+    useEffect(() => {
+        const GetEmailAttachments = async () => {
+
+            if (!invoices || invoices.length === 0) return;
+            if (!client || !client.GUID) return;
+            var a  = await service.getAttachmentsForInvoice(client.GUID, invoices[0].PolicyId);
+            console.log(a)
+        }
+        GetEmailAttachments();
+
+    }, []);
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = Array.from(e.target.files || [])
@@ -99,8 +113,7 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain, o
         padding: '8px',
     };
 
-    ;
-
+    
 
     const inputGroupStyle: React.CSSProperties = {
         marginBottom: '28px'

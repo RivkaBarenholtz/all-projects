@@ -685,11 +685,22 @@ public class Function
             }
             else if (lastSegment == "get-invoice-attachments")
             {
-                //get policy id GUID
-                //get account id api 
-                // get attachments for these two values 
-                
-                // return list of attachments 
+
+                var AccountGUID = request.QueryStringParameters["accountid"];
+                var PolicyId = request.QueryStringParameters["policyid"];
+                var iPolicyNum = int.TryParse(PolicyId, out int parsedPolicyId) ? parsedPolicyId : -1;
+                string PolicyGUID = "";
+                if (iPolicyNum > 0)
+                {
+                    var policy = new AppliedPolicyRequest(iPolicyNum); 
+                   await policy.GetPropertiesFromApplied(vendor);
+                    PolicyGUID = policy.PolicyGUID;
+                }
+
+                var attachments = new AppliedAttachmentRequest(PolicyGUID, AccountGUID ?? "");
+                var attachmentList = await attachments.GetAttachmentsAsync(vendor);
+                response.Body =await attachmentList.Content.ReadAsStringAsync();
+                return response;
             }
             else if (lastSegment == "make-method-default")
             {
