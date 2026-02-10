@@ -19,7 +19,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
   const [surcharge, setSurcharge] = useState<number>(0);
   const [vendorSurcharge, setVendorSurcharge] = useState<number>(0);
   const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [invoicesLoading, setInvoicesLoading] = useState<boolean>(true);
   const [showSettings, setShowSettings] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -36,8 +37,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
 
   useEffect(() => {
     loadData();
+   
   }, []);
 
+ useEffect(() => {
+    loadInvoices();
+    
+  }, [client]);
 
 
   const loadData = async () => {
@@ -81,20 +87,33 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
       setSurcharge(surchargeData.surcharge);
       setVendorSurcharge(surchargeData.vendorSurcharge);
 
-      // Get invoices
+      
 
-      const invoiceData = await apiService.getOpenInvoices(accountId, clientData.LookupCode);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const loadInvoices = async () => {
+    if (!client) return;
+    
+    try {
+      // Get invoices
+      setInvoicesLoading(true); 
+      const invoiceData = await apiService.getOpenInvoices(accountId, client.LookupCode);
       const invoicesWithIds = invoiceData.map((inv, index) => ({ ...inv, id: index }));
       setInvoices(invoicesWithIds);
 
       // Select all invoices by default
       const allInvoiceNumbers = new Set(invoicesWithIds.map(inv => inv.AppliedEpicInvoiceNumber));
       setSelectedInvoices(allInvoiceNumbers);
-
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('Error loading invoices:', error);
     } finally {
-      //setLoading(false);
+      setInvoicesLoading(false);
     }
   };
 
@@ -143,7 +162,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
             />
 
 
-            {invoices.filter(a=> a.AgencySubdomain == paylinkSubdomain && a.Balance != 0).length > 0 && (
+           { invoicesLoading ? (
+              <div className="loading-div">
+                <div className="spinner"></div>
+                <p>Loading invoices...</p>
+              </div>
+            ) : (
+            <>{invoices.filter(a=> a.AgencySubdomain == paylinkSubdomain && a.Balance != 0).length > 0 && (
               <InvoiceList
                 invoices={invoices}
                 subdomain={subdomain}
@@ -163,7 +188,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
                 onSaveSurcharge={handleSaveSurcharge}
               />
             )}
-
+            </>
+          )
+          }
             <i
               className="fa-solid fa-gear gear-icon"
               title="View account settings"

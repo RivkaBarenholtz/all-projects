@@ -158,7 +158,7 @@ namespace InsTechClassesV2.Services
                 {
                     CardType = "ACH",
                     CustomerNumber = request.AccountID,
-                    MaskedAccountNumber = rsp.xMaskedCardNumber,
+                    MaskedAccountNumber = rsp.xMaskedAccountNumber,
                     Token = rsp.xToken,
                     Exp = rsp.xExp
                 };

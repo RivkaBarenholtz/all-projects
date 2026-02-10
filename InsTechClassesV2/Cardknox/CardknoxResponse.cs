@@ -17,6 +17,7 @@ namespace InsTechClassesV2.Cardknox
         public string xDate { get; set; }
         public string xToken { get; set; }
         public string xMaskedCardNumber { get; set; }
+        public string xMaskedAccountNumber { get; set; }
         public string xCardType { get; set; }
     }
 }

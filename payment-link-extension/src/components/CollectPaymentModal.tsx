@@ -77,7 +77,7 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
 
     useEffect(() => {
         if (paymentMethod && paymentMethod.length > 0) {
-            let method = paymentMethod.find((m: any) => m.IsDefault);
+            let method = paymentMethod.find((m: any) => m.IsDefault || paymentMethod.length === 1);
             setSelectedMethod(method);
         }
         else setSelectedMethod({ value: "new", MaskedAccountNumber: " + New" })
@@ -261,7 +261,7 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
             <div style={{ display: "flex", gap: "25px" }}>
                 <div className="form-group">
                     <label> Amount </label>
-                    <input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(Number(e.target.value))} />
+                    <input type="number" value={Number(paymentAmount).toFixed(2)} onChange={(e) => setPaymentAmount(Number(e.target.value))} />
                 </div>
 
                 {!((activeTab == "eCheck" && selectedMethod.value == "new") || selectedMethod?.CardType == "ACH") && <>
@@ -280,7 +280,7 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
                                 min="0"
                                 max="3.5"
                                 step="0.01"
-                                value={transferFee}
+                                value={Number(transferFee).toFixed(2)}
                                 onChange={(e) => setTransferFee(Number(e.target.value))}
                                 placeholder="0"
                             />
