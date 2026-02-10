@@ -62,20 +62,11 @@ jobs:
           IFS='.' read -r -a VERSION_PARTS <<< "$CURRENT_VERSION"
           MAJOR="${VERSION_PARTS[0]}"
           MINOR="${VERSION_PARTS[1]}"
+          PATCH="${VERSION_PARTS[2]}"
+
+          PATCH=$((PATCH + 1))
           
-          # Generate date part (YYYYMMDD)
-          DATE_PART=$(date -u +%Y%m%d)
-          
-          # Calculate minutes since midnight (UTC)
-          HOUR=$(date -u +%H)
-          MINUTE=$(date -u +%M)
-          MINUTES_SINCE_MIDNIGHT=$((10#$HOUR * 60 + 10#$MINUTE))
-          
-          # Pad to 4 digits
-          TIME_PART=$(printf "%04d" $MINUTES_SINCE_MIDNIGHT)
-          
-          # Construct new version: MAJOR.MINOR.YYYYMMDD.MMMM
-          NEW_VERSION="$MAJOR.$MINOR.$DATE_PART.$TIME_PART"
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           echo "New version: $NEW_VERSION"
           
           # Update manifest.json
