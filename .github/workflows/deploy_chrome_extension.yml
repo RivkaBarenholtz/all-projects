@@ -133,12 +133,3 @@ jobs:
           client-secret: ${{ secrets.CHROME_CLIENT_SECRET}}
           refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN}}
       
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ steps.bump_version.outputs.version }}-${{ steps.credentials.outputs.environment }}
-          name: Release v${{ steps.bump_version.outputs.version }} (${{ steps.credentials.outputs.environment }})
-          files: extension-${{ steps.bump_version.outputs.version }}.zip
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
