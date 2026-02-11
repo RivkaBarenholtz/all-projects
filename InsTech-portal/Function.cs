@@ -664,8 +664,9 @@ public class Function
                 if (user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Role == "admin")
                 {
                     var users = await InsTechClassesV2.User.GetUsersAsync(vendor.Id);
-                    bool HideUser = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Hide ?? false;
-                    users = users.Where(u => !u.Hide || HideUser ).ToList(); // exclude self
+                    //bool HideUser = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Hide ?? false;
+                   // users = users.Where(u => !u.Hide || HideUser ).ToList(); // exclude self
+                    users = users.Where(u => !u.Hide  ).ToList(); // exclude self
                     response.Body = JsonConvert.SerializeObject(users);
 
                 }

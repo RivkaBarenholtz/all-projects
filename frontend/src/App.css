@@ -1817,7 +1817,6 @@ body {
 
 .table-wrapper {
   overflow: auto;
-  max-height: 800px;
   position: relative;
 }
 
