@@ -48,7 +48,8 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
             OriginalTransaction: transaction.xRefNum,
             IsCheck: transaction.xCommand.toLowerCase().includes("check"),
             Subtotal: transaction.xCustom10 == 0 || transaction.xCustom10 == null ? transaction.xAmount : transaction.xCustom10,
-            Surcharge: transaction.xCustom09 ?? 0
+            Surcharge: transaction.xCustom09 ?? 0, 
+            Amount: transaction.xAmount
         }
         if (refundOption == "Partial") {
             const surchargePercent = RefundRequest.Surcharge / RefundRequest.Subtotal;
@@ -180,7 +181,9 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
                     </div>
 
 
-                    <div className="radio-group">
+                    { 
+                        transaction.xCommand.toLowerCase().startsWith("cc") &&
+                        <div className="radio-group">
                         <div>
                             <label className="radio-option">
                                 <input name="refundOption" type="radio" onChange={() => { setRefundOption('Full') }} checked={refundOption == 'Full'} value='Full' />
@@ -210,6 +213,7 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
                         </div>
 
                     </div>
+                    }
                 </div>
             </div>
 
@@ -292,12 +296,16 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
         }}>
           
 
-            <button style={{justifyContent:"center", padding: ".25rem" }} type="button" className="btn btn-secondary" onClick={() => { setShowVoidConfirm(true) }}>
-                <X  />  Void
-            </button>
-            <button style={{justifyContent:"center", padding: ".25rem" }} type="button" className="btn btn-secondary" onClick={() => { setShowRefundConfirm(true) }}>
-                <RotateCcw /> Refund
-            </button>
+           {
+                !(trans.xVoid == 1) &&  <>
+                <button style={{justifyContent:"center", padding: ".25rem" }} type="button" className="btn btn-secondary" onClick={() => { setShowVoidConfirm(true) }}>
+                    <X  />  Void
+                </button>
+                <button style={{justifyContent:"center", padding: ".25rem" }} type="button" className="btn btn-secondary" onClick={() => { setShowRefundConfirm(true) }}>
+                    <RotateCcw /> Refund
+                </button>
+            </>
+            }
             {
                 transaction.xCommand.includes('Wire') &&
                 <button style={{justifyContent:"center", padding: ".25rem" }} type="button" className="btn btn-secondary" onClick={() => { setShowConfirmWire(true) }}>

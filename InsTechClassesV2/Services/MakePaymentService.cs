@@ -329,7 +329,7 @@ namespace InsTechClassesV2.Services
             CardknoxCCRefundApiRequest apiRequest = new();
             if (request.IsCheck) apiRequest.xCommand = "check:Refund";
             apiRequest.xRefNum = request?.OriginalTransaction ?? "";
-            apiRequest.xAmount = (request?.Surcharge ?? 0) + (request?.Subtotal ?? 0);
+            apiRequest.xAmount = request.IsCheck? request.Amount : (request?.Surcharge ?? 0) + (request?.Subtotal ?? 0);
             apiRequest.xCustom09 = request?.Surcharge ?? 0;
             apiRequest.xCustom10 = request?.Subtotal ?? 0;
             apiRequest.xBillLastName = request?.AccountID ?? "";

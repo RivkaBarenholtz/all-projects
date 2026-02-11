@@ -23,6 +23,7 @@ namespace InsTechClassesV2.TransactionRequests
         public bool IsCheck { get; set; } = true; 
         public decimal Subtotal { get; set; }
         public decimal Surcharge { get; set; }
+        public decimal Amount { get; set; }
     }
     public class ReceiveVoidRequest
     {
