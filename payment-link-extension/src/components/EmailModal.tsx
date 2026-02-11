@@ -35,6 +35,8 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain, o
     const [status, setStatus] = useState<Status>({ type: '', message: '' });
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [emailAddresses, setEmailAddresses] = useState([client?.EmailAddress || '', client?.CSREmailAddress || ''].filter(email => email !== ''));
+    const [filesFromEpic , setFilesFromEpic] = useState<any[]>([]);
+    const [selectedEpicFiles, setSelectedEpicFiles] = useState<any[]>([]);
     const [error, setErrors] = useState<(string | null)[]>([]);
 
     useEffect(() => {
@@ -42,12 +44,30 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain, o
 
             if (!invoices || invoices.length === 0) return;
             if (!client || !client.GUID) return;
-            var a  = await service.getAttachmentsForInvoice(client.GUID, invoices[0].PolicyId);
-            console.log(a)
+            const a  = await service.getAttachmentsForInvoice(client.GUID, invoices[0].PolicyId);
+            const b = a?.attachments?._embedded?.attachments?.map ((att: any) => ({
+                description: att?.description,
+                attachedOn: att?.attachedOn, 
+                link : att?._links?.self
+
+                })
+            )
+            console.log (a)
+            console.log(b)
+            setFilesFromEpic (b || []);
+            
         }
         GetEmailAttachments();
 
     }, []);
+
+    const toggleEpicFile = (fileName: any) => {
+        if (selectedEpicFiles.includes(fileName)) {
+            setSelectedEpicFiles(selectedEpicFiles.filter(f => f !== fileName));    
+        } else {
+            setSelectedEpicFiles([...selectedEpicFiles, fileName]);
+        }
+    };
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = Array.from(e.target.files || [])
@@ -84,7 +104,7 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain, o
 
 
         try {
-            const response = service.sendInvoiceEmail(formData.message, formData.file!, 'Invoice Reminder for ' + client?.ClientName || '', [...emailAddresses || ''].filter(email => email.trim() !== ''));
+            const response = service.sendInvoiceEmail(formData.message, formData.file!, 'Invoice Reminder for ' + client?.ClientName || '', [...emailAddresses || ''].filter(email => email.trim() !== ''), selectedEpicFiles.map(file => file.link?.href) || []);
             onSuccess();
         } catch (error) {
             setStatus({ type: 'error', message: 'Error sending email.' });
@@ -315,7 +335,22 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain, o
                            
                         />
                     </div>
+                    {filesFromEpic.length > 0 && <div style={inputGroupStyle}>
+                        <label style={labelStyle}>
+                            Attach Files from Epic:
+                        </label>
+                        { filesFromEpic.map ((file, index) => (
+                          <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '8px', gap: '8px' }}>
 
+                           <input type="checkbox" id={`epic-file-${index}`} name={`epic-file-${index}`} checked={selectedEpicFiles.includes(file)} onChange={() => toggleEpicFile(file)} />
+                            <div key={index} >
+                                {file.description}    (Attached on: {new Date(file.attachedOn).toLocaleDateString()})
+                            </div>
+                            </div>
+                        ))}
+                    </div>
+                  
+}
                     {/* File Upload */}
                     <div style={inputGroupStyle}>
                         <label htmlFor="file" style={labelStyle}>

@@ -13,6 +13,8 @@ namespace InsTechClassesV2.TransactionRequests
         public List< AttachmentInfo> Attachment { get; set; }
         public List<string> recipients { get; set; } = new List<string>();
 
+        public List<string> epicAttachments { get; set; }
+
         public string Subject { get; set; }
 
     }

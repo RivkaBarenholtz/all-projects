@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Amazon.Runtime.Internal.Transform;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,7 +28,10 @@ namespace InsTechClassesV2.AppliedEpic
             var queryParams = new Dictionary<string, string>
             {
                 { "policy", PolicyGUID },
-                { "account", AccountGUID }
+                { "account", AccountGUID },
+                { "description_contains" , "Invoice" }, 
+                { "systemGenerated" , "true" }
+
             };
             return await AppliedApiClient.GetObject(_url, queryParams, vendor);
 

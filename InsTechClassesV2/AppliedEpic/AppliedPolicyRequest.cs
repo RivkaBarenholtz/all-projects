@@ -9,7 +9,7 @@ namespace InsTechClassesV2.AppliedEpic
 {
     public class AppliedPolicyRequest
     {
-        private static string _url = "https://api.myappliedproducts.com/epic/policy/v2/policies";
+        private static string _url = "https://api.myappliedproducts.com/sdk/v1/policies";
         public int PolicyID { get; set; }
 
         public AppliedPolicyRequest() { }
@@ -27,7 +27,8 @@ namespace InsTechClassesV2.AppliedEpic
             {
                 var policyContent = await policyResponse.Content.ReadAsStringAsync();
                 var policyJson = Newtonsoft.Json.Linq.JObject.Parse(policyContent);
-                PolicyGUID = policyJson["PolicyGUID"]?.ToString();
+
+                PolicyGUID = policyJson["Envelope"]?["Body"]?["Get_PolicyResponse"]?["Get_PolicyResult"]?["Policies"]?["Policy"]?["PolicyGUID"]?.ToString()??"";
             }
         }
     }

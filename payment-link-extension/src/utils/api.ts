@@ -30,7 +30,7 @@ export class ApiService {
       reader.onerror = (error) => reject(error);
     });
   }
-  async sendInvoiceEmail(body: string, attachment: File[], subject: string, recipients: string[]): Promise<string> {
+  async sendInvoiceEmail(body: string, attachment: File[], subject: string, recipients: string[], epicAttachments: string[]): Promise<string> {
     const url = `${this.baseUrl()}/send-invoice-email`;
     const attachments: { name: string, type: string, data: string }[] = [];
     for (const file of attachment) {
@@ -47,6 +47,7 @@ export class ApiService {
       body: body,
       subject: subject,
       recipients: recipients,
+      epicAttachments:  epicAttachments, 
       attachment: attachments
 
     };
