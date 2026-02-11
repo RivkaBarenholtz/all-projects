@@ -39,8 +39,8 @@ export const ClientInfo: React.FC<ClientInfoProps> = ({
 
       const toastStyle: React.CSSProperties = {
           position: "relative",
-          top: "-68px",
-          left: "0px",
+          top: "-48px",
+          left: "60px",
           width: "fit-content",
           backgroundColor: "#dc3545",
           color: "white",

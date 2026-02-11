@@ -118,7 +118,7 @@ export const EmailForm: React.FC<EmailModalProps> = ({ text, isDev, subdomain, o
         zIndex: 1000,
         position: 'absolute',
         left: '100px',
-        top: '100px',
+        top: '-100px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
