@@ -18,6 +18,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.ComponentModel.Design;
 using System.Globalization;
+using System.Net.Http;
 using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -231,6 +232,28 @@ public class Function
                 var emailRequest = JsonConvert.DeserializeObject<EmailInvoiceRequest>(request.Body);
                 
                 var email = new SimpleEmail(emailRequest.recipients, emailRequest.Subject, emailRequest.Body, vendor.defaultEmail);
+
+                if(emailRequest.epicAttachments.Count > 0)
+                {
+                    foreach (var attachmentUrl in emailRequest.epicAttachments)
+                    {
+                        var attachmentItemRsp = await AppliedApiClient.GetObject(attachmentUrl, new Dictionary<string, string>(), vendor);
+                        var attachmentItemJson = await attachmentItemRsp.Content.ReadAsStringAsync();
+                        dynamic attachmentItem = JsonConvert.DeserializeObject(attachmentItemJson);
+                        if(attachmentItem.file != null )
+                        {
+                            var fileUrl = (string)attachmentItem.file.url;
+                            var fileName = (string)attachmentItem.file.name;
+                            var httpClient = new HttpClient();
+                            var bytes = await httpClient.GetByteArrayAsync(fileUrl);
+                            email.attachmentFiles.Add(new SimpleEmail.AttachmentFile
+                            {
+                                FileName = fileName,
+                                FileContent = bytes
+                            });
+                        }
+                    }
+                }
 
                 if (emailRequest?.Attachment?.Count > 0 )
                 {
@@ -682,6 +705,32 @@ public class Function
                 var req = JsonConvert.DeserializeObject<DeletePaymentMethodRequest>(request.Body);
                 await MakePaymentService.DeletePaymentMethod(req.Token, vendor);
                 response.Body = JsonConvert.SerializeObject(new { message = "Success" });
+                return response;
+            }
+            else if (lastSegment == "get-invoice-attachments")
+            {
+
+                var AccountGUID = request.QueryStringParameters["accountid"];
+                var PolicyId = request.QueryStringParameters["policyid"];
+                var iPolicyNum = int.TryParse(PolicyId, out int parsedPolicyId) ? parsedPolicyId : -1;
+                string PolicyGUID = "";
+                if (iPolicyNum > 0)
+                {
+                    var policy = new AppliedPolicyRequest(iPolicyNum); 
+                    await policy.GetPropertiesFromApplied(vendor);
+                    PolicyGUID = policy.PolicyGUID;
+                }
+
+                var attachments = new AppliedAttachmentRequest(PolicyGUID, AccountGUID ?? "");
+                var attachmentList = await attachments.GetAttachmentsAsync(vendor);
+                dynamic data = Newtonsoft.Json.JsonConvert.DeserializeObject(await attachmentList.Content.ReadAsStringAsync());
+
+                dynamic resp = new
+                {
+                    attachments = data ,
+                    policyGUID = PolicyGUID
+                };
+                response.Body = JsonConvert.SerializeObject(resp);
                 return response;
             }
             else if (lastSegment == "make-method-default")

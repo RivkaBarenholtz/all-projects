@@ -12,6 +12,7 @@ namespace InsTechClassesV2.AppliedEpic
         public decimal Balance { get; set; }
         public decimal Surcharge { get; set; }
         public decimal InvoiceTotal { get; set; }
+        public string PolicyId { get; set; }
         public Boolean IsEditable { get; set; } = true;
         public string AgencyCode { get; set; }
         public string AgencySubdomain {  get; set; }

@@ -30,7 +30,7 @@ export class ApiService {
       reader.onerror = (error) => reject(error);
     });
   }
-  async sendInvoiceEmail(body: string, attachment: File[], subject: string, recipients: string[]): Promise<string> {
+  async sendInvoiceEmail(body: string, attachment: File[], subject: string, recipients: string[], epicAttachments: string[]): Promise<string> {
     const url = `${this.baseUrl()}/send-invoice-email`;
     const attachments: { name: string, type: string, data: string }[] = [];
     for (const file of attachment) {
@@ -47,6 +47,7 @@ export class ApiService {
       body: body,
       subject: subject,
       recipients: recipients,
+      epicAttachments:  epicAttachments, 
       attachment: attachments
 
     };
@@ -61,6 +62,11 @@ export class ApiService {
     return await this.svc.get(url);
 
 
+  }
+
+  async getAttachmentsForInvoice(clientGUID: string, policyId: number): Promise<any> {
+    const url = `${this.baseUrl()}/get-invoice-attachments?accountid=${clientGUID}&policyid=${policyId}`;
+    return await this.svc.get(url);
   }
   async getClientFromEpicWithLookup(lookupCode: string): Promise<Client> {
     const url = `${this.baseUrl()}/get-client-from-epic?LookupCode=${lookupCode}`;

@@ -140,6 +140,7 @@ If you have any questions or need assistance, please let us know`;
       text={mail}
       isDev={isDev}
       client={client}
+      invoices={invoices}
       subdomain={paylinkSubdomain}
       onClose={() => setIsEmailModalOpen(false)}
       onSuccess={() => setIsEmailModalOpen(false)}

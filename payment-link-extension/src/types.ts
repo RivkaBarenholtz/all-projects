@@ -7,10 +7,12 @@ export interface Invoice {
   IsEditable: boolean;
   AgencyCode: string;
   AgencySubdomain: string;
+  PolicyId: number;
 }
 
 export interface Client {
   LookupCode: string;
+  GUID? : string; 
   ClientName: string;
   EmailAddress?: string;
   CSREmailAddress?: string;
