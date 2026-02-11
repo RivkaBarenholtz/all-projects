@@ -3,7 +3,7 @@ import { refreshSession } from "./AuthContext";
 export const fetchWithAuth = async (url, options = {}, isText = false, isBlob = false) => {
   const token = localStorage.getItem('idToken');
   const userEmail = SafeParseJson(localStorage.getItem('User')).email;
-  const vendor = localStorage.getItem("currentVendor");
+  const vendor = new URLSearchParams(window.location.search).get("vendor") || localStorage.getItem("currentVendor");
   
   const makeRequest = async (jwtToken, userEmail, vend) => {
     const headers = {

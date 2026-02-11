@@ -31,7 +31,9 @@ const Navbar = ({setTitle, open, setOpen, user, setUser}) => {
   useEffect (()=>{ 
     if(userObjects.length > 0)
     {
-      const vend =   localStorage.getItem("currentVendor")?? userObjects[0].VendorId;
+      const vendorParam = new URLSearchParams(window.location.search).get("vendor");
+      if (vendorParam) localStorage.setItem("currentVendor", vendorParam);
+      const vend =   vendorParam?? localStorage.getItem("currentVendor")?? userObjects[0].VendorId;
       
       setVendor(vend);
 

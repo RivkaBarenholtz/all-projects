@@ -24,9 +24,13 @@ export const refreshSession = () => {
       }
 
       if (session.isValid()) {
-        const token = session.getIdToken().getJwtToken();
-        localStorage.setItem('idToken', token);
-        resolve(token);
+        const idtoken = session.getIdToken().getJwtToken();
+        localStorage.setItem('idToken', idtoken);
+
+        const accessToken = session.getAccessToken().getJwtToken();
+        localStorage.setItem('accessToken', accessToken);
+        
+        resolve(idtoken);
         return;
       }
 

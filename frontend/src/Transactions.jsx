@@ -10,11 +10,20 @@ import { Car, X } from 'lucide-react';
 import cardknoxErrors from './Data/ErrorCodes.json';
 import { ConfirmationModal } from './Objects/ConfimationModal';
 import { Card } from './Components/UI/card';
+import { set } from 'date-fns';
 
 function Transactions({ user }) {
+
+
+  const beginParam = new URLSearchParams(window.location.search).get("beginDate");
+  const endParam = new URLSearchParams(window.location.search).get("endDate");
+  const accountIDParam = new URLSearchParams(window.location.search).get("accountID");
+  const refNumParam = new URLSearchParams(window.location.search).get("refNum");
+
+
   // const sixDaysAgo = new Date() - 6 
-  const [beginDate, setBeginDate] = useState(new Date(new Date().setDate(new Date().getDate() - 6)))
-  const [endDate, setEndDate] = useState(new Date)
+  const [beginDate, setBeginDate] = useState(beginParam??new Date(new Date().setDate(new Date().getDate() - 6)))
+  const [endDate, setEndDate] = useState(endParam??new Date())
   const [showError, setShowError] = useState(false)
   const [activePage, setActivePage] = useState(1);
   const [filters, setFilters] = useState({});
@@ -24,9 +33,12 @@ function Transactions({ user }) {
   const [showCustomDateRange, setShowCustomDateRange] = useState(false);
   const [customBeginDate, setCustomBeginDate] = useState(new Date());
   const [customEndDate, setCustomEndDate] = useState(new Date());
-  const [accountID, setAccountID] = useState("")
+  const [accountID, setAccountID] = useState(accountIDParam??"");
   const [showSuccess, setShowSuccess] = useState(false);
-  const [dateRangeOption, setDateRangeOption] = useState("last7Days");
+  const [dateRangeOption, setDateRangeOption] = useState(beginParam|| endParam?"Custom":"last7Days");
+  const [selectedRefNum, setSelectedRefNum] = useState(refNumParam??"");
+
+
 
 
 
@@ -362,6 +374,11 @@ function Transactions({ user }) {
         className: trans.xResponseResult.toLowerCase() == "approved" ? "" : "not-counted"
       }
     })
+    if(selectedRefNum && selectedRefNum != ""){
+      const selectedTrans = responseFormatted.find(t => t.xRefNum == selectedRefNum);
+      setSelectedTransaction(selectedTrans);
+      setSelectedRefNum("") // Clear the selected ref num after opening the transaction detail
+    }
     setTransactions(responseFormatted);
     setTotalResults(response.xRecordsReturned);
     setTotal(response.xResult);
