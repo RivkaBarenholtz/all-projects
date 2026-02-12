@@ -67,7 +67,10 @@ function App() {
 
     const isRoot = location.pathname === "/" || location.pathname === "";
 
-    console.log(isRoot); // true if nothing after domain
+    if(isRoot) {
+      window.location.href = "https://portal.instechpay.co";
+        return null;
+    }
 
     return (
       <div className="main-content-no-auth">
