@@ -297,7 +297,7 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
           
 
            {
-                !(trans.xVoid == 1) &&  <>
+                !(transaction.xVoid == 1) &&  <>
                 <button style={{justifyContent:"center", padding: ".25rem" }} type="button" className="btn btn-secondary" onClick={() => { setShowVoidConfirm(true) }}>
                     <X  />  Void
                 </button>

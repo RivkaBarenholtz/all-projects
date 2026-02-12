@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "InsTech360 for Applied Epic by Insure Tech",
-  "version": "1.09.06",
+  "version": "1.09.9",
   "host_permissions": [
     "https://*.appliedepic.com/*",
     "https://*.instechpay.co/*",
@@ -12,7 +12,6 @@
     "service_worker": "background.js",
     "type": "module"
   },
- 
   "permissions": [
     "webRequest",
     "scripting",
@@ -20,10 +19,14 @@
     "windows",
     "storage"
   ],
-"content_scripts": [
+  "content_scripts": [
     {
-      "matches": ["https://*.appliedepic.com/*"],
-      "js": ["content.js"],
+      "matches": [
+        "https://*.appliedepic.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_start"
     }
   ],
@@ -47,7 +50,9 @@
         "webfonts/*.woff2",
         "webfonts/*.ttf"
       ],
-      "matches": ["https://*.appliedepic.com/*"]
+      "matches": [
+        "https://*.appliedepic.com/*"
+      ]
     }
   ]
 }
