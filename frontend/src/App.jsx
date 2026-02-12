@@ -63,12 +63,12 @@ function App() {
 
   /* Payment-only subdomain */
   if (window.location.hostname === "pay.instechpay.co") {
-    const { context } = useParams();
-    if (!context) 
-      {
-        window.location.href = "https://portal.instechpay.co";
-        return null;
-      }
+    // const { context } = useParams();
+    // if (!context) 
+    //   {
+    //     window.location.href = "https://portal.instechpay.co";
+    //     return null;
+    //   }
     return (
       <div className="main-content-no-auth">
         <Routes>
