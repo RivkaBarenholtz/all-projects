@@ -600,7 +600,7 @@ public class Function
                 try
                 {
                     await MakePaymentService.UpdateCustomSurcharge(request.Body, vendor);
-                    response.Body = "Success";
+                    response.Body = JsonConvert.SerializeObject(new { Message = "Success" });
                     return response;
                 }
                 catch (Exception ex)

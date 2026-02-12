@@ -84,7 +84,7 @@ namespace InsTechClassesV2.Services
                 {
                     var invoice = await InvoiceSurcharge.Load(vendor, request.InvoiceNumber);
 
-                    if (client.CustomSurcharge == request.SurchargeAmount && request.IsEditable == true)
+                    if (client.CustomSurcharge == request.SurchargeAmount && request.IsEditable == false)
                     {
                         await invoice.Delete(vendor);
                         continue;

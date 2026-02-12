@@ -43,7 +43,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
  useEffect(() => {
     loadInvoices();
     
-  }, [client]);
+  }, [client?.LookupCode]);
 
 
   const loadData = async () => {
@@ -62,7 +62,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
       if (accountId) {
         try {
           clientData = await apiService.getClientFromEpic(accountId) ?? clientData;
-        } catch (error) {
+        } 
+        catch (error) {
           console.error('Error fetching client:', error);
           const parts = document.title.split(' - ');
           clientData = {
