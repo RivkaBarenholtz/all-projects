@@ -37,6 +37,26 @@ export const ClientInfo: React.FC<ClientInfoProps> = ({
   const [isEmailModalOpen, setIsEmailModalOpen] = useState<boolean>(false);
   const [submitted , setSubmitted ] = useState<boolean>(false);
 
+      const toastStyle: React.CSSProperties = {
+          position: "relative",
+          top: "-48px",
+          left: "60px",
+          width: "fit-content",
+          backgroundColor: "#dc3545",
+          color: "white",
+          textAlign: "center",
+          fontSize: "0.7em",
+          opacity: 1,
+          transform: "translateY(0px)",
+          pointerEvents: "none",
+          zIndex: 1000,
+          padding: "0px 7px",
+          borderRadius: "4px",
+          transition: "opacity 0.3s, transform 0.3s",
+          whiteSpace: "nowrap"
+      }
+  
+
 
   useEffect(() => {
 
@@ -174,6 +194,7 @@ If you have any questions or need assistance, please let us know`;
             style={{...{ textAlign: 'left', marginLeft: '10px', width: '150px' }, ...(submitted && !amount ? { border: '1px solid red' } : {})}}
             onChange={(e) => setAmount(e.target.value)}
           />
+           {submitted && !amount && <div style={toastStyle}>Amount required.</div>}
         </div>
 
         <div style={{ marginLeft: '5px', marginTop: '20px', textDecoration: 'underline', display: 'flex' }}>

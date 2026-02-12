@@ -20,6 +20,11 @@ namespace InsTechClassesV2.Cardknox
         public List<SplitInstructions> xSplitInstruction { get; set; }
 
     }
+    public class CardknoxCCAuthApiRequest : CardknoxCCTransactionApiRequest
+    {
+        public override string xCommand { get; set; } = "cc:authonly";
+    }
+
     public class CardknoxSaveCCInfoApiRequest : CardknoxApiRequest
     {
         public override string xCommand { get; set; } = "cc:save";

@@ -91,7 +91,8 @@ namespace InsTechReceivePayment
                 AppliedEpicInvoiceNumber = x.Key, 
                 Balance = x.Sum(a => a.Balance) , 
                 InvoiceTotal = x.Sum(a => a.TransactionAmount), 
-                AgencyCode = x.FirstOrDefault()?.BillingValue?.AgencyCode??vendor.AgencyCode   
+                AgencyCode = x.FirstOrDefault()?.BillingValue?.AgencyCode??vendor.AgencyCode   ,
+                PolicyId = x.FirstOrDefault()?.PolicyID ?? "",
             }).ToList();
 
             var invoiceSurcharges = await  InvoiceSurcharge.LoadMany(vendor,  invoices.Select(x => x.AppliedEpicInvoiceNumber).ToList());
