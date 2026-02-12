@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "InsTech360 for Applied Epic by Insure Tech",
-  "version": "1.09.9",
+  "version": "1.09.10",
   "host_permissions": [
     "https://*.appliedepic.com/*",
     "https://*.instechpay.co/*",
