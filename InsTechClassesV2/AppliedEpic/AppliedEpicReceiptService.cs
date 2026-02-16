@@ -163,6 +163,10 @@ namespace InsTechClassesV2.AppliedEpic
             DateTime dateTime = cardknox.ReportData.Count > 0 ? Convert.ToDateTime(cardknox.ReportData[0].EnteredDate) : estTime;
 
             string command = cardknox.ReportData.Count > 0 ? cardknox.ReportData[0].Command.ToLower() : "";
+            if (currentCommand.ToLower() == "check:adjust")
+            {
+                dateTime = estTime; 
+            }
             if (command.Contains("check"))
             {
                 string negativeDeposit = "";
