@@ -119,6 +119,12 @@ public class Function
             int xInvoice = int.TryParse(xInvoiceStr, out int parsedInvoice) ? parsedInvoice : 0;
 
             List<string> emailList = new List<string>() { xEmail };
+            if (xCommand.ToLower() == "check:adjust" && xStatus == "14")
+            {
+                var dynamoDBObject = await AmazonUtilities.DynamoDatabaseTransactions.GetItemByIdAsync(vendor.Id.ToString(), xRefNum, "Transaction");
+                if (dynamoDBObject != null  && dynamoDBObject.TryGetValue("Status", out var attributeValue2) && attributeValue2.S == "14")
+                    return Serialize(queryParams).ToUpper();
+            }
             try
             {
                await  TransactionsService.SaveTransaction(xRefNum, vendor); 
@@ -161,6 +167,7 @@ public class Function
                 fundedAmount = xAmount;
                 debitCredit = DebitCredit.Debit;
                 xResponseResult = "APPROVED";
+                //if ()
             }
             else
             {
