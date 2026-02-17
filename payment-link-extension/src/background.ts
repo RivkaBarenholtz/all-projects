@@ -1,4 +1,6 @@
-// Background Service Worker for Insure Tech Extension
+
+
+
 console.log('Background service worker initialized');
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -112,6 +114,47 @@ chrome.runtime.onMessage.addListener(
     return false;
   }
 );
+
+
+
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+  if (message.action === 'OPEN_WEBSITE_SSO') {
+    try {
+      // Get tokens
+      var tokens  = await chrome.storage.local.get(['cognito_refresh_token', 'cognito_id_token', 'cognito_user_info'])
+      .then(result => {
+        const idToken = result['cognito_id_token'] || null;
+        const refreshToken = result['cognito_refresh_token'] || null;
+        const userInfo = result['cognito_user_info'] || null;
+        return { idToken, refreshToken, userInfo };
+      } );
+
+      const username = tokens.userInfo ? JSON.parse(tokens.userInfo).email : null;
+       
+      const url = message.isDev? 'http://127.0.0.1:3000' : 'https://portal.instechpay.co';
+      // Get one-time code from backend
+      const response = await fetch(`${url}/portal-v1/${message.subdomain}/generate-sso-code`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${tokens.idToken}`,
+          'Content-Type': 'application/json', 
+           'user': username || '' // Pass username if available
+        },
+        body: JSON.stringify({ idToken: tokens.idToken, refreshToken: tokens.refreshToken, subdomain : message.subdomain })
+      });
+      
+      const { code } = await response.json();
+      const searchParams = new URLSearchParams({ code , accountID: message.accountId});
+      // Open new tab with code
+      chrome.tabs.create({ 
+        url: message.isDev? `http://localhost:5173/sso?${searchParams.toString()}` :`https://portal.instechpay.co/sso?${searchParams.toString()}` 
+      });
+      
+    } catch (error) {
+      console.error('SSO failed:', error);
+    }
+  }
+});
 
 // Handle messages from content script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

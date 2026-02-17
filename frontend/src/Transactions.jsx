@@ -6,7 +6,7 @@ import { Grid } from './Objects/Grid';
 import PaymentForm from './PaymentPage/PaymentForm'
 import TransactionDetail from './Objects/TransactionDetail';
 import { ColumnDropdown } from './Objects/ColumnDropdown';
-import { Car, X } from 'lucide-react';
+import { Car, Type, X } from 'lucide-react';
 import cardknoxErrors from './Data/ErrorCodes.json';
 import { ConfirmationModal } from './Objects/ConfimationModal';
 import { Card } from './Components/UI/card';
@@ -26,7 +26,7 @@ function Transactions({ user }) {
   const [endDate, setEndDate] = useState(endParam??new Date())
   const [showError, setShowError] = useState(false)
   const [activePage, setActivePage] = useState(1);
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState(accountIDParam ? { xBillLastName: { value: accountIDParam , type: "text"} } : {});
   const [totalResults, setTotalResults] = useState(0);
   const [total, setTotal] = useState(0);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
@@ -337,8 +337,6 @@ function Transactions({ user }) {
       RefNum: refNum,
       Statuses: filteredOption.length == statusOptions.length ? [-1] : statusOptions.filter(a => a.isSelected).map(f => f.value),
       PaymentMethods: filteredPmntMethods.length == pmntMethodOptions.length ? ["ALL"] : pmntMethodOptions.filter(a => a.isSelected).map(f => f.value),
-      AccountID: accountID
-
 
     }
 

@@ -12,6 +12,7 @@ import Customers from "./Customers";
 import PaymentForm from "./PaymentPage/PaymentForm";
 import ThankYouPage from "./PaymentPage/ThankYouPage";
 import { Settings } from "./Settings";
+import SSO from "./SSO";
 
 /* ---------- Context-based layout ---------- */
 function ContextLayout({ isAuthenticated, setIsAuthenticated }) {
@@ -36,6 +37,7 @@ function ContextLayout({ isAuthenticated, setIsAuthenticated }) {
           <Route path="pay" element={<PaymentForm subdomain={context} isPortal={false} />} />
           <Route path="thank-you" element={<ThankYouPage />} />
           <Route path="login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
+          <Route path="sso" element={<SSO />} />
 
           <Route path="dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="transactions" element={<PrivateRoute><Transactions user={user} /></PrivateRoute>} />

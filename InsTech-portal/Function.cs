@@ -110,6 +110,14 @@ public class Function
             List<Cognito> user = new();
             Console.WriteLine(JsonConvert.SerializeObject(request));
 
+            if (lastSegment == "get-login-from-code")
+            {
+                SSOLogin ssoLogin = JsonConvert.DeserializeObject<SSOLogin>(request.Body);
+                await ssoLogin.GetFromDynamo();
+                response.Body = JsonConvert.SerializeObject(ssoLogin);
+                return response;
+
+            }
 
 
             if (!caseInsensitiveHeaders.TryGetValue("authorization", out var authHeader) || !authHeader.StartsWith("Bearer "))
@@ -707,6 +715,14 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(new { message = "Success" });
                 return response;
             }
+            else if (lastSegment == "generate-sso-code")
+            {
+               SSOLogin ssoLogin = JsonConvert.DeserializeObject<SSOLogin>(request.Body);
+                var code = await ssoLogin.EnterIntoDynamo();
+                response.Body =  JsonConvert.SerializeObject(new {code });
+                return response; 
+            }
+            
             else if (lastSegment == "get-invoice-attachments")
             {
 
@@ -716,7 +732,7 @@ public class Function
                 string PolicyGUID = "";
                 if (iPolicyNum > 0)
                 {
-                    var policy = new AppliedPolicyRequest(iPolicyNum); 
+                    var policy = new AppliedPolicyRequest(iPolicyNum);
                     await policy.GetPropertiesFromApplied(vendor);
                     PolicyGUID = policy.PolicyGUID;
                 }
@@ -727,7 +743,7 @@ public class Function
 
                 dynamic resp = new
                 {
-                    attachments = data ,
+                    attachments = data,
                     policyGUID = PolicyGUID
                 };
                 response.Body = JsonConvert.SerializeObject(resp);

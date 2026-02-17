@@ -45,6 +45,16 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
     
   }, [client?.LookupCode]);
 
+   const handleGoToInstech=() => {
+    chrome.runtime.sendMessage({
+      action: "OPEN_WEBSITE_SSO", 
+      subdomain: paylinkSubdomain, 
+      accountId: client?.LookupCode ?? "",
+      isDev: isDev ?? false
+    });
+  }
+
+
 
   const loadData = async () => {
     try {
@@ -192,11 +202,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
             </>
           )
           }
+          <div className='card' style={{padding: "10px"}}>
+           <a
+            onClick={handleGoToInstech}
+            style={{textDecoration: "underline", color:"#148ec2cd" , marginLeft: "30px"}}> View transactions in InsTech360</a>
             <i
               className="fa-solid fa-gear gear-icon"
               title="View account settings"
               onClick={() => setShowSettings(true)}
-            />
+            > 
+            <span style={{fontFamily: "'inter'"}} > Account Settings</span>
+            </i>
+            </div>
           </>
         )}
       </div>

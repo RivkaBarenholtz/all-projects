@@ -125,6 +125,7 @@ If you have any questions or need assistance, please let us know`;
     });
   }
 
+ 
 
   const ActionButtonStyles = {
     color: '#22845a99',
@@ -218,12 +219,15 @@ If you have any questions or need assistance, please let us know`;
             <i className="fas fa-link"></i> Copy payment link
           </button>
 
+          
+         
         </div>
 
 
 
       </div>
     </div>
+   
     </>
   );
 };
