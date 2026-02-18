@@ -393,7 +393,10 @@ namespace InsTechClassesV2.AppliedEpic
                         if ((result.Contains("Agency Code not found") || result.Contains("Lookup code not found.")) && ! string.IsNullOrEmpty(vendor.DummyAccountCode) )
                         {
                             var c = await AppliedGetClientRequest.Create(vendor.DummyAccountCode, vendor, logger);
-                            Console.Write($"We couldn't enter payment using the standard vendor agency code. Applying to default accountt.({vendor.DummyAccountCode})"); 
+                            Console.Write($"We couldn't enter payment using the standard vendor agency code. Applying to default accountt.({vendor.DummyAccountCode})");
+                            logger.ClientFoundDisplay = "none";
+                            logger.ClientNotFoundDisplay = "block";
+                            logger.AccountID = vendor.DummyAccountCode;
                             result = await AppliedEpicReceiptService.AddNewDetailToReceiptAndUpdateApplied(receiptObject, vendor, CardNumber, Amount, SwallowedAmount, c, RefNum, vendor.AgencyCode, logger, method, debitCredit);
                         }
                         
