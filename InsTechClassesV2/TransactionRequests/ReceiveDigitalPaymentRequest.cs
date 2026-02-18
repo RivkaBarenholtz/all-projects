@@ -17,6 +17,10 @@ namespace InsTechClassesV2.TransactionRequests
         public string Zip { get; set; }
         public string FirstName { get; set; }
 
+
+
+       
+
     }
 
 }

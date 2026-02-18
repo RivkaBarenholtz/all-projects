@@ -18,7 +18,7 @@ namespace InsTechClassesV2.TransactionRequests
         public string Zip { get; set; } = "";
 
         public string Token { get; set; }
-
+        public string Software { get; set; }
         public string BillingAddress { get; set; } = "";
         public string City { get; set; } = "";
         public string State { get; set; } = "";

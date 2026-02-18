@@ -87,7 +87,7 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
         setSubmitPressed(true);
         const paymentInfo = getPaymentInfo();
         console.log("Payment Info: ", paymentInfo);
-        const response = await createTransaction(paymentInfo, subdomain, (activeTab == "eCheck" && selectedMethod.value == "new") || selectedMethod.CardType == "ACH");
+        const response = await createTransaction({...paymentInfo, ...{Software: "Instech360-extension"}} , subdomain, (activeTab == "eCheck" && selectedMethod.value == "new") || selectedMethod.CardType == "ACH");
 
         if (response) {
             if (response.xStatus == "Approved")
