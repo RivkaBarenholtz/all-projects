@@ -70,11 +70,22 @@ namespace InsTechPortal
             {
                 return false;
             }
+           
             return true; 
         }
 
 
 
+        public static string GetEmailFromJwt(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token);
+
+            var email = jwt.Claims
+                .FirstOrDefault(c => c.Type == "email")?.Value;
+
+            return email;
+        }
         public static async Task<string> HandleLogin(LoginRequest request)
         {
             // Simulate a database check (replace with actual user authentication logic)

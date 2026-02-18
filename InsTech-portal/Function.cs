@@ -78,9 +78,6 @@ public class Function
             }
             else if (segments.Length == 1)
             {
-
-
-
                 secondToLastSegment = segments[0];
                 lastSegment = "";
             }
@@ -128,19 +125,7 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(new { message = "Missing or invalid Authorization header" });
                 return response;
             }
-            if (!caseInsensitiveHeaders.TryGetValue("user", out var userName) || userName == "")
-            {
-                response.StatusCode = 401;
-                response.Body = JsonConvert.SerializeObject(new { message = "Missing or invalid user header" });
-                return response;
-            }
-            else
-            {
-                var username = userName;
-
-                user = await User.GetUserAsync(username);
-                Console.WriteLine($"User Object: {JsonConvert.SerializeObject(user)}");
-            }
+               
             var tokenOnly = authHeader.Substring("Bearer ".Length);
             var isValidToken = await Login.IsTokenValid(tokenOnly);
             if (!isValidToken)
@@ -150,6 +135,8 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(new { message = "Invalid or expired token" });
                 return response;
             }
+            var username = Login.GetEmailFromJwt(tokenOnly);
+            user = await User.GetUserAsync(username)??new List<Cognito>();
 
             if (lastSegment == "get-available-vendors")
             {
@@ -661,7 +648,7 @@ public class Function
                 {
                     var CognitoUser = JsonConvert.DeserializeObject<Cognito>(request.Body);
                     Console.WriteLine($"Creating user: {JsonConvert.SerializeObject(CognitoUser)}");
-                    CognitoUser.AddedBy = userName;
+                    CognitoUser.AddedBy = username;
                     CognitoUser.AccountName = vendor.CardknoxAccountCode;
                     await User.CreateUserInCognitoAndDynamoDb(CognitoUser);
                     response.Body = JsonConvert.SerializeObject(new { message = "User created successfully" });
