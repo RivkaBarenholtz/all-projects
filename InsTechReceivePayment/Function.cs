@@ -33,7 +33,9 @@ public class Function
 
             var caseInsensitiveHeaders = new Dictionary<string, string>(request.Headers, StringComparer.OrdinalIgnoreCase);
 
-            
+            Console.WriteLine($"Received request: {JsonConvert.SerializeObject(request)}");
+
+
             string fullPath = request.RawPath ?? "";
 
             string[] segments = fullPath.Split('/', StringSplitOptions.RemoveEmptyEntries);

@@ -139,7 +139,7 @@ public class Function
                 var username = userName;
 
                 user = await User.GetUserAsync(username);
-                //Console.WriteLine(JsonConvert.SerializeObject(User));
+                Console.WriteLine($"User Object: {JsonConvert.SerializeObject(user)}");
             }
             var tokenOnly = authHeader.Substring("Bearer ".Length);
             var isValidToken = await Login.IsTokenValid(tokenOnly);
