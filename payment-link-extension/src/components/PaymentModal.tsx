@@ -202,12 +202,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
             </>
           )
           }
-          <div className='card' style={{padding: "10px"}}>
+          <div className='card' style={{color:"#148ec2cd" , padding: "10px"}}>
+            
            <a
             onClick={handleGoToInstech}
-            style={{textDecoration: "underline", color:"#148ec2cd" , marginLeft: "30px"}}> View transactions in InsTech360</a>
+            style={{textDecoration: "underline"}}> View transactions in InsTech360</a>↗
             <i
-              className="fa-solid fa-gear gear-icon"
+              className="fa-regular fa-gear gear-icon"
               title="View account settings"
               onClick={() => setShowSettings(true)}
             > 
