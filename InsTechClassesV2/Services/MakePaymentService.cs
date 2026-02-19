@@ -150,6 +150,7 @@ namespace InsTechClassesV2.Services
             apiRequest.xEmail = request?.Email ?? "";
             apiRequest.xToken = request?.Token;
             apiRequest.xInvoice = request?.InvoiceNumber ?? "";
+            apiRequest.xSoftwareName = request?.Software ?? "Insure-Tech"; 
 
             var rsp = await apiRequest.SendRequest(vendor);
             if (request.SavePaymentMethod && rsp.xResult != "E")
@@ -230,6 +231,7 @@ namespace InsTechClassesV2.Services
             apiRequest.xBillState = request.State ?? "";
             apiRequest.xBillFirstName = request.FirstName ?? "";
             apiRequest.xBillLastName = request?.AccountID ?? "";
+            apiRequest.xSoftwareName = request?.Software ?? "Insure-Tech";
             return await apiRequest.PostToCardknox(vendor);
 
 
@@ -258,6 +260,7 @@ namespace InsTechClassesV2.Services
             apiRequest.xName = request?.CardHolderName ?? "";
             apiRequest.xEmail = request?.Email ?? "";
             apiRequest.xToken = request?.Token;
+            apiRequest.xSoftwareName = request?.Software ?? "Insure-Tech"; 
             apiRequest.xInvoice = request?.InvoiceNumber?? "";
 
 

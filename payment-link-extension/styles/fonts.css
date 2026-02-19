@@ -509,8 +509,8 @@ input[type="number"]:focus {
 
 .gear-icon {
   color: var(--primary-dark);
-  padding-left: 30px;
-  font-size: 25px;
+  padding-left: 10px;
+  font-size: 15px;
 }
 
 .surcharge-cell .btn-group {

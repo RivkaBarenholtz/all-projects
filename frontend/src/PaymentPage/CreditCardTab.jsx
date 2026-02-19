@@ -159,6 +159,7 @@ export const CreditCardTab = (
             CSRCode: csrCode,
             CSREmail: csrEmail,
             CaptchaToken: captchaToken,
+            Software: isPortal ? "Instech-Pay-Portal" : "Instech-Payment-Site",
             isDevelopment: import.meta.env.VITE_ENV === 'development'
         };
        

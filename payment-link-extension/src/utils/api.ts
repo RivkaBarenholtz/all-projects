@@ -121,6 +121,7 @@ export class ApiService {
     };
     return await this.svc.post(url, body);
   }
+  
 
   async setDefaultPaymentMethod(token: string, accountCode: string): Promise<string> {
     const url = `${this.baseUrl()}/make-method-default`;

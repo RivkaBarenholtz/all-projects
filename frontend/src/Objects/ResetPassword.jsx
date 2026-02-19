@@ -257,8 +257,8 @@ const validation = validatePassword(newPassword);
               style={{
                 width: '100%',
                 padding: '14px',
-                backgroundColor: loading ? '#d1d5db' : '#e5e7eb',
-                color: loading ? '#9ca3af' : '#374151',
+                backgroundColor: 'rgb(4 57 105)',
+                color: '#ffffffff' ,
                 border: 'none',
                 borderRadius: '6px',
                 fontSize: '16px',

@@ -78,9 +78,6 @@ public class Function
             }
             else if (segments.Length == 1)
             {
-
-
-
                 secondToLastSegment = segments[0];
                 lastSegment = "";
             }
@@ -110,6 +107,14 @@ public class Function
             List<Cognito> user = new();
             Console.WriteLine(JsonConvert.SerializeObject(request));
 
+            if (lastSegment == "get-login-from-code")
+            {
+                SSOLogin ssoLogin = JsonConvert.DeserializeObject<SSOLogin>(request.Body);
+                await ssoLogin.GetFromDynamo();
+                response.Body = JsonConvert.SerializeObject(ssoLogin);
+                return response;
+
+            }
 
 
             if (!caseInsensitiveHeaders.TryGetValue("authorization", out var authHeader) || !authHeader.StartsWith("Bearer "))
@@ -120,19 +125,7 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(new { message = "Missing or invalid Authorization header" });
                 return response;
             }
-            if (!caseInsensitiveHeaders.TryGetValue("user", out var userName) || userName == "")
-            {
-                response.StatusCode = 401;
-                response.Body = JsonConvert.SerializeObject(new { message = "Missing or invalid user header" });
-                return response;
-            }
-            else
-            {
-                var username = userName;
-
-                user = await User.GetUserAsync(username);
-                //Console.WriteLine(JsonConvert.SerializeObject(User));
-            }
+               
             var tokenOnly = authHeader.Substring("Bearer ".Length);
             var isValidToken = await Login.IsTokenValid(tokenOnly);
             if (!isValidToken)
@@ -142,6 +135,8 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(new { message = "Invalid or expired token" });
                 return response;
             }
+            var username = Login.GetEmailFromJwt(tokenOnly);
+            user = await User.GetUserAsync(username)??new List<Cognito>();
 
             if (lastSegment == "get-available-vendors")
             {
@@ -653,7 +648,7 @@ public class Function
                 {
                     var CognitoUser = JsonConvert.DeserializeObject<Cognito>(request.Body);
                     Console.WriteLine($"Creating user: {JsonConvert.SerializeObject(CognitoUser)}");
-                    CognitoUser.AddedBy = userName;
+                    CognitoUser.AddedBy = username;
                     CognitoUser.AccountName = vendor.CardknoxAccountCode;
                     await User.CreateUserInCognitoAndDynamoDb(CognitoUser);
                     response.Body = JsonConvert.SerializeObject(new { message = "User created successfully" });
@@ -707,6 +702,14 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(new { message = "Success" });
                 return response;
             }
+            else if (lastSegment == "generate-sso-code")
+            {
+               SSOLogin ssoLogin = JsonConvert.DeserializeObject<SSOLogin>(request.Body);
+                var code = await ssoLogin.EnterIntoDynamo();
+                response.Body =  JsonConvert.SerializeObject(new {code });
+                return response; 
+            }
+            
             else if (lastSegment == "get-invoice-attachments")
             {
 
@@ -716,7 +719,7 @@ public class Function
                 string PolicyGUID = "";
                 if (iPolicyNum > 0)
                 {
-                    var policy = new AppliedPolicyRequest(iPolicyNum); 
+                    var policy = new AppliedPolicyRequest(iPolicyNum);
                     await policy.GetPropertiesFromApplied(vendor);
                     PolicyGUID = policy.PolicyGUID;
                 }
@@ -727,7 +730,7 @@ public class Function
 
                 dynamic resp = new
                 {
-                    attachments = data ,
+                    attachments = data,
                     policyGUID = PolicyGUID
                 };
                 response.Body = JsonConvert.SerializeObject(resp);

@@ -18,7 +18,7 @@ export const fetchWithAuth = async (url, options = {}, isText = false, isBlob = 
     }
     const response = await fetch(`${baseUrl}/${url}`, {
                 method: 'POST',
-                body: JSON.stringify(options),
+                body: JSON.stringify({...options, ...{Software: "Instech-Portal", xSoftwareName: "Instech-Portal"}}),
                 headers: headers
             });
    
