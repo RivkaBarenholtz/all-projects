@@ -10,17 +10,17 @@ const poolData = {
 
 const userPool = new CognitoUserPool(poolData);
 
-export default function ForgotPassword({setForgot, setMessage}) {
+export default function ForgotPassword({ setForgot, setMessage }) {
     const [email, setEmail] = useState("");
     const [sent, setSent] = useState(false);
     const [error, setError] = useState("");
-    const [resetCode , setResetCode]= useState("")
-    const [newPassword , setNewPassword]= useState("")
-    const [showPassword , setShowPassword ]= useState(false)
-    const [confirmPassword, setConfirmPassword]= useState("")
+    const [resetCode, setResetCode] = useState("")
+    const [newPassword, setNewPassword] = useState("")
+    const [showPassword, setShowPassword] = useState(false)
+    const [confirmPassword, setConfirmPassword] = useState("")
     const [message, setSendMessage] = useState("If an account exists for this email, you will receive a password reset code.")
-    const [resending , setResending ]= useState(false)
-    const [loading , setLoading ]= useState(false)
+    const [resending, setResending] = useState(false)
+    const [loading, setLoading] = useState(false)
 
     const sendCode = () => {
         if (!email || !isValidEmail(email)) {
@@ -37,13 +37,13 @@ export default function ForgotPassword({setForgot, setMessage}) {
 
     const resend = () => {
         setResending(true);
-        sendCode(); 
-        setSendMessage ("A new code has been sent (if this email exists in our system).")
-        setResending (false)
-  };
+        sendCode();
+        setSendMessage("A new code has been sent (if this email exists in our system).")
+        setResending(false)
+    };
 
 
-      
+
     const validatePassword = (password) => {
         const hasMinLength = password.length >= 8;
         const hasNumber = /\d/.test(password);
@@ -52,40 +52,39 @@ export default function ForgotPassword({setForgot, setMessage}) {
         return { hasMinLength, hasNumber, hasSymbol };
     };
     const validation = validatePassword(newPassword);
-    
-    const handleSubmit = (e)=> 
-    {
-        e.preventDefault(); 
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
         setError('');
-        
+
 
         if (!validation.hasMinLength || !validation.hasNumber || !validation.hasSymbol) {
-        setError('Please meet all password requirements');
-        return;
+            setError('Please meet all password requirements');
+            return;
         }
 
         if (newPassword !== confirmPassword) {
-        setError('Passwords do not match');
-        return;
+            setError('Passwords do not match');
+            return;
         }
 
 
-        submitNewPassword(); 
+        submitNewPassword();
     }
 
     const submitNewPassword = () => {
-    const user = new CognitoUser({ Username: email, Pool: userPool });
+        const user = new CognitoUser({ Username: email, Pool: userPool });
 
         user.confirmPassword(resetCode, newPassword, {
-        onSuccess() {
-            setMessage("Password reset successfully")
-            setForgot(false);
-        },
-        onFailure(err) {
-            setError(err.message);
-        }
+            onSuccess() {
+                setMessage("Password reset successfully")
+                setForgot(false);
+            },
+            onFailure(err) {
+                setError(err.message);
+            }
         });
-  };
+    };
 
 
     return (
@@ -106,10 +105,10 @@ export default function ForgotPassword({setForgot, setMessage}) {
                 </>
             ) : (
                 <>
-                    <p style={{marginBottom : "20px"}}> {message} </p>
-               
+                    <p style={{ marginBottom: "20px" }}> {message} </p>
 
-                   <form onSubmit={handleSubmit}>
+
+                    <form onSubmit={handleSubmit}>
                         {error && (
                             <div style={{
                                 backgroundColor: '#fef2f2',
@@ -124,12 +123,12 @@ export default function ForgotPassword({setForgot, setMessage}) {
                             </div>
                         )}
 
-                           <a className="forgot-password"  onClick={resend} disabled={resending}>
+                        <a className="forgot-password" onClick={resend} disabled={resending}>
                             {resending ? "Resending..." : "Resend Code"}
                         </a>
 
-                        
-                         <div style={{ marginBottom: '8px' }}>
+
+                        <div style={{ marginBottom: '8px' }}>
 
 
                             <label style={{
@@ -143,7 +142,7 @@ export default function ForgotPassword({setForgot, setMessage}) {
                             </label>
                             <div style={{ position: 'relative' }}>
                                 <input
-                                   type="text"
+                                    type="text"
                                     value={resetCode}
                                     onChange={(e) => setResetCode(e.target.value)}
                                     placeholder="Confirmation Code"
@@ -157,12 +156,12 @@ export default function ForgotPassword({setForgot, setMessage}) {
                                         outline: 'none',
                                         boxSizing: 'border-box'
                                     }}
-                                   
+
                                 />
-                               
+
                             </div>
                         </div>
-                       
+
 
                         {/* Password Requirements */}
                         <div style={{
@@ -192,8 +191,8 @@ export default function ForgotPassword({setForgot, setMessage}) {
                             </ul>
                         </div>
                         {/* New Password */}
-                       
-                         <div style={{ marginBottom: '8px' }}>
+
+                        <div style={{ marginBottom: '8px' }}>
 
 
                             <label style={{
@@ -221,7 +220,7 @@ export default function ForgotPassword({setForgot, setMessage}) {
                                         outline: 'none',
                                         boxSizing: 'border-box'
                                     }}
-                                   
+
                                 />
                                 <button
                                     type="button"
@@ -282,8 +281,8 @@ export default function ForgotPassword({setForgot, setMessage}) {
                             style={{
                                 width: '100%',
                                 padding: '14px',
-                                backgroundColor: loading ? '#d1d5db' : '#e5e7eb',
-                                color: loading ? '#9ca3af' : '#374151',
+                                backgroundColor: 'rgb(4 57 105)',
+                                color: '#ffffffff',
                                 border: 'none',
                                 borderRadius: '6px',
                                 fontSize: '16px',
@@ -291,7 +290,7 @@ export default function ForgotPassword({setForgot, setMessage}) {
                                 cursor: loading ? 'not-allowed' : 'pointer',
                                 transition: 'background-color 0.2s'
                             }}
-                           
+
                         >
                             {loading ? 'Updating...' : 'Update Password'}
                         </button>
@@ -299,9 +298,9 @@ export default function ForgotPassword({setForgot, setMessage}) {
 
                     </form>
                 </>
-                 //confirmation code 
-                 //email 
-                 // reset email 
+                //confirmation code 
+                //email 
+                // reset email 
             )}
         </div>
     );
