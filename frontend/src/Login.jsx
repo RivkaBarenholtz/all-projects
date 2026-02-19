@@ -11,6 +11,7 @@ import { useAsync } from 'react-select/async';
 import { ResetPassword } from './Objects/ResetPassword';
 
 
+
 const poolData = {
   UserPoolId: 'us-east-1_guWlEt63Z',
   ClientId: '7nmt8a8ooc0oq1lcaj70n474ff',
@@ -25,6 +26,7 @@ export default function Login({ setIsAuthenticated }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [requireNewPassword, setRequireNewPassword] = useState(false);
@@ -116,7 +118,7 @@ export default function Login({ setIsAuthenticated }) {
       userAttributes,
       {
         onSuccess: (result) => {
-          setMessage('Password changed successfully! You are now logged in.');
+          setSuccessMessage('Password changed successfully! You are now logged in.');
           setRequireNewPassword(false);
           // tokens available here: result.getIdToken(), etc.
 
@@ -206,6 +208,7 @@ export default function Login({ setIsAuthenticated }) {
             </div>
           </div>
           <div className='error-div'> {message}</div>
+          <div style={{color: "green"}}> {successMessage}</div>
 
           <button type="submit" className="form-button">
             Sign In
@@ -213,7 +216,7 @@ export default function Login({ setIsAuthenticated }) {
           <a className='forgot-password' onClick={()=> setForgotPassword(true)}> Forgot Password</a>
         </form>
         :
-    <ForgotPassword setForgot={setForgotPassword} setMessage={setMessage}/>}
+    <ForgotPassword setForgot={setForgotPassword}  setMessage={setSuccessMessage}/>}
 
 
         <div className="login-footer">

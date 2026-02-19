@@ -14,7 +14,7 @@ namespace AmazonUtilities
 {
     public class SimpleEmail
     {
-        private static readonly string senderEmail = "info@mail.instechpay.co";
+        private static readonly string senderEmail = "InsTech 360 <no-reply@mail.instechpay.co>";
         private  List<string> defaultEmail = new List<string>();
         private List<string> recipientEmail = new List<string>();
         private string subject = "Test Email from AWS SES";
