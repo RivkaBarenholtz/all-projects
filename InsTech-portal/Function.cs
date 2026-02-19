@@ -140,16 +140,11 @@ public class Function
 
             if (lastSegment == "get-available-vendors")
             {
-                // Fix for CS4034: The 'await' operator can only be used within an async lambda expression.
-                // Updated the code to use an asynchronous lambda expression with the 'async' modifier.
-
-                var vendors = await Task.WhenAll(user.Select(async a => await Utilities.GetVendorByID(a.VendorId)));
+                var availableVendorIds = user.Select(x => x.VendorId);
+                var vendors = await Utilities.GetVendorListAsync();
+                vendors = vendors?.Where(v=> availableVendorIds.Contains(v.Id) ).ToList();
                 var returnedVendors = vendors.Select(a => new { a.CardknoxAccountCode, a.Id });
                 response.Body = JsonConvert.SerializeObject(returnedVendors);
-
-
-
-
                 return response;
             }
             else if (lastSegment == "get-user-info")
