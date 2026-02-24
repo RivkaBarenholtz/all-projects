@@ -283,6 +283,20 @@ export default function PaymentForm({ isPortal, onSuccess }) {
     }
   }, [policyId, vendor?.subdomain])
 
+    useEffect(() => {
+    const handleBoldSignMessage = (event) => {
+      // Verify it's from BoldSign
+      if (!event.origin.includes('boldsign.com')) return;
+      
+      const { action, data } = event.data;
+      
+        console.log('Received message from BoldSign:', action, data);
+      }
+    
+
+    window.addEventListener('message', handleBoldSignMessage);
+    return () => window.removeEventListener('message', handleBoldSignMessage);
+  }, []);
 
   useEffect(() => {
     if (accountCode.trim() == "" || accountCode == null || amount == 0) {
