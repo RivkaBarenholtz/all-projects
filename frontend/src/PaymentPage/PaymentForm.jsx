@@ -50,6 +50,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const invoiceAmount = searchParams.get("amount") ?? null;
   const epicClientNumber = searchParams.get("accountid") ?? 0;
   const invoiceIDparam = searchParams.get("invoiceid") ?? "";
+  const policyId = searchParams.get("policyid") ?? "";
   const errorCode = searchParams.get("error") ?? "";
   const csrEmail = searchParams.get("csremail")
   const csrCode = searchParams.get("csrcode")
@@ -80,6 +81,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
   const [focusedField, setFocusedField] = useState('')
   const [accountFocused, setAccountFocused] = useState(false);
+  const [policy , setPolicy ] = useState(null);
   const [amountFocused, setAmountFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isInvLoading, setIsInvLoading] = useState(false);
@@ -270,6 +272,16 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   } : {};
 
 
+  useEffect(() => {
+    if (policyId && vendor?.subdomain) {
+      const fetchPolicy = async () => {
+        const result = await fetch(`${BaseUrl()}/pay/${vendor?.subdomain}/get-policy-by-id?policyid=${policyId}`);
+        const json = await result.json();
+        setPolicy(json)
+      }
+      fetchPolicy();
+    }
+  }, [policyId, vendor?.subdomain])
 
 
   useEffect(() => {
@@ -297,10 +309,12 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           setIsLoading(false)
           return
         }
-        const clientid =
+        let clientid =
           (context ?? "app") === "app"
             ? BaseUrl().split('.')[0].split('//')[1]
             : (context ?? "ins-dev");
+        
+        if(clientid == "127") clientid = "ins-dev"
 
         const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/get-vendor`);
 
@@ -323,7 +337,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   useEffect(() => {
 
     const fetchData = async () => {
-      if (invoiceID) {
+      if (invoiceID && vendor?.subdomain) {
 
         const invoiceIdList = invoiceID.split(',');
 
@@ -337,11 +351,8 @@ export default function PaymentForm({ isPortal, onSuccess }) {
               result = await fetchWithAuth("get-invoice", { LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(Number(epicClientNumber)) ? null : epicClientNumber });
             }
             else {
-              const clientid =
-                (context ?? "app") === "app"
-                  ? BaseUrl().split('.')[0].split('//')[1]
-                  : (context ?? "ins-dev");
-              const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/get-invoice`, {
+            
+              const response = await fetch(`${BaseUrl()}/pay/${vendor.subdomain}/get-invoice`, {
                 method: 'POST',
                 body: JSON.stringify({ LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(Number(epicClientNumber)) ? null : epicClientNumber }),
                 headers: { 'Content-Type': 'application/json' }
@@ -373,7 +384,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
     fetchData();
 
-  }, [accountCode, invoiceID])
+  }, [accountCode, invoiceID, vendor?.subdomain])
 
   useEffect(() => {
     // Function to fetch data from your API
@@ -385,11 +396,8 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           result = await fetchWithAuth("get-surcharge", { ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID) || invoiceID == "" ? -1 : invoiceID });
         }
         else {
-          const clientid =
-            (context ?? "app") === "app"
-              ? BaseUrl().split('.')[0].split('//')[1]
-              : (context ?? "ins-dev");
-          const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/get-surcharge`, {
+         
+          const response = await fetch(`${BaseUrl()}/pay/${vendor.subdomain}/get-surcharge`, {
             method: 'POST',
             body: JSON.stringify({ ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID) || invoiceID == "" ? -1 : invoiceID }),
             headers: { 'Content-Type': 'application/json' }
@@ -407,8 +415,8 @@ export default function PaymentForm({ isPortal, onSuccess }) {
       }
 
     };
-    fetchData();
-  }, [accountCode, invoiceID])
+    if(vendor?.subdomain) fetchData();
+  }, [accountCode, invoiceID, vendor?.subdomain])
   // let style = {
   //     border: '1px solid black',
   //     fontsize: '14px',
@@ -422,20 +430,16 @@ export default function PaymentForm({ isPortal, onSuccess }) {
     const GetRefNum = async () => {
 
      
-      const clientid =
-        (context ?? "app") === "app"
-          ? BaseUrl().split('.')[0].split('//')[1]
-          : (context ?? "ins-dev");
-      const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/get-ref-num`, {
+     const response = await fetch(`${BaseUrl()}/pay/${vendor.subdomain}/get-ref-num`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
       const refNumObj = await response.json();
       setRefNum(refNumObj.refNum)
     }
-    GetRefNum();
+    if(vendor?.subdomain) GetRefNum();
   }
-    , []
+    , [vendor?.subdomain]
   )
 
   useEffect(
@@ -544,6 +548,10 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         </div>
       }
       <div className='main'>
+        {
+          policy?.SignPolicyLink && policy?.SignPolicyLink != "" &&
+          <iframe src={policy.SignPolicyLink} style={{ width: "100%", height: "1000px", border: "none" }} title="Sign Policy"></iframe>
+        }
         <div >
           <p className="error-field">{error}</p>
         </div>

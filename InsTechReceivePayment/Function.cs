@@ -91,10 +91,20 @@ public class Function
             if (lastSegment == "get-vendor")
             {
 
+                vendor.PaymentSiteSettings.subdomain = vendor.subdomain; 
                 response.Body = JsonConvert.SerializeObject(vendor.PaymentSiteSettings);
+
                 return response;
                     
 
+            }
+            else if (lastSegment == "get-policy-by-id")
+            {
+                var policyId = request.QueryStringParameters != null &&
+                         request.QueryStringParameters.TryGetValue("policyid", out var value) ? value : "";
+                var policy = await Policy.GetPolicyByIdAsync(vendor.Id.ToString(), policyId);
+                response.Body = JsonConvert.SerializeObject(policy);
+                return response;
             }
 
             else if (lastSegment == "get-surcharge")

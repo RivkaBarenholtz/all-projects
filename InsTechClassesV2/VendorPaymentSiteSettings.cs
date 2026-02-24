@@ -13,7 +13,7 @@ namespace InsTechClassesV2
         public string CardknoxIFeildsKey { get; set; }
         public string LogoUrl { get; set; }
         public string MobileLogoUrl { get; set; }
-
+        public string subdomain { get; set; }
         public BankInfo BankInfo { get; set; }
     }
 

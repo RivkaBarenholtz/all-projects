@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          -"*"
+
+        AllowHeaders:
+          - authorization
+          - content-type
+          - user
+          - vendor
+          - Access-Control-Allow-Private-Network  # Add this
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+
+  ReceiptFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: dotnet8
+      Handler: InsTechReceivePayment::InsTechReceivePayment.Function::FunctionHandler
+      CodeUri: .
+      MemorySize: 2048
+      Timeout: 30
+      Environment:
+        Variables:
+          SSL_CERT_FILE: /var/task/certs/cacert.pem
+      Events:
+        Proxy:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+            
+    Metadata:
+      DockerContext: ./ReceiptFunction
+      Dockerfile: Dockerfile
+      # Add this to handle the mount correctly
+      LocalMounts:
+        - Source: './boldsign.pem'
+          Target: '/etc/pki/ca-trust/source/anchors/boldsign.crt'

@@ -8,6 +8,7 @@ using AmazonUtilities;
 using AmazonUtilities.DynamoDatabase;
 using InsTechClassesV2;
 using InsTechClassesV2.AppliedEpic;
+using InsTechClassesV2.BoldSignApi;
 using InsTechClassesV2.Cardknox;
 using InsTechClassesV2.Services;
 using InsTechClassesV2.TransactionRequests;
@@ -43,6 +44,24 @@ public class Function
     {
         try
         {
+
+            // Arrange
+            //var apolicy = new Policy
+            //{
+            //    PolicyCode = "P123",
+            //    Amount = 1000,
+            //    Customer = new CardknoxNewCustomerApiRequest
+            //    {
+            //        BillFirstName = "John",
+            //        Email = "rivkyswia@gmail.com"
+            //    }
+            //};
+
+            // You would need to refactor BoldSignClient to inject dependencies for proper mocking.
+            // For now, this test will only show the structure.
+            // Act
+           // var result = await BoldSignClient.GenerateBoldSignUrl(apolicy);
+
             APIGatewayHttpApiV2ProxyResponse response = new APIGatewayHttpApiV2ProxyResponse
             {
                 Headers = new Dictionary<string, string>
@@ -191,15 +210,36 @@ public class Function
 
                 return response;
             }
+            else if (lastSegment == "get-policy-list")
+            {
+                //will become too slow hopefully by that time a new employee will deal with this 
+                var result= await Policy.GetListOfPoliciesFromDb(vendor.Id.ToString());
+                response.Body = JsonConvert.SerializeObject(result);
+                return response; 
+            }
+            else if (lastSegment == "create-policy")
+            {
+                var policy = JsonConvert.DeserializeObject<Policy>(request.Body);
+                await  policy?.InsertIntoDynamo(vendor);
+                response.Body = JsonConvert.SerializeObject(new
+                {
+                    Message = "Success",
+                    PolicyId = policy.Id
+                });
+
+            }
+
+
             else if (lastSegment == "get-cardknox-accounts")
             {
                 string clientLookup = request.QueryStringParameters?["accountid"] ?? "";
-                var body =  await AppliedEpicDataService.GetCardknoxAccounts(vendor, clientLookup);
+                var body = await AppliedEpicDataService.GetCardknoxAccounts(vendor, clientLookup);
                 response.Body = JsonConvert.SerializeObject(body);
                 return response;
             }
             else if (lastSegment == "get-vendor")
             {
+                vendor.PaymentSiteSettings.subdomain = vendor.subdomain; 
                 response.Body = JsonConvert.SerializeObject(vendor.PaymentSiteSettings);
                 return response;
             }
@@ -217,20 +257,20 @@ public class Function
 
                 return response;
             }
-            else if (lastSegment== "send-invoice-email")
+            else if (lastSegment == "send-invoice-email")
             {
                 var emailRequest = JsonConvert.DeserializeObject<EmailInvoiceRequest>(request.Body);
-                
+
                 var email = new SimpleEmail(emailRequest.recipients, emailRequest.Subject, emailRequest.Body, vendor.defaultEmail);
 
-                if(emailRequest.epicAttachments.Count > 0)
+                if (emailRequest.epicAttachments.Count > 0)
                 {
                     foreach (var attachmentUrl in emailRequest.epicAttachments)
                     {
                         var attachmentItemRsp = await AppliedApiClient.GetObject(attachmentUrl, new Dictionary<string, string>(), vendor);
                         var attachmentItemJson = await attachmentItemRsp.Content.ReadAsStringAsync();
                         dynamic attachmentItem = JsonConvert.DeserializeObject(attachmentItemJson);
-                        if(attachmentItem.file != null )
+                        if (attachmentItem.file != null)
                         {
                             var fileUrl = (string)attachmentItem.file.url;
                             var fileName = (string)attachmentItem.file.name;
@@ -245,9 +285,9 @@ public class Function
                     }
                 }
 
-                if (emailRequest?.Attachment?.Count > 0 )
+                if (emailRequest?.Attachment?.Count > 0)
                 {
-                    foreach ( var attachment in emailRequest.Attachment )
+                    foreach (var attachment in emailRequest.Attachment)
                     {
                         var base64Data = Regex.Replace(attachment.Data, @"^data:.*?;base64,", "");
 
@@ -264,9 +304,9 @@ public class Function
                         context.Logger.LogLine($"Received file: {attachment.Name}, Size: {fileBytes.Length} bytes");
                     }
 
-                   
 
-                   
+
+
                 }
                 await email.Send(false);
                 response.Body = JsonConvert.SerializeObject(new { message = "Success" });
@@ -625,7 +665,7 @@ public class Function
                 else
                     clientResponse = await AppliedGetClientRequest.Create(lookupCode, vendor, new GlobalLog());
 
-                if (!string.IsNullOrEmpty(clientResponse.CSRLookupCode) ) clientResponse.CSREmailAddress = await AppliedEpicReceiptService.GetCSREmailAddress(clientResponse.CSRLookupCode, vendor);
+                if (!string.IsNullOrEmpty(clientResponse.CSRLookupCode)) clientResponse.CSREmailAddress = await AppliedEpicReceiptService.GetCSREmailAddress(clientResponse.CSRLookupCode, vendor);
                 response.Body = JsonConvert.SerializeObject(clientResponse);
                 return response;
             }
@@ -678,8 +718,8 @@ public class Function
                 {
                     var users = await InsTechClassesV2.User.GetUsersAsync(vendor.Id);
                     //bool HideUser = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Hide ?? false;
-                   // users = users.Where(u => !u.Hide || HideUser ).ToList(); // exclude self
-                    users = users.Where(u => !u.Hide  ).ToList(); // exclude self
+                    // users = users.Where(u => !u.Hide || HideUser ).ToList(); // exclude self
+                    users = users.Where(u => !u.Hide).ToList(); // exclude self
                     response.Body = JsonConvert.SerializeObject(users);
 
                 }
@@ -699,12 +739,12 @@ public class Function
             }
             else if (lastSegment == "generate-sso-code")
             {
-               SSOLogin ssoLogin = JsonConvert.DeserializeObject<SSOLogin>(request.Body);
+                SSOLogin ssoLogin = JsonConvert.DeserializeObject<SSOLogin>(request.Body);
                 var code = await ssoLogin.EnterIntoDynamo();
-                response.Body =  JsonConvert.SerializeObject(new {code });
-                return response; 
+                response.Body = JsonConvert.SerializeObject(new { code });
+                return response;
             }
-            
+
             else if (lastSegment == "get-invoice-attachments")
             {
 

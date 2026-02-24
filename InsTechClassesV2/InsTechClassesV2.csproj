@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.1.7" />
+    <PackageReference Include="BoldSign.Api" Version="7.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="QuestPDF" Version="2025.7.4" />
   </ItemGroup>

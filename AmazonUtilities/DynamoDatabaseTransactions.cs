@@ -19,9 +19,12 @@ namespace AmazonUtilities
         private static readonly string tableName = "InsureTechData";
         private static readonly AmazonDynamoDBClient client = new AmazonDynamoDBClient();
 
+        private static string GetPK(string vendorid) =>  $"Vendor#{vendorid}";
+            
+
         public static async Task<Dictionary<string, AttributeValue>?> GetItemByIdAsync(string VendorId, string id, string objectType)
         {
-            string pk = $"Vendor#{VendorId}";
+            string pk = GetPK(VendorId);
             string sk = $"{objectType}#{id}";
 
             var request = new GetItemRequest
@@ -54,9 +57,10 @@ namespace AmazonUtilities
         //    return DynamoSerializer.Deserialize<T>(response.Item);
         //}
 
-    
+        
 
-        public static async Task<List<T>> GetItemsInJsonAsync<T>(string pk, string sk) where T : class
+
+        public static async Task<List<T>> GetVendorItemsInJsonAsync<T>(string pk, string sk) where T : class
         {
             var request = new QueryRequest
             {
@@ -128,7 +132,7 @@ namespace AmazonUtilities
             if (updates.ContainsKey("SK")) updates.Remove("SK");
             var (updateExpression, exprAttrNames, exprAttrValues) = BuildUpdateExpression(updates);
 
-            string pk = $"Vendor#{VendorId}";
+            string pk = GetPK(VendorId);
             string sk = $"{objectType}#{id}";
 
             var request = new UpdateItemRequest
@@ -150,7 +154,7 @@ namespace AmazonUtilities
         }
         public static async Task InsertItemAsync(string VendorId, Dictionary<string, AttributeValue> item, string id, string objectType)
         {
-            string pk = $"Vendor#{VendorId}";
+            string pk = GetPK(VendorId);
             string sk = $"{objectType}#{id}";
 
             item.Add("PK", new AttributeValue { S = pk });
@@ -165,9 +169,39 @@ namespace AmazonUtilities
             await client.PutItemAsync(request);
             Console.WriteLine($"item inserted with PK: {pk}");
         }
-    
 
-      public static  async Task<DynamoResult> QueryTransactionsAsync(
+
+        public static async Task<List<Dictionary<string, AttributeValue>>> GetAllItemsByEntity(string vendorId, string skPrefix)
+        {
+            var request = new QueryRequest
+            {
+                TableName = tableName, // replace or inject
+                KeyConditionExpression = "PK = :pk AND begins_with(SK, :skPrefix)",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+        {
+            { ":pk", new AttributeValue { S = GetPK(vendorId) } },
+            { ":skPrefix", new AttributeValue { S = skPrefix } }
+        }
+            };
+
+            var results = new List<Dictionary<string, AttributeValue>>();
+
+            QueryResponse response;
+
+            do
+            {
+                response = await client.QueryAsync(request);
+
+                results.AddRange(response.Items);
+
+                request.ExclusiveStartKey = response.LastEvaluatedKey;
+
+            } while (response.LastEvaluatedKey != null && response.LastEvaluatedKey.Count > 0);
+
+            return results;
+        }
+
+        public static  async Task<DynamoResult> QueryTransactionsAsync(
         string clientPk,
         DateTime startDate,
         DateTime endDate,
