@@ -83,12 +83,11 @@ namespace InsTechClassesV2.BoldSignApi
 
         public async static Task <string> DownloadSignedDocument (string _documentid)
         {
+
+            var apiClient = new ApiClient("https://api.boldsign.com",apiKey);
+            var documentClient = new DocumentClient(apiClient);
            
-            
-
-            var documentApi = new DocumentClient(apiKey);
-
-            using var fileStream = await documentApi.DownloadDocumentAsync(_documentid);
+            using var fileStream = await documentClient.DownloadDocumentAsync(_documentid);
             using var memoryStream = new MemoryStream();
 
             await fileStream.CopyToAsync(memoryStream);

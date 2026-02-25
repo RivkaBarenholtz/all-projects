@@ -11,6 +11,7 @@ using AmazonUtilities.DynamoDatabase;
 using InsTechClassesV2.Cardknox;
 using InsTechClassesV2.TransactionRequests;
 using InsTechClassesV2.BoldSign;
+using InsTechClassesV2.BoldSignApi;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -121,7 +122,22 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(policy);
                 return response;
             }
-
+            else if (lastSegment == "download-signed-policy-doc")
+            {
+                var documentId = request.QueryStringParameters["documentid"];
+                var base64 = await BoldSignClient.DownloadSignedDocument(documentId);
+                return new APIGatewayProxyResponse
+                {
+                    StatusCode = 200,
+                    IsBase64Encoded = true,
+                    Headers = new Dictionary<string, string>
+                {
+                    { "Content-Type", "application/pdf" },
+                    { "Content-Disposition", $"inline; filename=signed_{documentId}.pdf" }
+                },
+                    Body = base64
+                };
+            }
             else if (lastSegment == "get-surcharge")
             {
                 var surcharge = await MakePaymentService.GetClientSurcharge(request.Body, vendor);
