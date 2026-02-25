@@ -92,7 +92,7 @@ namespace InsTechClassesV2
 
                 PolicyCode = item.ContainsKey("PolicyCode") ? item["PolicyCode"].S : "",
                 PolicyDescription = item.ContainsKey("PolicyDescription") ? item["PolicyDescription"].S : "",
-                SignPolicyLink = item.ContainsKey("PayPolicyLink") ? item["PayPolicyLink"].S : "",
+                SignPolicyLink = item.ContainsKey("SignPolicyLink") ? item["SignPolicyLink"].S : "",
                 DocumentId = item.ContainsKey("EntityType") ? item["EntityType"].S : "",
                 IsSignedAndPaid = item.ContainsKey("IsSignedAndPaid") && (item["IsSignedAndPaid"].BOOL??false) ? true : false,
                 IsSigned = item.ContainsKey("IsSigned") && (item["IsSigned"].BOOL??false) ? true : false,
@@ -149,6 +149,7 @@ namespace InsTechClassesV2
             AddString("PolicyCode", PolicyCode);
             AddString("PolicyDescription", PolicyDescription);
             AddString("EntityType", DocumentId);
+            AddString ("SignPolicyLink", SignPolicyLink);
            
             // Customer fields (null-safe)
             if (Customer != null)
