@@ -61,7 +61,7 @@ namespace InsTechClassesV2
             return null;
 
         }
-        public static async Task<Policy?> GetPolicyByIdAsync(string vendorId, string policyId)
+        public static async Task<Policy?> GetPolicyByIdAsync(string vendorId, string policyId, string templateId)
         {
             var item = await DynamoDatabaseTransactions.GetItemByIdAsync(vendorId, policyId, "Policy");
            
@@ -70,7 +70,7 @@ namespace InsTechClassesV2
             {
                 if(!policy.IsSignedAndPaid && string.IsNullOrEmpty(policy.SignPolicyLink))
                 {
-                    policy.SignPolicyLink = await BoldSignApi.BoldSignClient.GenerateBoldSignUrl(policy, vendorId);
+                    policy.SignPolicyLink = await BoldSignApi.BoldSignClient.GenerateBoldSignUrl(policy, vendorId, templateId);
                 }
                 if (policy.IsSignedAndPaid)
                 {

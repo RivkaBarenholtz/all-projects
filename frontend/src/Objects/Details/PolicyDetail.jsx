@@ -28,6 +28,9 @@ export function PolicyDetail({ policy, onClose }) {
         navigator.clipboard.writeText(link);
         showSuccess("Pay link copied to clipboard");
      }
+
+
+     
     const body = () => {
 
         return <>

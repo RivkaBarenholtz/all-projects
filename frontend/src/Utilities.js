@@ -104,6 +104,36 @@ export const Sort = ( data,  field, ascending = true) =>{
     }
 
 
+    export const  DownloadPolicyDocument = async (documentId, policyid) => {
+        try {
+        const response = await fetch(
+            `${BaseUrl()}/download-signed-policy-doc?documentid=${documentId}`,
+            {
+            method: "GET",
+            }
+        );
+
+        if (!response.ok) throw new Error("Failed to fetch PDF");
+
+        // Get the response as a Blob (binary data)
+        const blob = await response.blob();
+
+        // Create a temporary link to trigger download
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `signed_${policyid}.pdf`; // filename
+        document.body.appendChild(link);
+        link.click();
+
+        // Clean up
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        } catch (err) {
+        console.error("Error downloading PDF:", err);
+        }
+  };
+
   export const handleUnauthorized = () => {
      
     localStorage.removeItem("idToken");

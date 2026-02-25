@@ -23,13 +23,13 @@ export const WireTab = ({
     csrEmail,
     refNum,
     validateAmount, 
+    submitPressed, setSubmitPressed,
     isSigned = true
 }) => {
     const [confNumber, setConfNumber] = useState("");
     //const [accountName , setAccountName] =  useState("");
     //const [date , setDate] =  useState("");
     const [captchaToken, setCaptchaToken] = useState('');
-    const [submitPressed, setSubmitPressed] = useState(false);
     const [showSubmit, setShowSubmit] = useState(true);
     const { context } = useParams();
     const navigate = useNavigate();

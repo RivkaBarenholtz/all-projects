@@ -1,6 +1,6 @@
 import React, { use, useRef, useState, useEffect } from 'react';
 import { useMediaQuery } from 'react-responsive';
-import { FormatCurrency, BaseUrl, fetchWithAuth } from '../Utilities';
+import { FormatCurrency, BaseUrl, fetchWithAuth , DownloadPolicyDocument} from '../Utilities';
 import { useSearchParams, useParams } from 'react-router-dom';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -54,6 +54,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const errorCode = searchParams.get("error") ?? "";
   const csrEmail = searchParams.get("csremail")
   const csrCode = searchParams.get("csrcode")
+  
 
   const isTabletOrMobile = useMediaQuery({ query: '(max-width: 768px)' });
 
@@ -77,6 +78,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const [invoiceID, setInvoiceID] = useState(invoiceIDparam ?? "");
   const [amountIsEditable, setAmountIsEditable] = useState(true);
   const [isSigned , setIsSigned] = useState(false);
+  const [submitPressed, setSubmitPressed] = useState(false);
 
 
   const [focusedField, setFocusedField] = useState('')
@@ -226,6 +228,9 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         isPortal={isPortal}
         onFinish={onSuccess}
         onError={onError}
+        subdomain={vendor.subdomain}
+        submitPressed={submitPressed}
+        setSubmitPressed={setSubmitPressed}
         isSigned={isSigned || isPortal || !policy}
       />,
     "eCheck":
@@ -248,6 +253,9 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         onFinish={onSuccess}
         onError={onError}
         ifieldsKey={vendor.CardknoxIFeildsKey}
+        subdomain={vendor.subdomain}
+        submitPressed={submitPressed}
+        setSubmitPressed={setSubmitPressed}
         isSigned={isSigned || isPortal || !policy}
       />,
     ...(vendor.BankInfo && !isPortal &&  {
@@ -268,6 +276,9 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           name={cardholderName}
           validateAmount={() => { setAmountFocused(true); }}
           zip={zip}
+          subdomain={vendor.subdomain}
+        submitPressed={submitPressed}
+        setSubmitPressed={setSubmitPressed}
           isSigned={isSigned || isPortal || !policy}
           invoiceNumber={invoiceID} />
     })
@@ -280,7 +291,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         const result = await fetch(`${BaseUrl()}/pay/${vendor?.subdomain}/get-policy-by-id?policyid=${policyId}`);
         const json = await result.json();
         setPolicy(json)
-        setIsSigned(policy.IsSigned);
+        setIsSigned(json.IsSigned);
       }
       fetchPolicy();
     }
@@ -577,12 +588,14 @@ export default function PaymentForm({ isPortal, onSuccess }) {
             src={policy.SignPolicyLink} 
             style={{ width: "100%", height: "1000px", border: "none" }} title="Sign Policy"></iframe>
         }
-        {isSigned && <div >Policy signed successfully. Please proceed to payment.
-            <a> Download Signed Policy</a>
+        {isSigned && <div style={{backgroundColor: "white", padding: "4px"}}> ✅Policy signed successfully. Please proceed to payment.
+            <a onClick={() => DownloadPolicyDocument(policy.DocumentId, policy.PolicyId)} style={{paddingLeft:"20px", cursor:"pointer", textDecoration: "underline", color: "#148dc2", fontWeight: "600"}}> Download Signed Policy</a>
           </div>}
-        <div >
-          <p className="error-field">{error}</p>
+        {error != "" && <div  style={{backgroundColor: "#b82630", color: 'white' , paddingLeft:"10px"}}>
+          <p >{error}</p>
+         { submitPressed && !isSigned && policy && <p> Please sign document before proceeding to payment. </p>}
         </div>
+}
         <div className='payment-container'>
 
           <div className='payment-left-panel'>

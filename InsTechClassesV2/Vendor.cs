@@ -35,6 +35,7 @@ namespace InsTechClassesV2
         public VendorPaymentSiteSettings PaymentSiteSettings { get; set; }
 
         public decimal CardknoxFeePercentage { get; set; } 
+        public string PolicyTemplateId { get; set; }
         
         public Boolean UsesEpicApi { get; set; }
         public string EpicSubdomain { get; set; }

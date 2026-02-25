@@ -31,7 +31,9 @@ export const CheckTab = (
         onFinish,
         onError, 
         ifieldsKey,
-        isSigned = true, 
+        isSigned = true,
+        submitPressed, setSubmitPressed, 
+        subdomain,
         showProcess = true  
     }) => {
     const [accountName, setAccountName] = useState('');
@@ -39,7 +41,7 @@ export const CheckTab = (
     const [routingNumber, setRoutingNumber] = useState('');
     const [accountType, setAccountType] = useState('checking');
     const [captchaToken, setCaptchaToken] = useState('');
-    const [submitPressed, setSubmitPressed] = useState(false);
+    
 
     const checkRef = useRef();
 
@@ -102,10 +104,7 @@ export const CheckTab = (
             Software: isPortal ? "Instech-Pay-Portal" : "Instech-Payment-Site",
             isDevelopment: import.meta.env.VITE_ENV === 'development'
         };
-         const clientid =
-            (context ?? "app") === "app"
-                ? BaseUrl().split('.')[0].split('//')[1]
-                : (context ?? "ins-dev");
+         
         try {
             let responseBody = null;
             if (isPortal) {
@@ -113,7 +112,7 @@ export const CheckTab = (
             }
             else {
             
-            const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/make-check-payment-to-cardknox`, {
+            const response = await fetch(`${BaseUrl()}/pay/${subdomain}/make-check-payment-to-cardknox`, {
                 method: 'POST',
                 body: JSON.stringify(request),
                 headers: { 'Content-Type': 'application/json' }
@@ -121,7 +120,7 @@ export const CheckTab = (
              responseBody = await response.json();
         }
             if (responseBody.xStatus == "Approved" ) {
-               if(!isPortal) window.location.href = `https://${clientid.replace("test", "ins-dev")}.instechpay.co/app/thank-you?amount=${amount}`;
+               if(!isPortal) window.location.href = `https://${subdomain}.instechpay.co/app/thank-you?amount=${amount}`;
                else onFinish(); 
                 
             }

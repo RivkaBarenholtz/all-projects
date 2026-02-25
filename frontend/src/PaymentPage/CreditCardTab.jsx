@@ -41,7 +41,8 @@ export const CreditCardTab = (
         onError,
         showProcess = true, 
         isSigned = true, 
-        subdomain
+        subdomain,
+        submitPressed, setSubmitPressed
 
     }) => {
 
@@ -55,8 +56,7 @@ export const CreditCardTab = (
     const [expMonth, setExpMonth] = useState('');
     const [expYear, setExpYear] = useState('');
     const [cvvValid, setCvvValid] = useState(true);
-    const [submitPressed, setSubmitPressed] = useState(false);
-
+    
     const cardRef = useRef();
     const cvvRef = useRef();
 
@@ -162,15 +162,14 @@ export const CreditCardTab = (
             CSRCode: csrCode,
             CSREmail: csrEmail,
             CaptchaToken: captchaToken,
+            Subdomain, 
+            submitPressed, setSubmitPressed,
             Software: isPortal ? "Instech-Pay-Portal" : "Instech-Payment-Site",
             isDevelopment: import.meta.env.VITE_ENV === 'development'
         
         };
        
-        const clientid =
-                    (context ?? "app") === "app"
-                        ? BaseUrl().split('.')[0].split('//')[1]
-                        : (context ?? "ins-dev");
+       
         try {
             let responseBody = null;
             if (isPortal) {
@@ -178,7 +177,7 @@ export const CreditCardTab = (
             }
             else {
                 
-                const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/make-payment-cardknox`, {
+                const response = await fetch(`${BaseUrl()}/pay/${subdomain}/make-payment-cardknox`, {
                     method: 'POST',
                     body: JSON.stringify(request),
                     headers: { 'Content-Type': 'application/json' }
@@ -186,7 +185,7 @@ export const CreditCardTab = (
                 responseBody = await response.json();
             }
             if (responseBody.xStatus == "Approved") {
-                if (!isPortal) window.location.href = `https://${clientid.replace("test", "ins-dev")}.instechpay.co/app/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
+                if (!isPortal) window.location.href = `https://${subdomain}.instechpay.co/app/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
                 else onFinish();
             }
             else {
