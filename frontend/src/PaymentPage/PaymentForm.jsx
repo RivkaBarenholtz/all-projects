@@ -280,7 +280,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         const result = await fetch(`${BaseUrl()}/pay/${vendor?.subdomain}/get-policy-by-id?policyid=${policyId}`);
         const json = await result.json();
         setPolicy(json)
-        setIsSigned(policy.isSigned);
+        setIsSigned(policy.IsSigned);
       }
       fetchPolicy();
     }
