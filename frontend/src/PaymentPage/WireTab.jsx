@@ -22,7 +22,8 @@ export const WireTab = ({
     csrCode,
     csrEmail,
     refNum,
-    validateAmount
+    validateAmount, 
+    isSigned = true
 }) => {
     const [confNumber, setConfNumber] = useState("");
     //const [accountName , setAccountName] =  useState("");
@@ -36,7 +37,7 @@ export const WireTab = ({
         setShowSubmit(false);
         setSubmitPressed(true);
         validateAmount();
-        if (confNumber == "" || amount <= 0 || (!import.meta.env.VITE_ENV === 'development' && (captchaToken == null || captchaToken == '' || captchaToken == ""))) {
+        if (confNumber == "" || !isSigned || amount <= 0 || (!import.meta.env.VITE_ENV === 'development' && (captchaToken == null || captchaToken == '' || captchaToken == ""))) {
             setShowSubmit(true);
             return;
         }

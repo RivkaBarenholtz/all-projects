@@ -10,12 +10,12 @@ namespace InsTechClassesV2.BoldSignApi
 {
     public class BoldSignClient
     {
-        public async static Task<string> GenerateBoldSignUrl ( Policy policy)
+        public async static Task<string> GenerateBoldSignUrl ( Policy policy, string vendorid )
         {
             Console.WriteLine("Generating URL for boldsign");
-            var boldSignApiClient = new BoldSign.Api.ApiClient() { ApiKey = "NmM5Nzk3NGQtNmRhMi00Mzk4LWJiZmYtMGUwOWI4YWJjOTIy" };
+            var boldSignApiClient = new ApiClient() { ApiKey = "NmM5Nzk3NGQtNmRhMi00Mzk4LWJiZmYtMGUwOWI4YWJjOTIy" };
            
-            var template = new BoldSign.Api.TemplateClient();
+            var template = new TemplateClient();
             var document = new DocumentClient();
 
             
@@ -66,8 +66,10 @@ namespace InsTechClassesV2.BoldSignApi
 
             var a = await template.SendUsingTemplateAsync(sendForSignFromTemplate);
             var b = a.DocumentId;
-            
-         
+
+            policy.DocumentId = a.DocumentId; 
+            await policy.UpdateDynamoAsync(vendorid);
+
             var c = await document.GetEmbeddedSignLinkAsync(b,policy.Customer.Email);
             return c.SignLink;
 

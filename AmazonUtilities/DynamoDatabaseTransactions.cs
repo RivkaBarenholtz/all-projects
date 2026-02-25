@@ -201,6 +201,25 @@ namespace AmazonUtilities
             return results;
         }
 
+        public static async Task<List<Dictionary<string, AttributeValue>>> QueryTableUsingIndexAsync ( string keyConditionExpression, Dictionary<string, AttributeValue> expressionAttributeValues)
+        {
+            var request = new QueryRequest
+            {
+                TableName = tableName,
+                IndexName = "EntityType-Date-index",
+                KeyConditionExpression = keyConditionExpression,
+                ExpressionAttributeValues = expressionAttributeValues
+            };
+            var results = new List<Dictionary<string, AttributeValue>>();
+            QueryResponse response;
+            do
+            {
+                response = await client.QueryAsync(request);
+                results.AddRange(response.Items);
+                request.ExclusiveStartKey = response.LastEvaluatedKey;
+            } while (response.LastEvaluatedKey != null && response.LastEvaluatedKey.Count > 0);
+            return results;
+        }
         public static  async Task<DynamoResult> QueryTransactionsAsync(
         string clientPk,
         DateTime startDate,

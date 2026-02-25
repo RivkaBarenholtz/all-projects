@@ -76,7 +76,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const [email, setEmail] = useState("");
   const [invoiceID, setInvoiceID] = useState(invoiceIDparam ?? "");
   const [amountIsEditable, setAmountIsEditable] = useState(true);
-
+  const [isSigned , setIsSigned] = useState(false);
 
 
   const [focusedField, setFocusedField] = useState('')
@@ -226,7 +226,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         isPortal={isPortal}
         onFinish={onSuccess}
         onError={onError}
-
+        isSigned={isSigned || isPortal || !policy}
       />,
     "eCheck":
       <CheckTab
@@ -248,6 +248,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         onFinish={onSuccess}
         onError={onError}
         ifieldsKey={vendor.CardknoxIFeildsKey}
+        isSigned={isSigned || isPortal || !policy}
       />,
     ...(vendor.BankInfo && !isPortal &&  {
       "Wire Funds":
@@ -267,6 +268,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           name={cardholderName}
           validateAmount={() => { setAmountFocused(true); }}
           zip={zip}
+          isSigned={isSigned || isPortal || !policy}
           invoiceNumber={invoiceID} />
     })
   } : {};
@@ -278,6 +280,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         const result = await fetch(`${BaseUrl()}/pay/${vendor?.subdomain}/get-policy-by-id?policyid=${policyId}`);
         const json = await result.json();
         setPolicy(json)
+        setIsSigned(policy.isSigned);
       }
       fetchPolicy();
     }
@@ -289,6 +292,8 @@ export default function PaymentForm({ isPortal, onSuccess }) {
       if (!event.origin.includes('boldsign.com')) return;
       
       const { action, data } = event.data;
+
+      if(action == "onDocumentSigned") setIsSigned(true);
       
         console.log('Received message from BoldSign:', action, data);
       }
@@ -563,9 +568,18 @@ export default function PaymentForm({ isPortal, onSuccess }) {
       }
       <div className='main'>
         {
-          policy?.SignPolicyLink && policy?.SignPolicyLink != "" &&
-          <iframe src={policy.SignPolicyLink} style={{ width: "100%", height: "1000px", border: "none" }} title="Sign Policy"></iframe>
+          policy?.SignPolicyLink 
+          && policy?.SignPolicyLink != "" 
+          && !isSigned 
+          && !policy.isSignedAndPaid 
+          &&
+          <iframe 
+            src={policy.SignPolicyLink} 
+            style={{ width: "100%", height: "1000px", border: "none" }} title="Sign Policy"></iframe>
         }
+        {isSigned && <div >Policy signed successfully. Please proceed to payment.
+            <a> Download Signed Policy</a>
+          </div>}
         <div >
           <p className="error-field">{error}</p>
         </div>

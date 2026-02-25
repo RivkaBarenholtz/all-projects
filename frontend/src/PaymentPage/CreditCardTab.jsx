@@ -39,7 +39,10 @@ export const CreditCardTab = (
         isPortal,
         onFinish,
         onError,
-        showProcess = true
+        showProcess = true, 
+        isSigned = true, 
+        subdomain
+
     }) => {
 
 
@@ -139,7 +142,7 @@ export const CreditCardTab = (
             // alert("Please verify that you are not a robot");
             return;
         }
-        if (!ccValid || expMonth == '' || expYear == '' || !cvvValid || !accountValid) return;
+        if (!ccValid || expMonth == '' || expYear == '' || !cvvValid || !accountValid || !isSigned) return;
         let request = {
             CardHolderName: cardHolderName,
             Zip: zip,
@@ -161,6 +164,7 @@ export const CreditCardTab = (
             CaptchaToken: captchaToken,
             Software: isPortal ? "Instech-Pay-Portal" : "Instech-Payment-Site",
             isDevelopment: import.meta.env.VITE_ENV === 'development'
+        
         };
        
         const clientid =

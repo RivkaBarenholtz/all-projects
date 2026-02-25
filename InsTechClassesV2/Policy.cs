@@ -22,7 +22,10 @@ namespace InsTechClassesV2
         public string DateCreated { get; set; }
         public string PolicyDescription { get; set;  }
         public string SignPolicyLink { get; set;  }
+        public string DocumentId { get; set; }
         public string Id { get; set;  }
+        
+        public Boolean IsSigned { get; set; } = false;
 
         public Boolean IsSignedAndPaid { get; set; } = false;
 
@@ -36,7 +39,26 @@ namespace InsTechClassesV2
             }
             return policies;
         }
+        public static async Task<Policy?> GetPolicyByDocumentIdAsync(string documentid)
+        {
+            var expressionAttributeValues = new Dictionary<string, AttributeValue>
+            {
+                {":entityType", new AttributeValue { S = documentid}}
+            };
+            string keyExpression = "EntityType = :entityType";
+            var result = await DynamoDatabaseTransactions.QueryTableUsingIndexAsync(keyExpression, expressionAttributeValues);
+            if (result != null && result.Count > 0)
+            {
+                var item = result.FirstOrDefault();
+                if (item != null)
+                {
+                    return MapFromDynamoItem(item);
+                }
 
+            }
+            return null;
+
+        }
         public static async Task<Policy?> GetPolicyByIdAsync(string vendorId, string policyId)
         {
             var item = await DynamoDatabaseTransactions.GetItemByIdAsync(vendorId, policyId, "Policy");
@@ -46,7 +68,7 @@ namespace InsTechClassesV2
             {
                 if(!policy.IsSignedAndPaid && string.IsNullOrEmpty(policy.SignPolicyLink))
                 {
-                    policy.SignPolicyLink = await BoldSignApi.BoldSignClient.GenerateBoldSignUrl(policy);
+                    policy.SignPolicyLink = await BoldSignApi.BoldSignClient.GenerateBoldSignUrl(policy, vendorId);
                 }
                 if (policy.IsSignedAndPaid)
                 {
@@ -71,7 +93,9 @@ namespace InsTechClassesV2
                 PolicyCode = item.ContainsKey("PolicyCode") ? item["PolicyCode"].S : "",
                 PolicyDescription = item.ContainsKey("PolicyDescription") ? item["PolicyDescription"].S : "",
                 SignPolicyLink = item.ContainsKey("PayPolicyLink") ? item["PayPolicyLink"].S : "",
+                DocumentId = item.ContainsKey("EntityType") ? item["EntityType"].S : "",
                 IsSignedAndPaid = item.ContainsKey("IsSignedAndPaid") && (item["IsSignedAndPaid"].BOOL??false) ? true : false,
+                IsSigned = item.ContainsKey("IsSigned") && (item["IsSigned"].BOOL??false) ? true : false,
 
                 Customer = new CustomerFilters
                 {
@@ -92,7 +116,15 @@ namespace InsTechClassesV2
 
             return policy;
         }
-        public async Task InsertIntoDynamo(Vendor vendor)
+
+        public async Task UpdateDynamoAsync(string vendorid)
+        {
+            var item = GenerateIntoDynamoItem();
+            await DynamoDatabaseTransactions.UpdateItemAsync(vendorid, item, this.Id.Replace("Policy#", ""), "Policy");
+               
+        }
+
+        private Dictionary<string, AttributeValue> GenerateIntoDynamoItem ()
         {
             var newItem = new Dictionary<string, AttributeValue>();
 
@@ -116,7 +148,8 @@ namespace InsTechClassesV2
             AddNumber("Amount", Amount);
             AddString("PolicyCode", PolicyCode);
             AddString("PolicyDescription", PolicyDescription);
-
+            AddString("EntityType", DocumentId);
+           
             // Customer fields (null-safe)
             if (Customer != null)
             {
@@ -134,6 +167,14 @@ namespace InsTechClassesV2
                 AddString("Zip", Customer.BillZip);
             }
 
+            newItem.Add("IsSignedAndPaid", IsSignedAndPaid ? new AttributeValue { BOOL = true } : new AttributeValue { BOOL = false });
+            newItem.Add("IsSigned", IsSigned ? new AttributeValue { BOOL = true } : new AttributeValue { BOOL = false });
+            return newItem;
+        }
+
+        public async Task InsertIntoDynamo(Vendor vendor)
+        {
+            var newItem = GenerateIntoDynamoItem(); 
             var newId = await WireRefNumGenerator.GenerateRefNumberAsync();
             
 

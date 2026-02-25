@@ -10,6 +10,7 @@ using  InsTechClassesV2;
 using AmazonUtilities.DynamoDatabase;
 using InsTechClassesV2.Cardknox;
 using InsTechClassesV2.TransactionRequests;
+using InsTechClassesV2.BoldSign;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -71,6 +72,20 @@ public class Function
                 string body = await AppliedEpicDataService.GetSubdomain(subdomain, clientLookup);
                 response.Body = body;
                 return response;
+            }
+            if(lastSegment == "post-boldsign-event")
+            {
+                var eventObject = JsonConvert.DeserializeObject<BoldSignWebhookEvent>(request.Body);
+                if (eventObject != null)
+                {
+                    if(eventObject.Event.EventType == "Signed")
+                    {
+                        var policy = await Policy.GetPolicyByDocumentIdAsync(eventObject.Data.DocumentId);
+                        policy.IsSigned = true;
+                        await policy.UpdateDynamoAsync(vendor.Id.ToString());
+                    }
+                }
+                return response; 
             }
 
             vendor = await Utilities.GetVendor(secondToLastSegment);

@@ -31,6 +31,7 @@ export const CheckTab = (
         onFinish,
         onError, 
         ifieldsKey,
+        isSigned = true, 
         showProcess = true  
     }) => {
     const [accountName, setAccountName] = useState('');
@@ -76,9 +77,9 @@ export const CheckTab = (
             //alert("Please verify that you are not a robot");
             return;
         }
-        if (checkToken == "" || routingNumber == "" || accountCode == "")
+        if (checkToken == "" || routingNumber == "" || accountCode == "" || !isSigned) {
             return;
-
+        }
         let request = {
             CardHolderName: cardHolderName,
             Zip: zip,
