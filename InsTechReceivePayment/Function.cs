@@ -82,7 +82,7 @@ public class Function
                     {
                         var policy = await Policy.GetPolicyByDocumentIdAsync(eventObject.Data.DocumentId);
                         policy.IsSigned = true;
-                        await policy.UpdateDynamoAsync(vendor.Id.ToString());
+                        await policy.UpdateDynamoAsync(policy.VendorId);
                     }
                 }
                 return response; 

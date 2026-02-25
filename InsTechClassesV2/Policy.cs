@@ -16,6 +16,8 @@ namespace InsTechClassesV2
     {
 
         public CustomerFilters Customer { get; set; }
+
+        public string VendorId { get; set;  }
         public decimal Amount { get; set; }
         public string PolicyCode { get; set; }
 
@@ -85,7 +87,7 @@ namespace InsTechClassesV2
 
             var policy = new Policy
             {
-                Id = item["SK"].S, 
+                Id = item["SK"].S,
                 Amount = item.ContainsKey("Amount") && !string.IsNullOrEmpty(item["Amount"].N)
                     ? decimal.Parse(item["Amount"].N)
                     : 0,
@@ -94,8 +96,9 @@ namespace InsTechClassesV2
                 PolicyDescription = item.ContainsKey("PolicyDescription") ? item["PolicyDescription"].S : "",
                 SignPolicyLink = item.ContainsKey("SignPolicyLink") ? item["SignPolicyLink"].S : "",
                 DocumentId = item.ContainsKey("EntityType") ? item["EntityType"].S : "",
-                IsSignedAndPaid = item.ContainsKey("IsSignedAndPaid") && (item["IsSignedAndPaid"].BOOL??false) ? true : false,
-                IsSigned = item.ContainsKey("IsSigned") && (item["IsSigned"].BOOL??false) ? true : false,
+                IsSignedAndPaid = item.ContainsKey("IsSignedAndPaid") && (item["IsSignedAndPaid"].BOOL ?? false) ? true : false,
+                IsSigned = item.ContainsKey("IsSigned") && (item["IsSigned"].BOOL ?? false) ? true : false,
+                VendorId = item["PK"].S.Replace("Vendor#", ""),
 
                 Customer = new CustomerFilters
                 {
