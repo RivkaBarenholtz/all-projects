@@ -589,7 +589,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
             style={{ width: "100%", height: "1000px", border: "none" }} title="Sign Policy"></iframe>
         }
         {isSigned && <div style={{backgroundColor: "white", padding: "4px"}}> ✅Policy signed successfully. Please proceed to payment.
-            <a onClick={() => DownloadPolicyDocument(policy.DocumentId, policy.PolicyId)} style={{paddingLeft:"20px", cursor:"pointer", textDecoration: "underline", color: "#148dc2", fontWeight: "600"}}> Download Signed Policy</a>
+            <a onClick={() => DownloadPolicyDocument(policy.DocumentId, policy.PolicyId, vendor.subdomain)} style={{paddingLeft:"20px", cursor:"pointer", textDecoration: "underline", color: "#148dc2", fontWeight: "600"}}> Download Signed Policy</a>
           </div>}
         {error != "" && <div  style={{backgroundColor: "#b82630", color: 'white' , paddingLeft:"10px"}}>
           <p >{error}</p>

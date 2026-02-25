@@ -107,7 +107,7 @@ export const Sort = ( data,  field, ascending = true) =>{
     export const  DownloadPolicyDocument = async (documentId, policyid, subdomain) => {
         try {
         const response = await fetch(
-            `${BaseUrl()}/pay/subdomain/download-signed-policy-doc?documentid=${documentId}`,
+            `${BaseUrl()}/pay/${subdomain}/download-signed-policy-doc?documentid=${documentId}`,
             {
             method: "GET",
             }
