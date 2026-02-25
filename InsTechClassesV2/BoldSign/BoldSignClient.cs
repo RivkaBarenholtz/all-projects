@@ -68,9 +68,12 @@ namespace InsTechClassesV2.BoldSignApi
             var b = a.DocumentId;
 
             policy.DocumentId = a.DocumentId; 
-            await policy.UpdateDynamoAsync(vendorid);
+
+           
 
             var c = await document.GetEmbeddedSignLinkAsync(b,policy.Customer.Email);
+            policy.SignPolicyLink = c.SignLink; 
+            await policy.UpdateDynamoAsync(vendorid);
             return c.SignLink;
 
             
