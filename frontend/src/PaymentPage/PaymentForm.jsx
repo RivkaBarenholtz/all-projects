@@ -835,11 +835,25 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           && !isSigned 
           && !policy.isSignedAndPaid 
           &&
+          <div style={{ position: "relative", marginTop: "20px"}}>
           <iframe 
             src={policy.SignPolicyLink} 
             style={{ width: "100%", height: "1000px", border: "none" }} title="Sign Policy">
-              
+
             </iframe>
+
+                <div style={{
+                  transform: "translateX(-50%)",
+                  position: "absolute",
+                  left: "50%",
+                 
+                  top: "960px",
+                  zIndex: "10000000",
+                  fontWeight: "bold",
+                  background: "#fad014"
+
+                }}> Finish and Pay</div>
+            </div>
         }
           
         </div>
