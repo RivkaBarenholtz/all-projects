@@ -425,7 +425,10 @@ public class Function
             }
             else if (lastSegment == "create-customer")
             {
+                //save all customers to dynamo db here 
+
                 var createCustomerRequest = JsonConvert.DeserializeObject<CardknoxNewCustomerApiRequest>(request.Body);
+                //
                 var createCustomerResponse = await createCustomerRequest.PostToCardknox(vendor);
                 response.Body = await createCustomerResponse.Content.ReadAsStringAsync();
                 return response;
@@ -589,6 +592,7 @@ public class Function
             }
             else if (lastSegment == "update-customer")
             {
+                //update in dynamo db here
                 var createCustomerRequest = JsonConvert.DeserializeObject<CardknoxUpdateCustomerApiRequest>(request.Body);
                 var createCustomerResponse = await createCustomerRequest.PostToCardknox(vendor);
                 response.Body = await createCustomerResponse.Content.ReadAsStringAsync();

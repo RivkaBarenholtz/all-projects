@@ -83,9 +83,10 @@ namespace InsTechClassesV2
                             FileData = documentBytes, 
                             ContentType = "application/pdf"   
                         };
-                        policy.SignPolicyLink = await BoldSignApi.BoldSignClient.GenerateBoldSignUrl(policy, vendorId, templateId, additionalDocument);
+                        
                     }
-                   
+                    policy.SignPolicyLink = await BoldSignApi.BoldSignClient.GenerateBoldSignUrl(policy, vendorId, templateId, null);
+
                 }
                 if (policy.IsSignedAndPaid)
                 {
