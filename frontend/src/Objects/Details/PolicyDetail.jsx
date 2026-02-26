@@ -1,13 +1,16 @@
 import Detail from "../Detail"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ActionButton } from "../../Components/UI/actionButton";
 import { Link , Check, Mail, Upload } from "lucide-react";
 import { fetchWithAuth } from "../../Utilities";
 import { useSuccessModal } from "../SuccessModal";
+import { Policy } from "../NewPolicy";
 export function PolicyDetail({ policy, onClose }) {
 
-    const [vendor, setVendor] = useState({});
+    const policyRef = useRef();
 
+    const [vendor, setVendor] = useState({});
+    const [isEditMode, setIsEditMode] = useState(false);
     useEffect(() => {
         const getVendor = async () => {
             const result = await fetchWithAuth("get-vendor", {})
@@ -19,7 +22,7 @@ export function PolicyDetail({ policy, onClose }) {
     const { showSuccess, SuccessModal } = useSuccessModal();
 
     const generateSignAndPayLink = () => {
-        const link = `https://pay.instechpay.co/${vendor?.subdomain}?policyid=${policy.PolicyId}&amount=${policy.PolicyAmount}`;
+        const link = `https://pay.instechpay.co/${vendor?.subdomain}?policyid=${policy.PolicyId.replace("Policy#","")}&amount=${policy.PolicyAmount}`;
         return link;
     }
 
@@ -29,12 +32,37 @@ export function PolicyDetail({ policy, onClose }) {
         showSuccess("Pay link copied to clipboard");
      }
 
-
+     const SaveChanges=() => {
+        if(policyRef.current){
+            policyRef.current.submit();
+        }
+     }
      
     const body = () => {
 
         return <>
-            <div className="trd-section">
+            
+                  <button
+                    title={isEditMode? "Save changes" :  "Edit"}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      marginRight: "10px",
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '18px',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+
+                    }}
+                    onClick={() => { setIsEditMode(!isEditMode); SaveChanges() }}
+                  >
+                    {isEditMode ? "✔" : "✎"}
+            </button>
+            { !isEditMode? <><div className="trd-section">
                 <h3 className="trd-section-title">Policy Information</h3>
                 <div className="trd-info-grid">
                     <div className="trd-info-row">
@@ -47,7 +75,7 @@ export function PolicyDetail({ policy, onClose }) {
                     </div>
                     <div className="trd-info-row">
                         <span className="trd-label">Policy Amount:</span>
-                        <span className="trd-value">{policy.PolicyAmount}</span>
+                        <span className="trd-value">{policy.PolicyAmountString}</span>
                     </div>
 
                 </div>
@@ -108,10 +136,7 @@ export function PolicyDetail({ policy, onClose }) {
                         flexDirection: 'column',
                         gap: '10px'
                     }}>
-                        <ActionButton >
-                                <Upload/> Upload Policy Document
-                            </ActionButton>
-                        {!policy.IsSignedAndPaid  ?
+                         {!policy.IsSignedAndPaid  ?
 
                         <>
                              
@@ -131,6 +156,13 @@ export function PolicyDetail({ policy, onClose }) {
                     </div>
                 </div>
             </div>
+            </>: 
+            <Policy 
+                ref={policyRef} 
+                isEdit={true} 
+                policy={policy} 
+                OnSuccess={() => { setIsEditMode(false); showSuccess("Policy updated successfully")}}/>
+        }
         </>
 
     }

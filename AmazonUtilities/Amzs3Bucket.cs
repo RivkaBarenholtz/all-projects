@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
+using Amazon.S3.Transfer;
 
 namespace AmazonUtilities
 {
@@ -38,7 +39,41 @@ namespace AmazonUtilities
                 return await reader.ReadToEndAsync();
             }
         }
+        public async Task UploadFileToS3(string data,string contentType )
+        {
+            // 1. Decode the Base64 string into bytes
+            byte[] fileBytes = Convert.FromBase64String(data);
 
+            // 2. Create a MemoryStream
+            using var stream = new MemoryStream(fileBytes);
+
+            // 3. Upload to S3
+            var transferUtility = new TransferUtility(s3Client); // s3Client = AmazonS3Client
+            await transferUtility.UploadAsync(new TransferUtilityUploadRequest
+            {
+                InputStream = stream,
+                Key = fileName,       // you can add folder paths: "invoices/Contract.pdf"
+                BucketName = bucketName,
+                ContentType = contentType
+            });
+
+            
+        }
+        public async Task<byte[]> ReadS3FileBytes()
+        {
+            var request = new GetObjectRequest
+            {
+                BucketName = bucketName,
+                Key = fileName
+            };
+
+            using (var response = await s3Client.GetObjectAsync(request))
+            using (var ms = new MemoryStream())
+            {
+                await response.ResponseStream.CopyToAsync(ms);
+                return ms.ToArray();  // returns the raw bytes of the PDF
+            }
+        }
 
         public async Task<string> UpdateFileContentAsync(string content)
         {

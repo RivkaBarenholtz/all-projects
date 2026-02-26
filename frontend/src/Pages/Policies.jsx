@@ -33,7 +33,7 @@ export default function Policies() {
       {
         DisplayValue:"Policy Amount",
         Show: true,
-        Value:  "PolicyAmount",
+        Value:  "PolicyAmountString",
         SortString : "PolicyAmount",
         SortAsc: true
           
@@ -120,7 +120,8 @@ export default function Policies() {
                 ...policy.Customer, 
                 PolicyCode: policy.PolicyCode,
                 PolicyDescription: policy.PolicyDescription,
-                PolicyAmount: FormatCurrency(policy.Amount),
+                PolicyAmountString: FormatCurrency(policy.Amount),
+                PolicyAmount: policy.Amount,
                 PolicyId: policy.Id
             }
       })

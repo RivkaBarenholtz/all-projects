@@ -2,6 +2,8 @@
 using AmazonUtilities;
 using AmazonUtilities.DynamoDatabase;
 using InsTechClassesV2.Cardknox;
+using BoldSign.Api;
+using BoldSign.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +26,7 @@ namespace InsTechClassesV2
         public string DateCreated { get; set; }
         public string PolicyDescription { get; set;  }
         public string SignPolicyLink { get; set;  }
+        public string QuoteFileName { get; set; }
         public string DocumentId { get; set; }
         public string Id { get; set;  }
         
@@ -61,16 +64,28 @@ namespace InsTechClassesV2
             return null;
 
         }
-        public static async Task<Policy?> GetPolicyByIdAsync(string vendorId, string policyId, string templateId)
+        public static async Task<Policy?> GetPolicyByIdAsync(string vendorId, string policyId, string templateId, string vendorFolder)
         {
             var item = await DynamoDatabaseTransactions.GetItemByIdAsync(vendorId, policyId, "Policy");
            
             var policy =  MapFromDynamoItem(item);
             if(policy != null)
             {
-                if(!policy.IsSignedAndPaid && string.IsNullOrEmpty(policy.SignPolicyLink))
+                if(!policy.IsSignedAndPaid && !policy.IsSigned && string.IsNullOrEmpty(policy.SignPolicyLink))
                 {
-                    policy.SignPolicyLink = await BoldSignApi.BoldSignClient.GenerateBoldSignUrl(policy, vendorId, templateId);
+                    if(!string.IsNullOrEmpty(policy.QuoteFileName))
+                    {
+                        var document = new AmzS3Bucket(vendorFolder, $"policies/{policy.QuoteFileName}");
+                        var documentBytes = await document.ReadS3FileBytes();
+                        DocumentFileBytes additionalDocument = new DocumentFileBytes
+                        {
+                            FileName = policy.QuoteFileName,
+                            FileData = documentBytes, 
+                            ContentType = "application/pdf"   
+                        };
+                        policy.SignPolicyLink = await BoldSignApi.BoldSignClient.GenerateBoldSignUrl(policy, vendorId, templateId, additionalDocument);
+                    }
+                   
                 }
                 if (policy.IsSignedAndPaid)
                 {

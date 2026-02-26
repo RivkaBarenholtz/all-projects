@@ -1,4 +1,5 @@
 using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.Runtime.Internal;
@@ -229,7 +230,17 @@ public class Function
 
             }
 
-
+            else if (lastSegment == "update-policy")
+            {
+                var policy = JsonConvert.DeserializeObject<Policy>(request.Body);
+                await policy.UpdateDynamoAsync(vendor.Id.ToString()); 
+                response.Body = JsonConvert.SerializeObject(new
+                {
+                    Message = "Success",
+                    PolicyId = policy.Id
+                });
+                return response; 
+            }
             else if (lastSegment == "get-cardknox-accounts")
             {
                 string clientLookup = request.QueryStringParameters?["accountid"] ?? "";
@@ -239,7 +250,7 @@ public class Function
             }
             else if (lastSegment == "get-vendor")
             {
-                vendor.PaymentSiteSettings.subdomain = vendor.subdomain; 
+                vendor.PaymentSiteSettings.subdomain = vendor.subdomain;
                 response.Body = JsonConvert.SerializeObject(vendor.PaymentSiteSettings);
                 return response;
             }
@@ -310,6 +321,16 @@ public class Function
                 }
                 await email.Send(false);
                 response.Body = JsonConvert.SerializeObject(new { message = "Success" });
+
+            }
+            else if (lastSegment == "save-policy-file")
+            {
+                var attachment = JsonConvert.DeserializeObject<AttachmentInfo>(request.Body);
+                var s3 = new AmzS3Bucket(vendor.s3BucketName, $"policies/{attachment.Name}");
+                string base64 = attachment.Data.Contains(",")
+                ? attachment.Data.Substring(attachment.Data.IndexOf(",") + 1)
+                 : attachment.Data;
+                await s3.UploadFileToS3(base64, "application/pdf");
 
             }
             else if (lastSegment == "void-transaction")

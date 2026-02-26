@@ -12,20 +12,20 @@ namespace InsTechClassesV2.BoldSignApi
     public class BoldSignClient
     {
         public static string apiKey = "NmM5Nzk3NGQtNmRhMi00Mzk4LWJiZmYtMGUwOWI4YWJjOTIy";
-        public async static Task<string> GenerateBoldSignUrl ( Policy policy, string vendorid, string templateId )
+        public async static Task<string> GenerateBoldSignUrl ( Policy policy, string vendorid, string templateId , DocumentFileBytes? additionalDocument)
         {
             Console.WriteLine("Generating URL for boldsign");
             var boldSignApiClient = new ApiClient() { ApiKey = "NmM5Nzk3NGQtNmRhMi00Mzk4LWJiZmYtMGUwOWI4YWJjOTIy" };
            
             var template = new TemplateClient();
             var document = new DocumentClient();
-
+           
             
            
             SendForSignFromTemplate sendForSignFromTemplate = new SendForSignFromTemplate()
             {
                 TemplateId =templateId, 
-                
+               
                 DisableEmails = true,
                 Roles = [
                     new Roles(){
@@ -65,6 +65,10 @@ namespace InsTechClassesV2.BoldSignApi
                     ]
 
             };
+            if(additionalDocument != null)
+            {
+                sendForSignFromTemplate.Files =new List<IDocumentFile> { additionalDocument }; 
+            }
 
             var a = await template.SendUsingTemplateAsync(sendForSignFromTemplate);
             var b = a.DocumentId;
