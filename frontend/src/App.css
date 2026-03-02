@@ -284,12 +284,18 @@ form {
   color: white;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background: #2d4f8e;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(54, 101, 183, 0.4);
 }
 
+.btn-primary:disabled {
+  background-color: #ccc;      /* greyed out */
+  color: #666;                 /* dim text */
+  cursor: not-allowed;         /* show “not allowed” cursor */
+  opacity: 0.6;                /* optional transparency */
+}
 .btn-apply {
   margin: 2px auto 5px auto;
   /* top auto bottom auto spacing */

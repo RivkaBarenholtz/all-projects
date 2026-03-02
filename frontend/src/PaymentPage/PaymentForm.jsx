@@ -13,6 +13,7 @@ import { CheckTab } from './CheckTab.jsx';
 import Loader from './Loader.jsx';
 import { set } from 'date-fns';
 import { ConfirmationModal } from '../Objects/ConfimationModal.jsx';
+import { ref } from 'node:process';
 
 
 
@@ -23,26 +24,9 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const { context } = useParams();
   // const [status, setStatus] = useState("loading");
 
-  // useEffect(() => {
-  //   fetch(`g.instechpay.co/pay/${param}/validate`)
-  //     .then(res => {
-  //       if (res.status === 404) throw new Error("not-found");
-  //       if (!res.ok) throw new Error("error");
-  //       return res.json();
-  //     })
-  //     .then(() => setStatus("ok"))
-  //     .catch(err => {
-  //       if (err.message === "not-found") {
-  //         setStatus("not-found");
-  //       } else {
-  //         setStatus("error");
-  //       }
-  //     });
-  // }, [param]);
 
-  // if (status === "loading") return <div>Loading…</div>;
-  // if (status === "not-found") return <div> 404 Page not found</div>  ;
-  // if (status === "error") return <div>Something went wrong</div>;
+
+
 
 
   const [searchParams] = useSearchParams();
@@ -232,6 +216,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         submitPressed={submitPressed}
         setSubmitPressed={setSubmitPressed}
         isSigned={isSigned || isPortal || !policy}
+        ref={cardtabRef}
       />,
     "eCheck":
       <CheckTab
@@ -257,6 +242,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         submitPressed={submitPressed}
         setSubmitPressed={setSubmitPressed}
         isSigned={isSigned || isPortal || !policy}
+        ref={checktabRef}
       />,
     ...(vendor.BankInfo && !isPortal &&  {
       "Wire Funds":
@@ -277,9 +263,10 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           validateAmount={() => { setAmountFocused(true); }}
           zip={zip}
           subdomain={vendor.subdomain}
-        submitPressed={submitPressed}
-        setSubmitPressed={setSubmitPressed}
+          submitPressed={submitPressed}
+          setSubmitPressed={setSubmitPressed}
           isSigned={isSigned || isPortal || !policy}
+          ref={wiretabRef}
           invoiceNumber={invoiceID} />
     })
   } : {};
@@ -298,14 +285,29 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   }, [policyId, vendor?.subdomain])
 
     useEffect(() => {
-    const handleBoldSignMessage = (event) => {
+    const handleBoldSignMessage = async(event) => {
       // Verify it's from BoldSign
       if (!event.origin.includes('boldsign.com')) return;
       
       const { action, data } = event.data;
 
-      if(action == "onDocumentSigned") setIsSigned(true);
-      
+      if(action == "onDocumentSigned")
+        {
+          let result = ""; 
+          setIsSigned(true);
+          if(activeTab  == "Credit Card") result = cardtabRef.current?.submitToGateway();
+          else if(activeTab == "eCheck") result = checktabRef.current?.submitToGateway();
+          else if(activeTab == "Wire Funds") result=  wiretabRef.current?.submitToGateway();
+          if(result == "Approved") window.location.href = `https://${vendor.subdomain}.instechpay.co/app/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
+          else {
+            alert (result);
+            const  resp = await fetchWithAuth("void-policy-document", {documentId: policy?.DocumentId})
+            setPolicy({...policy, SignPolicyLink: resp?.NewUrl, DocumentId: resp?.DocumentId});
+
+          }
+        } 
+
+
         console.log('Received message from BoldSign:', action, data);
       }
     
@@ -546,6 +548,13 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
   const amountRef = useRef(null);
   const accountRef = useRef(null);
+
+  const checktabRef = useRef(null);
+
+  const wiretabRef = useRef(null);
+  const cardtabRef = useRef(null);
+
+
 
 
   useEffect(() => {

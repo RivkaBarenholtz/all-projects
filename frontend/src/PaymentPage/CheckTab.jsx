@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useImperativeHandle, forwardRef } from "react";
 import { FormatCurrency, BaseUrl } from '../Utilities';
 import { useNavigate } from 'react-router-dom';
 import ReCAPTCHA from "react-google-recaptcha";
@@ -11,8 +11,7 @@ import { ACH_TYPE } from "@cardknox/react-ifields";
 import { fetchWithAuth } from "../Utilities";
 
 
-export const CheckTab = (
-    { 
+export const CheckTab = forwardRef(( { 
         amount, 
         accountCode, 
         csrCode, 
@@ -34,8 +33,16 @@ export const CheckTab = (
         isSigned = true,
         submitPressed, setSubmitPressed, 
         subdomain,
-        showProcess = true  
-    }) => {
+        showProcess = true  , 
+        hidePaymentButton = false
+    }, ref) => {
+
+    
+     useImperativeHandle(ref, () => ({
+        submitToGateway
+    }));
+
+
     const [accountName, setAccountName] = useState('');
     const [checkToken, setCheckToken] = useState('');
     const [routingNumber, setRoutingNumber] = useState('');
@@ -66,22 +73,26 @@ export const CheckTab = (
         setCheckToken(data.xToken);
     };
 
-
-    const submitToGateway = async () => {
-        setEverythingFocused();
-        setSubmitPressed(true);
-        //setAccountFocused(true); //even if it wasn't focused on yet we want it to behave as if it was because submit was pressed 
+    const isValid =()=> {
         if (!achChecked && !isPortal) {
             //alert("Please agree to terms and conditions");
-            return;
+            return false;
         }
         if ((captchaToken == "" || captchaToken == null) && !isPortal && import.meta.env.VITE_ENV !== 'development') {
             //alert("Please verify that you are not a robot");
             return;
         }
         if (checkToken == "" || routingNumber == "" || accountCode == "" || !isSigned) {
-            return;
+            return false;
         }
+    }
+
+
+    const submitToGateway = async () => {
+        setEverythingFocused();
+        setSubmitPressed(true);
+        //setAccountFocused(true); //even if it wasn't focused on yet we want it to behave as if it was because submit was pressed 
+       if (!isValid()) return;
         let request = {
             CardHolderName: cardHolderName,
             Zip: zip,
@@ -120,7 +131,7 @@ export const CheckTab = (
              responseBody = await response.json();
         }
             if (responseBody.xStatus == "Approved" ) {
-               if(!isPortal) window.location.href = `https://${subdomain}.instechpay.co/app/thank-you?amount=${amount}`;
+               if(!isPortal && !hidePaymentButton) window.location.href = `https://${subdomain}.instechpay.co/app/thank-you?amount=${amount}`;
                else onFinish(); 
                 
             }
@@ -132,10 +143,13 @@ export const CheckTab = (
             }
             if (responseBody.xResult === 'V')
                 verify3DS(responseBody);
+            return responseBody.xStatus;
         } catch (error) {
             onError("❌ An error occurred while processing the payment. Please try again.");
             console.error(error);
+            return "Error";
         }
+        
     }
 
     return (
@@ -262,13 +276,14 @@ export const CheckTab = (
                 </div>
 
 
-                <div className="button-spaced mt-3">
+               { !hidePaymentButton &&
+              <div className="button-spaced mt-3">
                     <button className="btn btn-primary" type="button" onClick={submitToGateway}>
                         <FontAwesomeIcon icon={faCreditCard} style={{ paddingRight: '5px' }} />
                         Process Payment
                     </button>
                 </div>
-
+                }
                 </>
     }
             </div>
@@ -276,5 +291,5 @@ export const CheckTab = (
 
 
     )
-};
+});
 

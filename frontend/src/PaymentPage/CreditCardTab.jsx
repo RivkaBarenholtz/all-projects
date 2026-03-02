@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, forwardRef, useImperativeHandle } from "react";
 import { FormatCurrency, BaseUrl } from '../Utilities';
 import CardnoxField from './CardnoxField';
 import GooglePay from './GooglePay';
@@ -15,7 +15,7 @@ import { fetchWithAuth } from "../Utilities";
 
 
 
-export const CreditCardTab = (
+export const CreditCardTab = forwardRef((
     {
         amount,
         surcharge,
@@ -42,9 +42,10 @@ export const CreditCardTab = (
         showProcess = true, 
         isSigned = true, 
         subdomain,
-        submitPressed, setSubmitPressed
+        submitPressed, setSubmitPressed, 
+        hidePaymentButton = false
 
-    }) => {
+    }, ref) => {
 
 
     const [issuer, setIssuer] = useState('');
@@ -56,6 +57,11 @@ export const CreditCardTab = (
     const [expMonth, setExpMonth] = useState('');
     const [expYear, setExpYear] = useState('');
     const [cvvValid, setCvvValid] = useState(true);
+
+    useImperativeHandle(ref, () => ({
+        submitToGateway
+    }));
+
     
     const cardRef = useRef();
     const cvvRef = useRef();
@@ -184,7 +190,7 @@ export const CreditCardTab = (
                 responseBody = await response.json();
             }
             if (responseBody.xStatus == "Approved") {
-                if (!isPortal) window.location.href = `https://${subdomain}.instechpay.co/app/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
+                if (!isPortal && !hidePaymentButton) window.location.href = `https://${subdomain}.instechpay.co/app/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
                 else onFinish();
             }
             else {
@@ -339,7 +345,7 @@ export const CreditCardTab = (
 
                 {amount > 0 && !isNaN(surcharge) && accountValid && !isPortal ? <GooglePay amount={amount} surcharge={surcharge} AccountID={accountCode} captchaToken={captchaToken} cardHolderName={cardHolderName} csrCode={csrCode} csrEmail={csrEmail} invoiceID={invoiceID} zip={zip} /> : <></>}
 
-                <div className="button-spaced mt-3">
+               { !hidePaymentButton && <><div className="button-spaced mt-3">
                     <button className="btn btn-primary" type="button" onClick={submitToGateway}>
                         <FontAwesomeIcon icon={faCreditCard} style={{ paddingRight: '5px' }} />
                         Process Payment
@@ -356,10 +362,11 @@ export const CreditCardTab = (
                     </FontAwesomeIcon>
                     100% Secure <br /> SSL encryption &amp; PCI compliant
                 </p>
+                </>}
             </>}
         </div>
 
 
     )
-};
+});
 

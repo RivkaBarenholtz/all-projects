@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, forwardRef , useImperativeHandle, use} from "react"
 import { useNavigate } from "react-router-dom";
 import { BaseUrl } from "../Utilities";
 import { CopyIcon } from "../FilterObjects/CopyIcon";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useParams } from "react-router-dom";
 
-export const WireTab = ({
+export const WireTab = forwardRef(({
     bankInfo,
     accountId,
     invoiceNumber,
@@ -24,8 +24,10 @@ export const WireTab = ({
     refNum,
     validateAmount, 
     submitPressed, setSubmitPressed,
+    subdomain,
+    hidePaymentButton = false,
     isSigned = true
-}) => {
+}, ref) => {
     const [confNumber, setConfNumber] = useState("");
     //const [accountName , setAccountName] =  useState("");
     //const [date , setDate] =  useState("");
@@ -33,6 +35,10 @@ export const WireTab = ({
     const [showSubmit, setShowSubmit] = useState(true);
     const { context } = useParams();
     const navigate = useNavigate();
+
+    useImperativeHandle(ref, () => ({
+        SubmitWire
+    }));
     const SubmitWire = async () => {
         setShowSubmit(false);
         setSubmitPressed(true);
@@ -60,22 +66,18 @@ export const WireTab = ({
             CsrCode: csrCode,
             CsrEmail: csrEmail,
             CaptchaToken: captchaToken,
-            isDevelopment: import.meta.env.VITE_ENV === 'development'
+            isDevelopment: import.meta.env.VITE_ENV === 'development', 
         }
 
-        const clientid =
-            (context ?? "app") === "app"
-                ? BaseUrl().split('.')[0].split('//')[1]
-                : (context ?? "ins-dev");
-
-        await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/submit-wire`, {
+       
+        await fetch(`${BaseUrl()}/pay/${subdomain}/submit-wire`, {
             method: 'POST',
             body: JSON.stringify(submitWireReq),
             headers: { 'Content-Type': 'application/json' }
         });
 
 
-         window.location.href = `https://${clientid.replace("test", "ins-dev")}.instechpay.co/app/thank-you?amount=${submitWireReq.Amount}`;
+        if(!hidePaymentButton) window.location.href = `https://${subdomain}.instechpay.co/app/thank-you?amount=${submitWireReq.Amount}`;
         //call back end which 
         // 1. saves our payment 
 
@@ -173,4 +175,4 @@ export const WireTab = ({
             </button>}
         </div>
     </div>
-}
+})
