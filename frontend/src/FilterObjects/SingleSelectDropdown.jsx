@@ -3,13 +3,13 @@ import { Dropdown } from "../Objects/Dropdown";
 import { FilterObject } from "./FilterObject";
 
 
-export const SingleSelectDropdown = ({ options, selectedOption, onChange , label, additionalContent, style}) => {
+export const SingleSelectDropdown = ({ options, selectedOption, onChange , label, additionalContent, style, defaultText}) => {
 
     const [show, setShow ]= useState(false);
     return <FilterObject label={label} style={style}>
 
 
-        <Dropdown show={show} buttonClasses={'btn btn-secondary'} classes={'multi'} buttonContent={ <div>{selectedOption?.label?? label}▼</div>} >
+        <Dropdown  show={show} buttonClasses={'btn btn-secondary'} classes={'multi'} buttonContent={ <div>{selectedOption?.label??defaultText?? label}▼</div>} >
 
        
             <> {

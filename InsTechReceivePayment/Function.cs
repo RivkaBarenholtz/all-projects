@@ -118,7 +118,7 @@ public class Function
             {
                 var policyId = request.QueryStringParameters != null &&
                          request.QueryStringParameters.TryGetValue("policyid", out var value) ? value : "";
-                var policy = await Policy.GetPolicyByIdAsync(vendor.Id.ToString(), policyId, vendor.PolicyTemplateId, vendor.s3BucketName);
+                var policy = await Policy.GetPolicyByIdAsync(vendor.Id.ToString(), policyId, vendor.PolicyTemplateId, vendor.CardknoxMerchantId);
                 response.Body = JsonConvert.SerializeObject(policy);
                 return response;
             }

@@ -11,8 +11,10 @@
     <PublishReadyToRun>true</PublishReadyToRun>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Amazon.Lambda.Core" Version="2.5.0" />
-    <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4" />
+    <PackageReference Include="Amazon.Lambda.Core" Version="2.8.1" />
+    <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.5" />
+    <PackageReference Include="AWSSDK.BedrockRuntime" Version="4.0.16.1" />
+    <PackageReference Include="AWSSDK.Textract" Version="4.0.3.14" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\InsTechClassesV2\InsTechClassesV2.csproj" />

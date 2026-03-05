@@ -21,19 +21,17 @@ namespace InsTechClassesV2
 
         public string VendorId { get; set;  }
         public decimal Amount { get; set; }
+        public decimal CommissionAmount { get; set; }
         public string PolicyCode { get; set; }
-
         public string DateCreated { get; set; }
         public string PolicyDescription { get; set;  }
         public string SignPolicyLink { get; set;  }
         public string QuoteFileName { get; set; }
         public string DocumentId { get; set; }
+
         public string Id { get; set;  }
-        
         public Boolean IsSigned { get; set; } = false;
-
         public Boolean IsSignedAndPaid { get; set; } = false;
-
         public async static  Task <List<Policy>> GetListOfPoliciesFromDb (string vendorId)
         {
             List<Policy> policies = new();
@@ -64,7 +62,7 @@ namespace InsTechClassesV2
             return null;
 
         }
-        public static async Task<Policy?> GetPolicyByIdAsync(string vendorId, string policyId, string templateId, string vendorFolder)
+        public static async Task<Policy?> GetPolicyByIdAsync(string vendorId, string policyId, string templateId, int merchantid )
         {
             var item = await DynamoDatabaseTransactions.GetItemByIdAsync(vendorId, policyId, "Policy");
            
@@ -75,7 +73,7 @@ namespace InsTechClassesV2
                 {
                     if(!string.IsNullOrEmpty(policy.QuoteFileName))
                     {
-                        var document = new AmzS3Bucket(vendorFolder, $"policies/{policy.QuoteFileName}");
+                        var document = new AmzS3Bucket("policy-uploads", $"{merchantid}/{policy.Id}");
                         var documentBytes = await document.ReadS3FileBytes();
                         DocumentFileBytes additionalDocument = new DocumentFileBytes
                         {
@@ -83,7 +81,6 @@ namespace InsTechClassesV2
                             FileData = documentBytes, 
                             ContentType = "application/pdf"   
                         };
-                        
                     }
                     policy.SignPolicyLink = await BoldSignApi.BoldSignClient.GenerateBoldSignUrl(policy, vendorId, templateId, null);
 
@@ -106,6 +103,9 @@ namespace InsTechClassesV2
                 Id = item["SK"].S,
                 Amount = item.ContainsKey("Amount") && !string.IsNullOrEmpty(item["Amount"].N)
                     ? decimal.Parse(item["Amount"].N)
+                    : 0,
+                CommissionAmount = item.ContainsKey("CommissionAmount") && !string.IsNullOrEmpty(item["CommissionAmount"].N)
+                    ? decimal.Parse(item["CommissionAmount"].N)
                     : 0,
 
                 PolicyCode = item.ContainsKey("PolicyCode") ? item["PolicyCode"].S : "",
@@ -165,6 +165,7 @@ namespace InsTechClassesV2
 
             // Policy fields
             AddNumber("Amount", Amount);
+            AddNumber("CommissionAmount", CommissionAmount);
             AddString("PolicyCode", PolicyCode);
             AddString("PolicyDescription", PolicyDescription);
             AddString("EntityType", DocumentId);

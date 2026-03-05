@@ -77,6 +77,14 @@ export function PolicyDetail({ policy, onClose }) {
                         <span className="trd-label">Policy Amount:</span>
                         <span className="trd-value">{policy.PolicyAmountString}</span>
                     </div>
+                    <div className="trd-info-row">
+                        <span className="trd-label">Commission Amount:</span>
+                        <span className="trd-value">{policy.CommissionAmountString}</span>
+                    </div>
+                    <div className="trd-info-row">
+                        <span className="trd-label">Payable To Carrier:</span>
+                        <span className="trd-value">{policy.PayableAmountString}</span>
+                    </div>
 
                 </div>
             </div>

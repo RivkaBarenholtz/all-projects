@@ -1,4 +1,5 @@
 import { refreshSession } from "./AuthContext";
+import { PDFDocument } from 'pdf-lib';
 
 export const fetchWithAuth = async (url, options = {}, isText = false, isBlob = false) => {
   const token = localStorage.getItem('idToken');
@@ -66,6 +67,34 @@ export const fetchWithAuth = async (url, options = {}, isText = false, isBlob = 
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regex.test(email);
     }
+
+
+
+export async function extractPages(file, startPage, endPage ) {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdfDoc = await PDFDocument.load(arrayBuffer);
+  const newPdf = await PDFDocument.create();
+
+  const pagesToCopy = pdfDoc.getPages().slice(startPage, endPage);
+  const copiedPages = await newPdf.copyPages(pdfDoc, pagesToCopy.map((_, i) => i));
+  copiedPages.forEach((page) => newPdf.addPage(page));
+
+  const pdfBytes = await newPdf.save();
+  return new Blob([pdfBytes], { type: 'application/pdf' });
+}
+
+export async function uploadToS3(blob, presignedUrl) {
+  const response = await fetch(presignedUrl, {
+    method: 'PUT',
+    body: blob,
+    headers: {
+      'Content-Type': 'application/pdf'
+    }
+  });
+
+  if (!response.ok) throw new Error('S3 upload failed');
+  console.log('Upload successful!');
+}
 
 export const Sort = ( data,  field, ascending = true) =>{
       return data.slice().sort((a, b) => {

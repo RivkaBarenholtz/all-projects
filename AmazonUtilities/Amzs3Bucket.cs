@@ -59,6 +59,21 @@ namespace AmazonUtilities
 
             
         }
+
+        public async Task<string> GetUploadUrlAsync()
+        {
+           
+            var request = new GetPreSignedUrlRequest
+            {
+                BucketName = bucketName,
+                Key =  fileName,
+                Verb = HttpVerb.PUT,
+                Expires = DateTime.UtcNow.AddMinutes(10),
+                ContentType = "application/pdf"
+            };
+
+            return  s3Client.GetPreSignedURL(request);
+        }
         public async Task<byte[]> ReadS3FileBytes()
         {
             var request = new GetObjectRequest

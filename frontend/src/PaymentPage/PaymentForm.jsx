@@ -13,7 +13,7 @@ import { CheckTab } from './CheckTab.jsx';
 import Loader from './Loader.jsx';
 import { set } from 'date-fns';
 import { ConfirmationModal } from '../Objects/ConfimationModal.jsx';
-import { ref } from 'node:process';
+import { FinanceTab } from './FinanceTab.jsx';
 
 
 
@@ -109,6 +109,13 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
   const [accountValid, setAccountValid] = useState(true);
 
+    const amountRef = useRef(null);
+  const accountRef = useRef(null);
+
+  const checktabRef = useRef(null);
+
+  const wiretabRef = useRef(null);
+  const cardtabRef = useRef(null);
 
   const customStyles = {
     menuList: (provided) => ({
@@ -244,6 +251,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         isSigned={isSigned || isPortal || !policy}
         ref={checktabRef}
       />,
+    "Finance": <FinanceTab submitPressed={submitPressed} setSubmitPressed={setSubmitPressed} amount={amount}/>,
     ...(vendor.BankInfo && !isPortal &&  {
       "Wire Funds":
         <WireTab
@@ -300,9 +308,9 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           else if(activeTab == "Wire Funds") result=  wiretabRef.current?.submitToGateway();
           if(result == "Approved") window.location.href = `https://${vendor.subdomain}.instechpay.co/app/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
           else {
-            alert (result);
-            const  resp = await fetchWithAuth("void-policy-document", {documentId: policy?.DocumentId})
-            setPolicy({...policy, SignPolicyLink: resp?.NewUrl, DocumentId: resp?.DocumentId});
+            // alert (result);
+            // const  resp = await fetchWithAuth("void-policy-document", {documentId: policy?.DocumentId})
+            // setPolicy({...policy, SignPolicyLink: resp?.NewUrl, DocumentId: resp?.DocumentId});
 
           }
         } 
@@ -546,13 +554,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   }
 
 
-  const amountRef = useRef(null);
-  const accountRef = useRef(null);
 
-  const checktabRef = useRef(null);
-
-  const wiretabRef = useRef(null);
-  const cardtabRef = useRef(null);
 
 
 

@@ -85,6 +85,13 @@ namespace InsTechClassesV2.BoldSignApi
             
         }
 
+        //public async static Task VoidDocument ()
+        //{
+        //    var apiClient = new ApiClient("https://api.boldsign.com", apiKey);
+        //    var documentClient = new DocumentClient(apiClient);
+        //    var result = await documentClient.;
+
+        //}
         public async static Task <string> DownloadSignedDocument (string _documentid)
         {
 

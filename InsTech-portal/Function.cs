@@ -214,6 +214,7 @@ public class Function
             else if (lastSegment == "get-policy-list")
             {
                 //will become too slow hopefully by that time a new employee will deal with this 
+                Console.Write("This is the latest code 3/2/2026");
                 var result= await Policy.GetListOfPoliciesFromDb(vendor.Id.ToString());
                 response.Body = JsonConvert.SerializeObject(result);
                 return response; 
@@ -222,10 +223,19 @@ public class Function
             {
                 var policy = JsonConvert.DeserializeObject<Policy>(request.Body);
                 await  policy?.InsertIntoDynamo(vendor);
+                string uploadUrl = "";
+                if(!String.IsNullOrEmpty(policy.QuoteFileName))
+                {
+                    var s3 = new AmzS3Bucket("policy-uploads", $"{vendor.CardknoxMerchantId}/{policy.Id}");
+                    uploadUrl = await s3.GetUploadUrlAsync();
+                }
+                    
                 response.Body = JsonConvert.SerializeObject(new
                 {
                     Message = "Success",
-                    PolicyId = policy.Id
+                    PolicyId = policy.Id, 
+                    UploadUrl = uploadUrl 
+
                 });
 
             }
@@ -323,22 +333,40 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(new { message = "Success" });
 
             }
-            else if (lastSegment == "save-policy-file")
-            {
-                var attachment = JsonConvert.DeserializeObject<AttachmentInfo>(request.Body);
-                var s3 = new AmzS3Bucket(vendor.s3BucketName, $"policies/{attachment.Name}");
-                string base64 = attachment.Data.Contains(",")
-                ? attachment.Data.Substring(attachment.Data.IndexOf(",") + 1)
-                 : attachment.Data;
-                await s3.UploadFileToS3(base64, "application/pdf");
+            //else if (lastSegment == "save-policy-file")
+            //{
+            //    var attachment = JsonConvert.DeserializeObject<AttachmentInfo>(request.Body);
+            //    var s3 = new AmzS3Bucket(vendor.s3BucketName, $"policies/{attachment.Name}");
+            //    string base64 = attachment.Data.Contains(",")
+            //    ? attachment.Data.Substring(attachment.Data.IndexOf(",") + 1)
+            //     : attachment.Data;
+            //    await s3.UploadFileToS3(base64, "application/pdf");
 
-            }
+            //}
             else if (lastSegment == "void-transaction")
             {
                 var voidResponse = await MakePaymentService.VoidTransaction(request.Body, vendor);
                 response.Body = await voidResponse.Content.ReadAsStringAsync();
                 return response;
             }
+
+            //else if (lastSegment == "void-policy-document")
+            //{
+            //    var docRequest = JsonConvert.DeserializeObject<dynamic>(request.Body);
+            //    var docid = docRequest?["documentId"]?.ToString();
+            //    if (!string.IsNullOrEmpty(docid))
+            //    {
+            //        var policy =await Policy.GetPolicyByDocumentIdAsync(docid);
+            //        var voidDocResponse = await BoldSignClient.VoidDocument(docid, vendor);
+            //        response.Body = JsonConvert.SerializeObject(new { success = voidDocResponse });
+            //        return response;
+            //    }
+            //    else
+            //    {
+            //        response.Body = JsonConvert.SerializeObject(new { success = false, message = "Missing documentId in request body" });
+            //        return response;
+            //    }
+            //}
 
             else if (lastSegment == "issue-refund-cardknox")
             {
@@ -769,7 +797,56 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(new { code });
                 return response;
             }
-
+            else if (lastSegment == "get-presigned-url")
+            {
+                string guid = Guid.NewGuid().ToString(); 
+                var s3 = new AmzS3Bucket("temp-document-storage", $"temp-{guid}");
+                string url = await s3.GetUploadUrlAsync();
+                response.Body = JsonConvert.SerializeObject(new { uploadUrl = url, fileName = guid });
+                return response;
+            }
+            else if (lastSegment == "analyze-policy-document")
+            {
+                string fileName = JsonConvert.DeserializeObject<dynamic>(request.Body)?["fileName"];
+                if (string.IsNullOrEmpty(fileName))
+                {
+                    response.StatusCode = 400;
+                    response.Body = JsonConvert.SerializeObject(new { message = "Missing fileName in request body" });
+                    return response;
+                }
+               string jobId  = await   DocumentAnalysis.StartTextractJob("temp-document-storage", fileName);
+                
+               response.Body = JsonConvert.SerializeObject(new {
+                    jobId 
+                })
+                ;
+               return response;
+            }
+            else if (lastSegment == "get-textract-result")
+            {
+                string jobId = JsonConvert.DeserializeObject<dynamic>(request.Body)?["jobId"];
+                if (string.IsNullOrEmpty(jobId))
+                {
+                    response.StatusCode = 400;
+                    response.Body = JsonConvert.SerializeObject(new { message = "Missing jobId in request body" });
+                    return response;
+                }
+                var textractResult = await DocumentAnalysis.GetTextractJobStatusAsync(jobId);
+                response.Body = JsonConvert.SerializeObject(new { status = textractResult });
+                return response;
+            }
+            else if (lastSegment == "get-bedrock-result")
+            {
+                string jobId = JsonConvert.DeserializeObject<dynamic>(request.Body)?["jobId"];
+                if (string.IsNullOrEmpty(jobId))
+                {
+                    response.StatusCode = 400;
+                    response.Body = JsonConvert.SerializeObject(new { message = "Missing jobId in request body" });
+                    return response;
+                }
+                var documentRsp = await DocumentAnalysis.GetJsonResponseFromBedrockAsync(jobId);
+                response.Body = documentRsp; 
+            }
             else if (lastSegment == "get-invoice-attachments")
             {
 

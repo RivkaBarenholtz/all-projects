@@ -39,6 +39,24 @@ export default function Policies() {
           
       },
 
+     
+      {
+        DisplayValue:"Commission Amount",
+        Show: true,
+        Value:  "CommissionAmountString",
+        SortString : "CommissionAmount",
+        SortAsc: true
+          
+      },
+      {
+        DisplayValue:"Payable To Carrier",
+        Show: true,
+        Value:  "PayableAmountString",
+        SortString : "PayableAmount",
+        SortAsc: true
+          
+      },
+
      {
          DisplayValue: "Last Name",
          Show: true,
@@ -121,7 +139,10 @@ export default function Policies() {
                 PolicyCode: policy.PolicyCode,
                 PolicyDescription: policy.PolicyDescription,
                 PolicyAmountString: FormatCurrency(policy.Amount),
+                CommissionAmountString: FormatCurrency(policy.CommissionAmount),
+                PayableAmountString: FormatCurrency(policy.Amount - policy.CommissionAmount),
                 PolicyAmount: policy.Amount,
+                PayableAmount: policy.Amount - policy.CommissionAmount,
                 PolicyId: policy.Id
             }
       })

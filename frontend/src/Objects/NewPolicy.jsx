@@ -1,7 +1,8 @@
-import { useState, forwardRef, useImperativeHandle } from "react";
+import { useState, forwardRef, useImperativeHandle, useEffect } from "react";
 import { ConfirmationModal } from "./ConfimationModal";
 import { CustomerInfo } from "./CustomerInfo";
-import { fetchWithAuth } from "../Utilities";
+import { fetchWithAuth, extractPages, uploadToS3 } from "../Utilities";
+import { TextractBedrockProcessor } from "./BedrockProcessor";
 import { X } from "lucide-react";
 
 export const Policy = forwardRef(
@@ -25,33 +26,65 @@ export const Policy = forwardRef(
     const [policyCode, setPolicyCode] = useState(policy?.PolicyCode ?? "");
     const [policyDescription, setPolicyDescription] = useState(policy?.PolicyDescription ?? "");
     const [policyAmount, setPolicyAmount] = useState(policy?.PolicyAmount ?? "");
+    const [commissionAmount, setCommissionAmount] = useState(policy?.CommissionAmount ?? "");
+    const [jobId, setJobId] = useState("");
+
+    const [bedrockResult, setBedrockResult] = useState(null);
 
     const [submitPressed, setSubmitPressed] = useState(false);
 
+    useEffect(() => {
+        if (bedrockResult && file) {
+          if(policyCode == "" || policyCode == null) setPolicyCode(bedrockResult.PolicyId ?? "");
+          if(street == "" || street == null) setStreet(bedrockResult.CustomerAddressLine1 ?? "");
+          if(policyDescription == "" || policyDescription == null) setPolicyDescription(bedrockResult.PolicyName ?? "");
+          if(state == "" || state == null) setState(bedrockResult.CustomerState ?? "");
+          if(city == "" || city == null) setCity(bedrockResult.CustomerCity ?? "");
+          if(zip == "" || zip == null) setZip(bedrockResult.CustomerZip ?? "");
+          if(email == "" || email == null) setEmail(bedrockResult.CustomerEmail ?? "");
+          if(phone == "" || phone == null) setPhone(bedrockResult.CustomerPhone ?? "");
+          if(company == "" || company == null) setCompany(bedrockResult.CustomerName ?? "");
+          if(policyAmount == "" || policyAmount == null || policyAmount) setPolicyAmount(bedrockResult.TotalPremiumAmount.replace('$', '').replace(',', '') ?? 0);
+        }
+      }, [bedrockResult])
 
-    const fileToBase64 = (file) => {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = (error) => reject(error);
+    
+
+
+    // const fileToBase64 = (file) => {
+    //   return new Promise((resolve, reject) => {
+    //     const reader = new FileReader();
+    //     reader.readAsDataURL(file);
+    //     reader.onload = () => resolve(reader.result);
+    //     reader.onerror = (error) => reject(error);
+    //   });
+    // }
+
+    const analyzePDF = async (file) => {
+      if (!file) return;
+      const presignedRsp = await fetchWithAuth("get-presigned-url", { });
+      const {uploadUrl, fileName} = presignedRsp;
+
+       //const blob = await  extractPages(file,0, 5);
+       await uploadToS3(file, uploadUrl);
+       const policy = await fetchWithAuth("analyze-policy-document", { fileName : `temp-${fileName}`});
+       setJobId(policy.jobId);
+    };
+
+    const SaveFile = async (file, url ) => {
+     await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/pdf"
+        },
+        body: file
       });
-    }
-
-    const SaveFile = async (file) => {
-      const base64File = await fileToBase64(file);
-      const requestBody = {
-        name: file.name,
-        type: file.type,
-        data: base64File
-      }
-
-      await fetchWithAuth("save-policy-file", requestBody);
     }
 
     const handleFileChange = async (e) => {
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
+      await analyzePDF(selectedFile);
       
     }
 
@@ -80,6 +113,7 @@ export const Policy = forwardRef(
         PolicyCode: policyCode,
         PolicyDescription: policyDescription,
         Amount: policyAmount,
+        CommissionAmount : commissionAmount,
         QuoteFileName: file ? file.name : "",
         Customer: NewCustomer,
         ... (isEdit ? { PolicyId: policy.PolicyId } : {})
@@ -93,7 +127,7 @@ export const Policy = forwardRef(
         console.error("Error:", resp.Error);
         return;
       }
-      if (file) await SaveFile(file);
+      if (file) await SaveFile(file, resp.UploadUrl);
       OnSuccess();
     };
 
@@ -108,29 +142,8 @@ export const Policy = forwardRef(
       <>
         <section className="form-section">
           <h3>Policy Info</h3>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Policy Code</label>
-              <input
-                type="text"
-                value={policyCode}
-                onChange={(e) => setPolicyCode(e.target.value)}
-              />
-              {submitPressed && policyCode == "" ? <div className="toast show" id="toast-for-account-holder">Policy Code required.</div> : ''}
 
-            </div>
 
-            <div className="form-group">
-              <label>Policy Description *</label>
-              <input
-                type="text"
-                value={policyDescription}
-                onChange={(e) => setPolicyDescription(e.target.value)}
-              />
-              {submitPressed && policyDescription == "" ? <div className="toast show" id="toast-for-account-holder">Policy Description required.</div> : ''}
-
-            </div>
-          </div>
           
           { !file && <div className="form-group">
             <label>Policy Contract</label>
@@ -157,20 +170,61 @@ export const Policy = forwardRef(
             />
           </div>
           }
+
+          {
+            jobId && jobId != "" && <TextractBedrockProcessor bedrockResult={bedrockResult} setBedrockResult={setBedrockResult} jobId={jobId} />
+          }
           {file && <div className="form-group"><span style={{fontWeight:"bold"}}>Selected file:</span> {file.name} 
           <span style={{fontWeight:"bold", paddingLeft:"10px", cursor:"pointer"}} title="Remove file">
             <X  size={11} onClick={()=> setFile(null)}/>
           </span> </div>}
-         
-          <div className="form-group">
-            <label>Amount *</label>
-            <input
-              type="text"
-              value={policyAmount}
-              onChange={(e) => setPolicyAmount(e.target.value)}
-            />
-            {submitPressed && policyAmount == "" ? <div className="toast show" id="toast-for-account-holder">Amount required.</div> : ''}
 
+          
+            <div className="form-group">
+              <label>Policy Code</label>
+              <input
+                type="text"
+                value={policyCode}
+                onChange={(e) => setPolicyCode(e.target.value)}
+              />
+              {submitPressed && policyCode == "" ? <div className="toast show" id="toast-for-account-holder">Policy Code required.</div> : ''}
+
+            </div>
+
+            <div className="form-group">
+              <label>Policy Description *</label>
+              <input
+                type="text"
+                value={policyDescription}
+                onChange={(e) => setPolicyDescription(e.target.value)}
+              />
+              {submitPressed && policyDescription == "" ? <div className="toast show" id="toast-for-account-holder">Policy Description required.</div> : ''}
+
+            </div>
+       
+          
+          <div className="form-row">
+          
+            <div className="form-group">
+              <label>Amount *</label>
+              <input
+                type="text"
+                value={policyAmount}
+                onChange={(e) => setPolicyAmount(e.target.value)}
+              />
+              {submitPressed && policyAmount == "" ? <div className="toast show" id="toast-for-account-holder">Amount required.</div> : ''}
+
+            </div>
+            <div className="form-group">
+              <label>Commission Amount *</label>
+              <input
+                type="text"
+                value={commissionAmount}
+                onChange={(e) => setCommissionAmount(e.target.value)}
+              />
+              {submitPressed && commissionAmount == "" ? <div className="toast show" id="toast-for-account-holder">Commission Amount required.</div> : ''}
+
+            </div>
           </div>
 
         </section>
