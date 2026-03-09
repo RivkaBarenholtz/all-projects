@@ -1,6 +1,6 @@
 {
   "name": "payment-link-extension",
-  "version": "1.9.10",
+  "version": "1.9.11",
   "description": "Chrome extension for generating payment links",
   "private": true,
   "scripts": {
