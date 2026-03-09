@@ -5,6 +5,8 @@ using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime.Internal;
 
 
+
+
 // If the package is not available or you do not intend to use it, you can remove the using directive and any related code that depends on it.
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -58,6 +60,47 @@ namespace AmazonUtilities
         //}
 
         
+        public static async Task<List<T>>GetEntityItemsFromDynamoAsync<T>(string pk, string sk) where T : class
+        {
+            var request = new QueryRequest
+            {
+                TableName = tableName,
+
+                KeyConditionExpression =
+                "PK = :pk AND begins_with(SK, :sk)",
+
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    [":pk"] = new AttributeValue { S = GetPK(pk) },
+                    [":sk"] = new AttributeValue { S = sk }
+                }
+            };
+
+            var result = new List<Dictionary<string, AttributeValue>>(); // Declare and initialize 'result'
+
+            QueryResponse response;
+            do
+            {
+                response = await client.QueryAsync(request);
+                result.AddRange(response.Items); // Use 'result' to store the items
+                request.ExclusiveStartKey = response.LastEvaluatedKey;
+
+            } while (response.LastEvaluatedKey != null && response.LastEvaluatedKey.Count > 0);
+
+            var context = new DynamoDBContext(new AmazonDynamoDBClient());
+            var jsonResult = new List<T>();
+
+            foreach (var item in result)
+            {
+                var doc = Document.FromAttributeMap(item);
+                var obj = context.FromDocument<T>(doc);
+                jsonResult.Add(obj);
+            }
+
+            return jsonResult;
+
+        }
+
 
 
         public static async Task<List<T>> GetVendorItemsInJsonAsync<T>(string pk, string sk) where T : class

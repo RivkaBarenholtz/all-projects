@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { fetchWithAuth } from "../Utilities";
-
+import   Loader from "../PaymentPage/Loader"
 
 export function TextractBedrockProcessor({ jobId , bedrockResult, setBedrockResult}) {
   const [status, setStatus] = useState("pending");
@@ -16,8 +16,7 @@ export function TextractBedrockProcessor({ jobId , bedrockResult, setBedrockResu
   useEffect(() => {
     if (!jobId) return;
 
-    let intervalId;
-
+    
     const pollTextract = async () => {
       try {
         const res = await fetchWithAuth("get-textract-result", { jobId });
@@ -56,9 +55,9 @@ export function TextractBedrockProcessor({ jobId , bedrockResult, setBedrockResu
 
   if (error) return <div>Error: {error}</div>;
   if (!bedrockResult && !error)
-    return <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-         <div className="spinner"></div>
-         
+    return <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' , zIndex: 100000, background: "#ffffff", position: "fixed", width: "100%", height:"100%" }}>
+        <Loader/>
+
          Analyzing document... 
          
          </div>;

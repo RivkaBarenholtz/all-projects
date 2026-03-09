@@ -44,7 +44,7 @@ namespace InsTechClassesV2.Cardknox
         public string Email { get; set; }
         public string CustomerNotes { get; set; }
         public string CustomerNumber { get; set; }
-
+        public string CustomerId { get; set; }
 
     }
     
@@ -69,6 +69,14 @@ namespace InsTechClassesV2.Cardknox
         public int Revision { get; set; }
  
         public string ScheduleId { get; set; }
+    }
+    public class CardknoxListCustomerApiResponse
+    {
+        public string RefNum { get; set; }
+        public string Result { get; set; }
+        public string Error { get; set; }
+        public List<CardknoxNewCustomerApiRequest> Customers { get; set; }
+        public string NextToken { get; set; }
     }
     public class CardknoxListCustomerApiRequest : CardknoxSchedule
     {

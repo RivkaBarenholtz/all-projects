@@ -111,7 +111,7 @@ namespace AmazonUtilities
 
             var request = new InvokeModelRequest
             {
-                ModelId = "arn:aws:bedrock:us-east-1:664418966079:inference-profile/global.anthropic.claude-haiku-4-5-20251001-v1:0",
+                ModelId = "arn:aws:bedrock:us-east-1:664418966079:inference-profile/global.anthropic.claude-sonnet-4-6",
                 ContentType = "application/json",
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(bodyJson))
             };

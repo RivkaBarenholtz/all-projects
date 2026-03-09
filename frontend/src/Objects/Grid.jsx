@@ -17,10 +17,10 @@ export const Grid = (
     activePage,
     setActivePage,
     Sort,
-    SetHeaderList,
+    setSelectedItem,
     rowClick,
     footerObjects,
-    hideColumnDropdown,
+    selectedItem,
     filters,
     setFilters,
     enableFilters = true
@@ -36,6 +36,7 @@ export const Grid = (
   const scrollContainerRef = useRef(null);
   const tableBodyRef = useRef(null);
   const scrollTimeoutRef = useRef(null);
+  
   const lastScrollTimeRef = useRef(0);
   const isScrollCooldownRef = useRef(false);
   const cooldownTimeoutRef = useRef(null);
@@ -417,7 +418,8 @@ export const Grid = (
                 key={item.id || item.UniqueKey}
                 className={`data-row ${item.className || ''}`}
                 data-row
-                onClick={rowClick ? () => { rowClick(item); } : () => { }}
+                style= {selectedItem == item ? { backgroundColor: '#c9d8fdff' } : {}}
+                onClick={rowClick ? () => { rowClick(item); } : isSelectable ? () => { setSelectedItem(item) } : () => { }}
               >
 
                 {isSelectable && (item.subData || item.getSubData) && (
@@ -425,7 +427,12 @@ export const Grid = (
                     {expandedRows.includes(item.id) ? '▼' : '▶'}
                   </button>
                 )}
-
+                {isSelectable && (!item.subData && !item.getSubData) && (
+                 <td> <input checked= {selectedItem == item} name='radio-select' type="radio" onClick= {()=> setSelectedItem(item)}>
+                   
+                  </input>
+                  </td>
+                )}
                 {headerList.map((header) => {
                   if (!header.Show) return null;
                   return (

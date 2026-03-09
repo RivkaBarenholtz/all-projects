@@ -5,13 +5,12 @@ import { useSuccessModal } from "../Objects/SuccessModal";
 import { PolicyDetail } from "../Objects/Details/PolicyDetail";
 import { Grid } from '../Objects/Grid';
 
+
 export default function Policies() {
    const [showNewPolicy, setShowNewPolicy] = useState(false);
    const [policy , setPolicy] = useState(null);
-   const [nextToken, setNextToken] = useState("");
    const [data, setData] = useState([]);
-
-
+  
 
    const [headers, setHeaders] = useState([
       
@@ -56,7 +55,52 @@ export default function Policies() {
         SortAsc: true
           
       },
+      
+      {
+        DisplayValue:"Carrier",
+        Show: true,
+        Value:  "CarrierName",
+        SortString : "CarrierName",
+        SortAsc: true
+          
+      },
+      {
+        DisplayValue:"Sub-broker",
+        Show: true,
+        Value:  "SubBrokerName",
+        SortString : "SubBrokerName",
+        FilterValue: "SubBrokerName",
+        SortAsc: true
+          
+      },
 
+      {
+        DisplayValue:"Sub-broker Commission",
+        Show: true,
+        Value:  "SubBrokerAmountString",
+        SortString : "SubBrokerAmount",
+        FilterValue : "SubBrokerAmount", 
+        SortAsc: true
+          
+      },
+
+
+      {
+        DisplayValue:"Policy Start",
+        Show: true,
+        Value:  "PolicyStartString",
+        SortString : "PolicyStartDate",
+        SortAsc: false
+          
+      },
+       {
+        DisplayValue:"Policy End",
+        Show: true,
+        Value:  "PolicyEndString",
+        SortString : "PolicyEndDate",
+        SortAsc: false
+          
+      },
      {
          DisplayValue: "Last Name",
          Show: true,
@@ -135,15 +179,17 @@ export default function Policies() {
       
       const formattedData = response.map((policy) => {
            return  {
-                ...policy.Customer, 
-                PolicyCode: policy.PolicyCode,
-                PolicyDescription: policy.PolicyDescription,
+                ...policy.Customer,
+                ...policy,  
                 PolicyAmountString: FormatCurrency(policy.Amount),
                 CommissionAmountString: FormatCurrency(policy.CommissionAmount),
                 PayableAmountString: FormatCurrency(policy.Amount - policy.CommissionAmount),
                 PolicyAmount: policy.Amount,
                 PayableAmount: policy.Amount - policy.CommissionAmount,
-                PolicyId: policy.Id
+                PolicyId: policy.Id, 
+                SubBrokerAmountString : FormatCurrency(policy.SubbrokerAmount),
+
+
             }
       })
 
@@ -196,7 +242,6 @@ export default function Policies() {
 
       {
          showNewPolicy && <Policy Close={() => setShowNewPolicy(false)} OnSuccess={ShowSuccessfulNewPolicy} />
-
 
       }
       <Grid 

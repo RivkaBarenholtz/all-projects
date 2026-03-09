@@ -5,6 +5,7 @@ using InsTechClassesV2;
 using InsTechClassesV2.Cardknox;
 using Newtonsoft.Json;
 using Amazon.DynamoDBv2.DocumentModel;
+using System.Diagnostics;
 
 
 
@@ -15,7 +16,56 @@ namespace SyncCardknoxToDynamo;
 
 public class Function
 {
-    
+
+    async Task  SyncCustomers (Vendor vendor)
+    {
+        try
+        {
+            var records = 500;
+            CardknoxListCustomerApiRequest cardknoxNewCustomerApiRequest = new CardknoxListCustomerApiRequest();
+            cardknoxNewCustomerApiRequest.PageSize = records;
+            string nextToken = "";
+
+            var dynamoList = await DynamoDatabaseTransactions.GetAllItemsByEntity(vendor.Id.ToString(), "Customer");
+
+
+            do
+            {
+                var existingCustomerList = await DynamoDatabaseTransactions.GetEntityItemsFromDynamoAsync<CardknoxNewCustomerApiRequest>(vendor.Id.ToString(), "Customer");
+                cardknoxNewCustomerApiRequest.NextToken = nextToken;
+                var rsp = await cardknoxNewCustomerApiRequest.PostToCardknox(vendor);
+                string content = await rsp.Content.ReadAsStringAsync();
+
+                CardknoxListCustomerApiResponse responseObject = JsonConvert.DeserializeObject<CardknoxListCustomerApiResponse>(content) ?? new CardknoxListCustomerApiResponse();
+                nextToken = responseObject.NextToken;
+                foreach (var customer in responseObject.Customers)
+                {
+                    var existingCustomer = existingCustomerList.FirstOrDefault(c => c.CustomerId == customer.CustomerId);
+                    if (existingCustomer != null)
+                    {
+                        var existingObject = Document.FromJson(JsonConvert.SerializeObject(existingCustomer)).ToAttributeMap();
+                        var updateObject = Document.FromJson(JsonConvert.SerializeObject(customer)).ToAttributeMap();
+                        var same = DynamoDatabaseTransactions.AreDynamoItemsEqual(updateObject, existingObject);
+                        if (!same) await DynamoDatabaseTransactions.UpdateItemAsync(vendor.Id.ToString(), updateObject, customer.CustomerId, "Customer");
+                    }
+                    else
+                    {
+                        var newObject = Document.FromJson(JsonConvert.SerializeObject(customer)).ToAttributeMap();
+                        await DynamoDatabaseTransactions.InsertItemAsync(vendor.Id.ToString(), newObject, customer.CustomerId, "Customer");
+                    }
+                }
+            }
+
+            while (!string.IsNullOrEmpty(nextToken));
+        }
+        catch(Exception ex)
+        
+        { 
+            Debug.WriteLine (ex.ToString());
+        }
+
+    }
+
     /// <summary>
     /// A simple function that takes a string and does a ToUpper
     /// </summary>
@@ -31,7 +81,7 @@ public class Function
         //vendors.Reverse();
         foreach (Vendor vendor in vendors)
         {
-
+            await SyncCustomers(vendor); 
             var recordsReturned = 1000;
             var startDate = DateTime.UtcNow.AddDays(-60);
             var endDate = DateTime.UtcNow;
@@ -48,7 +98,7 @@ public class Function
                 string json = await cardknoxResponse.Content.ReadAsStringAsync();
                 CardknoxTransactionReportResponse responseObject = JsonConvert.DeserializeObject<CardknoxTransactionReportResponse>(json) ?? new CardknoxTransactionReportResponse();
                 recordsReturned = responseObject.ReportData.Count;
-                var earliest = responseObject.ReportData.LastOrDefault().EnteredDate;
+                var earliest = responseObject.ReportData.LastOrDefault()?.EnteredDate??DateTime.Now.ToString();
                 var earliestDate = Convert.ToDateTime(earliest);
                 var dynamoResult = await DynamoDatabaseTransactions.QueryTransactionsAsync($"Vendor#{vendor.Id}", earliestDate, endDate, "","", new List<string> { "ALL"}, new List<int> { -1 }, 1, 100000000);
                 var dynamo = dynamoResult.resultSet;

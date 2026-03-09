@@ -214,7 +214,6 @@ public class Function
             else if (lastSegment == "get-policy-list")
             {
                 //will become too slow hopefully by that time a new employee will deal with this 
-                Console.Write("This is the latest code 3/2/2026");
                 var result= await Policy.GetListOfPoliciesFromDb(vendor.Id.ToString());
                 response.Body = JsonConvert.SerializeObject(result);
                 return response; 
@@ -222,6 +221,33 @@ public class Function
             else if (lastSegment == "create-policy")
             {
                 var policy = JsonConvert.DeserializeObject<Policy>(request.Body);
+                if(string.IsNullOrEmpty(policy.Customer.CustomerId))
+                {
+                    var customer = policy.Customer;
+                    //save in cardknox 
+                    var cardknoxCustomer = new CardknoxNewCustomerApiRequest
+                    {
+                        BillCity = customer.BillCity,
+                        BillCountry = customer.BillCountry,
+                        BillCompany = customer.BillCompany,
+                        BillFirstName = customer.BillFirstName,
+                        BillLastName = customer.BillLastName,
+                        BillMiddleName = customer.BillMiddleName,
+                        BillPhone = customer.BillPhone,
+                        BillMobile = customer.BillMobile,
+                        BillState = customer.BillState,
+                        BillStreet = customer.BillStreet,
+                        BillZip = customer.BillZip,
+                        CustomerId = customer.CustomerId,
+                        CustomerNumber = customer.CustomerNumber,
+                        Email = customer.Email,
+
+                    };
+                    var rsp = await cardknoxCustomer.PostToCardknox(vendor);
+                    var rspString = await rsp.Content.ReadAsStringAsync(); 
+                    var ckResponse = JsonConvert.DeserializeObject<dynamic>(rspString);
+                    policy.Customer.CustomerId = ckResponse["CustomerId"]?.ToString()??"";
+                }
                 await  policy?.InsertIntoDynamo(vendor);
                 string uploadUrl = "";
                 if(!String.IsNullOrEmpty(policy.QuoteFileName))
@@ -243,6 +269,8 @@ public class Function
             else if (lastSegment == "update-policy")
             {
                 var policy = JsonConvert.DeserializeObject<Policy>(request.Body);
+              
+                //save in dynamo
                 await policy.UpdateDynamoAsync(vendor.Id.ToString()); 
                 response.Body = JsonConvert.SerializeObject(new
                 {

@@ -1,54 +1,70 @@
-import { useState, forwardRef, useImperativeHandle, useEffect } from "react";
+import { useState, forwardRef, useImperativeHandle, useEffect, useRef } from "react";
 import { ConfirmationModal } from "./ConfimationModal";
 import { CustomerInfo } from "./CustomerInfo";
 import { fetchWithAuth, extractPages, uploadToS3 } from "../Utilities";
 import { TextractBedrockProcessor } from "./BedrockProcessor";
+import { CustomerSearch } from "../Objects/CustomerSearch";
+import { ActionButton } from "../Components/UI/actionButton";
+
+
 import { X } from "lucide-react";
 
 export const Policy = forwardRef(
   ({ Close, OnSuccess, isEdit, policyId, policy, }, ref) => {
 
+    const fileInputRef = useRef(null);
+
     // ------------------------
     // State
     // ------------------------
-    const [firstName, setFirstName] = useState(policy?.customer?.BillFirstName ?? "");
-    const [lastName, setLastName] = useState(policy?.customer?.BillLastName ?? "");
-    const [company, setCompany] = useState(policy?.customer?.BillCompany ?? "");
-    const [note, setNote] = useState(policy?.customer?.CustomerNotes ?? "");
-    const [customerNumber, setCustomerNumber] = useState(policy?.customer?.CustomerNumber ?? "");
-    const [street, setStreet] = useState(policy?.customer?.BillStreet ?? "");
-    const [city, setCity] = useState(policy?.customer?.BillCity ?? "");
-    const [state, setState] = useState(policy?.customer?.BillState ?? "");
-    const [zip, setZip] = useState(policy?.customer?.BillZip ?? "");
-    const [phone, setPhone] = useState(policy?.customer?.BillPhone ?? "");
-    const [email, setEmail] = useState(policy?.customer?.Email ?? "");
+    const [firstName, setFirstName] = useState(policy?.Customer?.BillFirstName ?? "");
+    const [lastName, setLastName] = useState(policy?.Customer?.BillLastName ?? "");
+    const [company, setCompany] = useState(policy?.Customer?.BillCompany ?? "");
+    const [note, setNote] = useState(policy?.Customer?.CustomerNotes ?? "");
+    const [customerNumber, setCustomerNumber] = useState(policy?.Customer?.CustomerNumber ?? "");
+    const [street, setStreet] = useState(policy?.Customer?.BillStreet ?? "");
+    const [city, setCity] = useState(policy?.Customer?.BillCity ?? "");
+    const [state, setState] = useState(policy?.Customer?.BillState ?? "");
+    const [zip, setZip] = useState(policy?.Customer?.BillZip ?? "");
+    const [phone, setPhone] = useState(policy?.Customer?.BillPhone ?? "");
+    const [email, setEmail] = useState(policy?.Customer?.Email ?? "");
     const [file, setFile] = useState(null);
     const [policyCode, setPolicyCode] = useState(policy?.PolicyCode ?? "");
     const [policyDescription, setPolicyDescription] = useState(policy?.PolicyDescription ?? "");
     const [policyAmount, setPolicyAmount] = useState(policy?.PolicyAmount ?? "");
     const [commissionAmount, setCommissionAmount] = useState(policy?.CommissionAmount ?? "");
     const [jobId, setJobId] = useState("");
+    const [showCustomerSearch, setShowCustomerSearch] = useState(false);
+    const [premadeCustomer, setPremadeCustomer] = useState(null);
+    const [pdfUrl, setPdfUrl] = useState(null);
+    const [isManual, setIsManual] = useState(null);
+    const [subbroker, setSubbroker] = useState(null);
+    const [policyStart, setPolicyStart] = useState(null);
+    const [policyEnd, setPolicyEnd] = useState(null);
+    const [carrier, setCarrier] = useState(null);
+    const [subbrokerCommission, setSubbrokerCommission] = useState(null);
+
+
 
     const [bedrockResult, setBedrockResult] = useState(null);
 
     const [submitPressed, setSubmitPressed] = useState(false);
 
     useEffect(() => {
-        if (bedrockResult && file) {
-          if(policyCode == "" || policyCode == null) setPolicyCode(bedrockResult.PolicyId ?? "");
-          if(street == "" || street == null) setStreet(bedrockResult.CustomerAddressLine1 ?? "");
-          if(policyDescription == "" || policyDescription == null) setPolicyDescription(bedrockResult.PolicyName ?? "");
-          if(state == "" || state == null) setState(bedrockResult.CustomerState ?? "");
-          if(city == "" || city == null) setCity(bedrockResult.CustomerCity ?? "");
-          if(zip == "" || zip == null) setZip(bedrockResult.CustomerZip ?? "");
-          if(email == "" || email == null) setEmail(bedrockResult.CustomerEmail ?? "");
-          if(phone == "" || phone == null) setPhone(bedrockResult.CustomerPhone ?? "");
-          if(company == "" || company == null) setCompany(bedrockResult.CustomerName ?? "");
-          if(policyAmount == "" || policyAmount == null || policyAmount) setPolicyAmount(bedrockResult.TotalPremiumAmount.replace('$', '').replace(',', '') ?? 0);
-        }
-      }, [bedrockResult])
+      if (bedrockResult && file) {
+        setPolicyCode(bedrockResult.PolicyId ?? "");
+        setStreet(bedrockResult.CustomerAddressLine1 ?? "");
+        setPolicyDescription(bedrockResult.PolicyName ?? "");
+        setState(bedrockResult.CustomerState ?? "");
+        setCity(bedrockResult.CustomerCity ?? "");
+        setZip(bedrockResult.CustomerZip ?? "");
+        setEmail(bedrockResult.CustomerEmail ?? "");
+        setPhone(bedrockResult.CustomerPhone ?? "");
+        setCompany(bedrockResult.CustomerName ?? "");
+        setPolicyAmount(bedrockResult.TotalPremiumAmount.replace('$', '').replace(',', '') ?? 0);
+      }
+    }, [bedrockResult])
 
-    
 
 
     // const fileToBase64 = (file) => {
@@ -60,19 +76,28 @@ export const Policy = forwardRef(
     //   });
     // }
 
-    const analyzePDF = async (file) => {
-      if (!file) return;
-      const presignedRsp = await fetchWithAuth("get-presigned-url", { });
-      const {uploadUrl, fileName} = presignedRsp;
-
-       //const blob = await  extractPages(file,0, 5);
-       await uploadToS3(file, uploadUrl);
-       const policy = await fetchWithAuth("analyze-policy-document", { fileName : `temp-${fileName}`});
-       setJobId(policy.jobId);
+    const openFileDialog = () => {
+      if (fileInputRef.current) {
+        fileInputRef.current.click();
+      }
     };
 
-    const SaveFile = async (file, url ) => {
-     await fetch(url, {
+
+
+    const analyzePDF = async (file) => {
+      if (!file) return;
+      const presignedRsp = await fetchWithAuth("get-presigned-url", {});
+      const { uploadUrl, fileName } = presignedRsp;
+
+      //const blob = await  extractPages(file,0, 5);
+      await uploadToS3(file, uploadUrl);
+      const policy = await fetchWithAuth("analyze-policy-document", { fileName: `temp-${fileName}` });
+      setJobId(policy.jobId);
+      setBedrockResult(null);
+    };
+
+    const SaveFile = async (file, url) => {
+      await fetch(url, {
         method: "PUT",
         headers: {
           "Content-Type": "application/pdf"
@@ -84,8 +109,9 @@ export const Policy = forwardRef(
     const handleFileChange = async (e) => {
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
+      setPdfUrl(URL.createObjectURL(selectedFile));
       await analyzePDF(selectedFile);
-      
+
     }
 
 
@@ -112,10 +138,15 @@ export const Policy = forwardRef(
         ...policy,
         PolicyCode: policyCode,
         PolicyDescription: policyDescription,
+        PolicyStartDate : policyStart, 
+        PolicyEndDate : policyEnd, 
+        CarrierName: carrier, 
+        SubbrokerName: subbroker, 
+        SubbrokerAmount: subbrokerCommission, 
         Amount: policyAmount,
-        CommissionAmount : commissionAmount,
+        CommissionAmount: commissionAmount,
         QuoteFileName: file ? file.name : "",
-        Customer: NewCustomer,
+        Customer: premadeCustomer ?? NewCustomer,
         ... (isEdit ? { PolicyId: policy.PolicyId } : {})
       };
 
@@ -140,46 +171,60 @@ export const Policy = forwardRef(
 
     const custInfo = (
       <>
-        <section className="form-section">
-          <h3>Policy Info</h3>
+        {
+          !isManual && !isEdit && jobId && jobId != "" && <TextractBedrockProcessor bedrockResult={bedrockResult} setBedrockResult={setBedrockResult} jobId={jobId} />
+        }
+        <input
+          type="file"
+          id="file"
+          accept=".pdf"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          style={{
+            display: "none"
+          }}
 
+        />
+        {
+          showCustomerSearch &&
+          <CustomerSearch
+            onSelectCustomer={(a) => { setPremadeCustomer(a); setShowCustomerSearch(false) }}
+            onClose={() => setShowCustomerSearch(false)} />
+        }
 
-          
-          { !file && <div className="form-group">
-            <label>Policy Contract</label>
-            <input
-              type="file"
-              id="file"
-              accept=".pdf"
-
-              onChange={handleFileChange}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(49, 43, 43, 0.2)',
-                borderRadius: '10px',
-                color: '#ffffff',
-                fontSize: '14px',
-                cursor: 'pointer',
-                outline: 'none',
-                transition: 'all 0.2s ease',
-                boxSizing: 'border-box'
-              }}
-
-            />
+        {
+          isManual == null && !isEdit &&  <div  style={{display:"flex", flexDirection: "column"}}> 
+          <div>
+            <input type="radio" checked={isManual === true} name="isManual" onChange={() => setIsManual(true)} style={{margin:"4px"}}/>
+            Enter Manually
           </div>
-          }
+          <div>
+            <input type="radio" checked={isManual === false} name="isManual"  style={{margin:"4px"}} onChange={() => { setIsManual(false); openFileDialog(); }} />
+            Analyze Document
+            </div>
+          </div>}
+        {(isManual !== null || isEdit )&& <>
+          <section className="form-section">
+            <h3>Policy Info</h3>
 
-          {
-            jobId && jobId != "" && <TextractBedrockProcessor bedrockResult={bedrockResult} setBedrockResult={setBedrockResult} jobId={jobId} />
-          }
-          {file && <div className="form-group"><span style={{fontWeight:"bold"}}>Selected file:</span> {file.name} 
-          <span style={{fontWeight:"bold", paddingLeft:"10px", cursor:"pointer"}} title="Remove file">
-            <X  size={11} onClick={()=> setFile(null)}/>
-          </span> </div>}
 
-          
+
+            {
+              <div className="form-group">
+                <label>Policy Contract</label>
+                <button type="button" onClick={openFileDialog} >
+                  Upload Document
+                </button>
+              </div>
+            }
+
+
+            {file && <div className="form-group"><span style={{ fontWeight: "bold" }}>Selected file:</span> {file.name}
+              <span style={{ fontWeight: "bold", paddingLeft: "10px", cursor: "pointer" }} title="Remove file">
+                <X size={11} onClick={() => { setFile(null); setPdfUrl("") }} />
+              </span> </div>}
+
+
             <div className="form-group">
               <label>Policy Code</label>
               <input
@@ -201,61 +246,135 @@ export const Policy = forwardRef(
               {submitPressed && policyDescription == "" ? <div className="toast show" id="toast-for-account-holder">Policy Description required.</div> : ''}
 
             </div>
-       
-          
-          <div className="form-row">
-          
-            <div className="form-group">
-              <label>Amount *</label>
-              <input
-                type="text"
-                value={policyAmount}
-                onChange={(e) => setPolicyAmount(e.target.value)}
-              />
-              {submitPressed && policyAmount == "" ? <div className="toast show" id="toast-for-account-holder">Amount required.</div> : ''}
 
+
+            <div className="form-row">
+
+              <div className="form-group">
+                <label>Amount *</label>
+                <input
+                  type="text"
+                  value={policyAmount}
+                  onChange={(e) => setPolicyAmount(e.target.value)}
+                />
+                {submitPressed && policyAmount == "" ? <div className="toast show" id="toast-for-account-holder">Amount required.</div> : ''}
+
+              </div>
+              <div className="form-group">
+                <label>Commission Amount</label>
+                <input
+                  type="text"
+                  value={commissionAmount}
+                  onChange={(e) => setCommissionAmount(e.target.value)}
+                />
+               
+              </div>
             </div>
             <div className="form-group">
-              <label>Commission Amount *</label>
-              <input
-                type="text"
-                value={commissionAmount}
-                onChange={(e) => setCommissionAmount(e.target.value)}
-              />
-              {submitPressed && commissionAmount == "" ? <div className="toast show" id="toast-for-account-holder">Commission Amount required.</div> : ''}
-
+                <label>Carrier</label>
+                <input
+                  type="text"
+                  value={carrier}
+                  onChange={(e) => setCarrier(e.target.value)}
+                />
+               
             </div>
-          </div>
+             <div className="form-row">
+              <div className="form-group">
+                  <label>Subbroker</label>
+                  <input
+                    type="text"
+                    value={subbroker}
+                    onChange={(e) => setSubbroker(e.target.value)}
+                  />
+               </div>
+               <div className="form-group">
+                  <label>Subbroker Commission</label>
+                  <input
+                    type="text"
+                    value={subbrokerCommission}
+                    onChange={(e) => setSubbrokerCommission(e.target.value)}
+                  />
+               </div>
+            </div>
+            <div className="form-row">
 
-        </section>
-        <CustomerInfo
-          firstName={firstName} setFirstName={setFirstName}
-          lastName={lastName} setLastName={setLastName}
-          company={company} setCompany={setCompany}
-          note={note} setNote={setNote}
-          customerNumber={customerNumber} setCustomerNumber={setCustomerNumber}
-          street={street} setStreet={setStreet}
-          city={city} setCity={setCity}
-          state={state} setState={setState}
-          zip={zip} setZip={setZip}
-          phone={phone} setPhone={setPhone}
-          email={email} setEmail={setEmail}
-          submitPressed={submitPressed}
-        />
+              <div className="form-group">
+                <label>Policy Start Date</label>
+                <input
+                  type="date"
+                  value={policyStart}
+                  onChange={(e) => setPolicyStart(e.target.value)}
+                />
+                
+              </div>
+              <div className="form-group">
+                <label>Policy End Date</label>
+                <input
+                  type="date"
+                  value={policyEnd}
+                  onChange={(e) => setPolicyEnd(e.target.value)}
+                />
+               
+              </div>
+            </div>
 
+          </section>
+          {premadeCustomer && !isEdit && <div>
+            Using preexisting customer {premadeCustomer.BillCompany || premadeCustomer.BillFirstName}
+            <span style={{ fontWeight: "bold", paddingLeft: "10px", cursor: "pointer" }} title="">
+              <X size={11} onClick={() => setPremadeCustomer(null)} />
+            </span>
+          </div>}
+          {!premadeCustomer && <> {!isEdit && <ActionButton onClick={() => setShowCustomerSearch(true)}>
+            Existing Customer
+          </ActionButton>}
+            <CustomerInfo
+              firstName={firstName} setFirstName={setFirstName}
+              lastName={lastName} setLastName={setLastName}
+              company={company} setCompany={setCompany}
+              note={note} setNote={setNote}
+              customerNumber={customerNumber} setCustomerNumber={setCustomerNumber}
+              street={street} setStreet={setStreet}
+              city={city} setCity={setCity}
+              state={state} setState={setState}
+              zip={zip} setZip={setZip}
+              phone={phone} setPhone={setPhone}
+              email={email} setEmail={setEmail}
+              submitPressed={submitPressed}
+            />
+          </>}
+        </>}
       </>
     );
 
     return isEdit ? (
       custInfo
     ) : (
-      <ConfirmationModal
-        confirmButtonText="Save"
-        onClose={Close}
-        onConfirm={CreateOrUpdatePolicy}
-      >
-        {custInfo}
-      </ConfirmationModal>
+      <>
+        {pdfUrl && (
+          <iframe src={pdfUrl} style={{
+            width: "800px",
+            height: "100%",
+            position: "fixed",
+            zIndex: 1000,
+            right: 0,
+            top: 0
+          }} />
+        )}
+        <ConfirmationModal
+          confirmButtonText="Save"
+          onClose={Close}
+          showButton = {isManual !== null }
+          maxWidth={showCustomerSearch ? "800px" : "430px"}
+          rightOffset={pdfUrl ? "800px" : "0px"}
+          onConfirm={CreateOrUpdatePolicy}
+        >
+
+
+          {custInfo}
+        </ConfirmationModal>
+      </>
     );
   }
 );

@@ -18,7 +18,12 @@ namespace InsTechClassesV2
     {
 
         public CustomerFilters Customer { get; set; }
-
+        public decimal SubBrokerAmount { get; set; }
+        public string SubBrokerName { get; set; }
+        
+        public string  CarrierName { get; set; }
+        public DateTime? PolicyStartDate { get; set; }
+        public DateTime? PolicyEndDate { get; set; }
         public string VendorId { get; set;  }
         public decimal Amount { get; set; }
         public decimal CommissionAmount { get; set; }
@@ -98,6 +103,15 @@ namespace InsTechClassesV2
             if (item == null || item.Count == 0)
                 return null;
 
+            DateTime? ParseDate(string str)
+            {
+                if (string.IsNullOrWhiteSpace(str)) return null;
+
+                return DateTime.TryParse(str, null, System.Globalization.DateTimeStyles.RoundtripKind, out var dt)
+                    ? dt
+                    : (DateTime?)null;
+            }
+
             var policy = new Policy
             {
                 Id = item["SK"].S,
@@ -107,8 +121,15 @@ namespace InsTechClassesV2
                 CommissionAmount = item.ContainsKey("CommissionAmount") && !string.IsNullOrEmpty(item["CommissionAmount"].N)
                     ? decimal.Parse(item["CommissionAmount"].N)
                     : 0,
-
+                SubBrokerAmount = item.ContainsKey("SubBrokerAmount") && !string.IsNullOrEmpty(item["SubBrokerAmount"].N)
+                    ? decimal.Parse(item["SubBrokerAmount"].N)
+                    : 0,
+                
                 PolicyCode = item.ContainsKey("PolicyCode") ? item["PolicyCode"].S : "",
+                CarrierName = item.ContainsKey("CarrierName") ? item["CarrierName"].S : "",
+                SubBrokerName = item.ContainsKey("SubBrokerName") ? item["SubBrokerName"].S : "",
+                PolicyStartDate = ParseDate(item.ContainsKey("PolicyStartDate") ? item["PolicyStartDate"].S : ""),
+                PolicyEndDate = ParseDate(item.ContainsKey("PolicyEndDate") ? item["PolicyEndDate"].S : ""),
                 PolicyDescription = item.ContainsKey("PolicyDescription") ? item["PolicyDescription"].S : "",
                 SignPolicyLink = item.ContainsKey("SignPolicyLink") ? item["SignPolicyLink"].S : "",
                 DocumentId = item.ContainsKey("EntityType") ? item["EntityType"].S : "",
@@ -166,10 +187,13 @@ namespace InsTechClassesV2
             // Policy fields
             AddNumber("Amount", Amount);
             AddNumber("CommissionAmount", CommissionAmount);
+            AddNumber("SubBrokerAmount", SubBrokerAmount);
             AddString("PolicyCode", PolicyCode);
             AddString("PolicyDescription", PolicyDescription);
             AddString("EntityType", DocumentId);
             AddString ("SignPolicyLink", SignPolicyLink);
+            AddString("SubBrokerName", SubBrokerName);
+            AddString("CarrierName", CarrierName);
            
             // Customer fields (null-safe)
             if (Customer != null)
