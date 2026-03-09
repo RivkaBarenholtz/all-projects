@@ -554,7 +554,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
               <div >
                 <h3>
 
-                  Policy Details
+                  Invoice Details
                 </h3>
               </div>
               <div >
