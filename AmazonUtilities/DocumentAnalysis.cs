@@ -130,7 +130,7 @@ namespace AmazonUtilities
             string documentText = BuildFullDocumentPrompt(blocks);
 
             string prompt = $@"
-            Extract the following fields from this document, if they are there- (if not provided, return empty string), as a JSON array of objects: 'PolicyName','PolicyId','CustomerAddressLine1', 'CustomerCity', 'CustomerState' , 'CustomerZip',  'CustomerName', 'TotalPremiumAmount'.
+            Extract the following fields from this document, if they are there- (if not provided, return empty string), as a JSON array of objects:'PolicyStartDate', 'PolicyEndDate', 'Carrier', 'PolicyName','PolicyId','CustomerAddressLine1', 'CustomerCity', 'CustomerState' , 'CustomerZip',  'CustomerName', 'TotalPremiumAmount'.
 
             Document:
             {documentText}

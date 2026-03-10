@@ -1,10 +1,11 @@
 import { useState, forwardRef, useImperativeHandle, useEffect, useRef } from "react";
 import { ConfirmationModal } from "./ConfimationModal";
 import { CustomerInfo } from "./CustomerInfo";
-import { fetchWithAuth, extractPages, uploadToS3 } from "../Utilities";
+import { fetchWithAuth, extractPages, uploadToS3, FormatCurrency } from "../Utilities";
 import { TextractBedrockProcessor } from "./BedrockProcessor";
 import { CustomerSearch } from "../Objects/CustomerSearch";
 import { ActionButton } from "../Components/UI/actionButton";
+import { PdfViewer } from "./PdfViewer";
 
 
 import { X } from "lucide-react";
@@ -43,6 +44,7 @@ export const Policy = forwardRef(
     const [policyEnd, setPolicyEnd] = useState(null);
     const [carrier, setCarrier] = useState(null);
     const [subbrokerCommission, setSubbrokerCommission] = useState(null);
+    const [highlightText, setHighlightText] =useState("")
 
 
 
@@ -62,6 +64,9 @@ export const Policy = forwardRef(
         setPhone(bedrockResult.CustomerPhone ?? "");
         setCompany(bedrockResult.CustomerName ?? "");
         setPolicyAmount(bedrockResult.TotalPremiumAmount.replace('$', '').replace(',', '') ?? 0);
+        setPolicyStart(bedrockResult.PolicyStartDate);
+        setPolicyEnd(bedrockResult.PolicyEndDate);
+        setCarrier(bedrockResult.Carrier)
       }
     }, [bedrockResult])
 
@@ -110,7 +115,7 @@ export const Policy = forwardRef(
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
       setPdfUrl(URL.createObjectURL(selectedFile));
-      await analyzePDF(selectedFile);
+      if (!isManual)  await analyzePDF(selectedFile);
 
     }
 
@@ -174,17 +179,7 @@ export const Policy = forwardRef(
         {
           !isManual && !isEdit && jobId && jobId != "" && <TextractBedrockProcessor bedrockResult={bedrockResult} setBedrockResult={setBedrockResult} jobId={jobId} />
         }
-        <input
-          type="file"
-          id="file"
-          accept=".pdf"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          style={{
-            display: "none"
-          }}
-
-        />
+        
         {
           showCustomerSearch &&
           <CustomerSearch
@@ -199,7 +194,7 @@ export const Policy = forwardRef(
             Enter Manually
           </div>
           <div>
-            <input type="radio" checked={isManual === false} name="isManual"  style={{margin:"4px"}} onChange={() => { setIsManual(false); openFileDialog(); }} />
+            <input type="radio" checked={isManual === false} name="isManual"  style={{margin:"4px"}} onChange={() => {  openFileDialog(); }} />
             Analyze Document
             </div>
           </div>}
@@ -231,6 +226,7 @@ export const Policy = forwardRef(
                 type="text"
                 value={policyCode}
                 onChange={(e) => setPolicyCode(e.target.value)}
+                onFocus={()=> setHighlightText(policyCode)}
               />
               {submitPressed && policyCode == "" ? <div className="toast show" id="toast-for-account-holder">Policy Code required.</div> : ''}
 
@@ -242,6 +238,7 @@ export const Policy = forwardRef(
                 type="text"
                 value={policyDescription}
                 onChange={(e) => setPolicyDescription(e.target.value)}
+                onFocus={()=> setHighlightText(policyDescription)}
               />
               {submitPressed && policyDescription == "" ? <div className="toast show" id="toast-for-account-holder">Policy Description required.</div> : ''}
 
@@ -256,6 +253,7 @@ export const Policy = forwardRef(
                   type="text"
                   value={policyAmount}
                   onChange={(e) => setPolicyAmount(e.target.value)}
+                  onFocus={()=> setHighlightText(FormatCurrency(policyAmount))}
                 />
                 {submitPressed && policyAmount == "" ? <div className="toast show" id="toast-for-account-holder">Amount required.</div> : ''}
 
@@ -276,6 +274,7 @@ export const Policy = forwardRef(
                   type="text"
                   value={carrier}
                   onChange={(e) => setCarrier(e.target.value)}
+                  onFocus={()=> setHighlightText(carrier)}
                 />
                
             </div>
@@ -349,19 +348,36 @@ export const Policy = forwardRef(
     );
 
     return isEdit ? (
-      custInfo
+      <>
+      <input
+          type="file"
+          id="file"
+          accept=".pdf"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          style={{
+            display: "none"
+          }}
+
+        />
+      
+      {custInfo}</>
     ) : (
       <>
-        {pdfUrl && (
-          <iframe src={pdfUrl} style={{
-            width: "800px",
-            height: "100%",
-            position: "fixed",
-            zIndex: 1000,
-            right: 0,
-            top: 0
-          }} />
-        )}
+      <input
+          type="file"
+          id="file"
+          accept=".pdf"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          style={{
+            display: "none"
+          }}
+
+        />
+        {pdfUrl && 
+          <PdfViewer fileUrl={pdfUrl}/>
+        }
         <ConfirmationModal
           confirmButtonText="Save"
           onClose={Close}
