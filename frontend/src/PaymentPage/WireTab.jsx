@@ -74,7 +74,7 @@ export const WireTab = ({
         });
 
 
-         window.location.href = `https://${clientid.replace("test", "ins-dev")}.instechpay.co/app/thank-you?amount=${submitWireReq.Amount}`;
+         window.location.href = `https://portal.instechpay.co/thank-you?amount=${submitWireReq.Amount}`;
         //call back end which 
         // 1. saves our payment 
 

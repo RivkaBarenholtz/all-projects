@@ -120,7 +120,7 @@ export const CheckTab = (
              responseBody = await response.json();
         }
             if (responseBody.xStatus == "Approved" ) {
-               if(!isPortal) window.location.href = `https://${clientid.replace("test", "ins-dev")}.instechpay.co/app/thank-you?amount=${amount}`;
+               if(!isPortal) window.location.href = `https://portal.instechpay.co/thank-you?amount=${amount}`;
                else onFinish(); 
                 
             }
