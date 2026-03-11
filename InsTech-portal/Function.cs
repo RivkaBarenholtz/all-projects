@@ -3,8 +3,7 @@ using Amazon.DynamoDBv2.Model;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.Runtime.Internal;
-using Amazon.S3.Transfer;
-using Amazon.SecretsManager.Model.Internal.MarshallTransformations;
+
 using AmazonUtilities;
 using AmazonUtilities.DynamoDatabase;
 using InsTechClassesV2;
@@ -265,19 +264,32 @@ public class Function
                 });
 
             }
+            else if (lastSegment == "get-policy-doc-url")
+            {
+                var policyid = request.QueryStringParameters["policyid"];
+                var s3 = new AmzS3Bucket("policy-uploads", $"{vendor.CardknoxMerchantId}/{policyid}");
+                var s3Url =  s3.GetDownloadPreSignedUrl();
+
+                response.Body = JsonConvert.SerializeObject(new
+                {
+                    Message = "Success",
+                    download = s3Url
+
+                });
+            }
 
             else if (lastSegment == "update-policy")
             {
                 var policy = JsonConvert.DeserializeObject<Policy>(request.Body);
-              
+
                 //save in dynamo
-                await policy.UpdateDynamoAsync(vendor.Id.ToString()); 
+                await policy.UpdateDynamoAsync(vendor.Id.ToString());
                 response.Body = JsonConvert.SerializeObject(new
                 {
                     Message = "Success",
                     PolicyId = policy.Id
                 });
-                return response; 
+                return response;
             }
             else if (lastSegment == "get-cardknox-accounts")
             {
@@ -827,7 +839,7 @@ public class Function
             }
             else if (lastSegment == "get-presigned-url")
             {
-                string guid = Guid.NewGuid().ToString(); 
+                string guid = Guid.NewGuid().ToString();
                 var s3 = new AmzS3Bucket("temp-document-storage", $"temp-{guid}");
                 string url = await s3.GetUploadUrlAsync();
                 response.Body = JsonConvert.SerializeObject(new { uploadUrl = url, fileName = guid });
@@ -842,13 +854,13 @@ public class Function
                     response.Body = JsonConvert.SerializeObject(new { message = "Missing fileName in request body" });
                     return response;
                 }
-               string jobId  = await   DocumentAnalysis.StartTextractJob("temp-document-storage", fileName);
-                
-               response.Body = JsonConvert.SerializeObject(new {
-                    jobId 
+                string jobId = await DocumentAnalysis.StartTextractJob("temp-document-storage", fileName);
+
+                response.Body = JsonConvert.SerializeObject(new {
+                    jobId
                 })
-                ;
-               return response;
+                 ;
+                return response;
             }
             else if (lastSegment == "get-textract-result")
             {
@@ -873,7 +885,7 @@ public class Function
                     return response;
                 }
                 var documentRsp = await DocumentAnalysis.GetJsonResponseFromBedrockAsync(jobId);
-                response.Body = documentRsp; 
+                response.Body = documentRsp;
             }
             else if (lastSegment == "get-invoice-attachments")
             {

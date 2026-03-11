@@ -39,6 +39,19 @@ namespace AmazonUtilities
                 return await reader.ReadToEndAsync();
             }
         }
+        public string GetDownloadPreSignedUrl()
+        {
+            var request = new GetPreSignedUrlRequest
+            {
+                BucketName = bucketName,
+                Key = fileName,
+                Expires = DateTime.UtcNow.AddMinutes(15), // link valid for 15 minutes
+                Verb = HttpVerb.GET
+            };
+
+            string url =s3Client.GetPreSignedURL(request);
+            return url;
+        }
         public async Task UploadFileToS3(string data,string contentType )
         {
             // 1. Decode the Base64 string into bytes

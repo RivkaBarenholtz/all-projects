@@ -39,12 +39,12 @@ export const Policy = forwardRef(
     const [premadeCustomer, setPremadeCustomer] = useState(null);
     const [pdfUrl, setPdfUrl] = useState(null);
     const [isManual, setIsManual] = useState(null);
-    const [subbroker, setSubbroker] = useState(null);
-    const [policyStart, setPolicyStart] = useState(null);
-    const [policyEnd, setPolicyEnd] = useState(null);
-    const [carrier, setCarrier] = useState(null);
-    const [subbrokerCommission, setSubbrokerCommission] = useState(null);
-    const [highlightText, setHighlightText] =useState("")
+    const [subbroker, setSubbroker] = useState("");
+    const [policyStart, setPolicyStart] = useState(new Date);
+    const [policyEnd, setPolicyEnd] = useState(new Date);
+    const [carrier, setCarrier] = useState("");
+    const [subbrokerCommission, setSubbrokerCommission] = useState(0);
+    const [highlightText, setHighlightText] = useState("")
 
 
 
@@ -85,7 +85,10 @@ export const Policy = forwardRef(
       if (fileInputRef.current) {
         fileInputRef.current.click();
       }
+
     };
+
+
 
 
 
@@ -115,7 +118,10 @@ export const Policy = forwardRef(
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
       setPdfUrl(URL.createObjectURL(selectedFile));
-      if (!isManual)  await analyzePDF(selectedFile);
+      if (!isManual) {
+        setIsManual(false);//if it was null 
+        await analyzePDF(selectedFile);
+      }
 
     }
 
@@ -143,11 +149,11 @@ export const Policy = forwardRef(
         ...policy,
         PolicyCode: policyCode,
         PolicyDescription: policyDescription,
-        PolicyStartDate : policyStart, 
-        PolicyEndDate : policyEnd, 
-        CarrierName: carrier, 
-        SubbrokerName: subbroker, 
-        SubbrokerAmount: subbrokerCommission, 
+        PolicyStartDate: policyStart,
+        PolicyEndDate: policyEnd,
+        CarrierName: carrier,
+        SubbrokerName: subbroker,
+        SubbrokerAmount: subbrokerCommission,
         Amount: policyAmount,
         CommissionAmount: commissionAmount,
         QuoteFileName: file ? file.name : "",
@@ -179,7 +185,7 @@ export const Policy = forwardRef(
         {
           !isManual && !isEdit && jobId && jobId != "" && <TextractBedrockProcessor bedrockResult={bedrockResult} setBedrockResult={setBedrockResult} jobId={jobId} />
         }
-        
+
         {
           showCustomerSearch &&
           <CustomerSearch
@@ -188,26 +194,29 @@ export const Policy = forwardRef(
         }
 
         {
-          isManual == null && !isEdit &&  <div  style={{display:"flex", flexDirection: "column"}}> 
-          <div>
-            <input type="radio" checked={isManual === true} name="isManual" onChange={() => setIsManual(true)} style={{margin:"4px"}}/>
-            Enter Manually
-          </div>
-          <div>
-            <input type="radio" checked={isManual === false} name="isManual"  style={{margin:"4px"}} onChange={() => {  openFileDialog(); }} />
-            Analyze Document
+          isManual == null && !isEdit && <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            <div>
+              <ActionButton style={{ width: "100%" }} onClick={() => setIsManual(true)} >
+                Enter Manually
+              </ActionButton >
+
+            </div>
+            <div>
+              <ActionButton style={{ width: "100%" }} onClick={() => openFileDialog()} >
+                AI Analyze Pdf
+              </ActionButton>
             </div>
           </div>}
-        {(isManual !== null || isEdit )&& <>
+        {(isManual !== null || isEdit) && <>
           <section className="form-section">
             <h3>Policy Info</h3>
 
 
 
             {
-              <div className="form-group">
+              !file && <div className="form-group">
                 <label>Policy Contract</label>
-                <button type="button" onClick={openFileDialog} >
+                <button type="button" style={{ width: "100%", borderRadius: "5px", padding: "10px", cursor: "pointer" }} onClick={openFileDialog} >
                   Upload Document
                 </button>
               </div>
@@ -226,7 +235,7 @@ export const Policy = forwardRef(
                 type="text"
                 value={policyCode}
                 onChange={(e) => setPolicyCode(e.target.value)}
-                onFocus={()=> setHighlightText(policyCode)}
+                onFocus={() => setHighlightText(policyCode)}
               />
               {submitPressed && policyCode == "" ? <div className="toast show" id="toast-for-account-holder">Policy Code required.</div> : ''}
 
@@ -238,7 +247,7 @@ export const Policy = forwardRef(
                 type="text"
                 value={policyDescription}
                 onChange={(e) => setPolicyDescription(e.target.value)}
-                onFocus={()=> setHighlightText(policyDescription)}
+                onFocus={() => setHighlightText(policyDescription)}
               />
               {submitPressed && policyDescription == "" ? <div className="toast show" id="toast-for-account-holder">Policy Description required.</div> : ''}
 
@@ -253,7 +262,7 @@ export const Policy = forwardRef(
                   type="text"
                   value={policyAmount}
                   onChange={(e) => setPolicyAmount(e.target.value)}
-                  onFocus={()=> setHighlightText(FormatCurrency(policyAmount))}
+                  onFocus={() => setHighlightText(FormatCurrency(policyAmount))}
                 />
                 {submitPressed && policyAmount == "" ? <div className="toast show" id="toast-for-account-holder">Amount required.</div> : ''}
 
@@ -265,36 +274,36 @@ export const Policy = forwardRef(
                   value={commissionAmount}
                   onChange={(e) => setCommissionAmount(e.target.value)}
                 />
-               
+
               </div>
             </div>
             <div className="form-group">
-                <label>Carrier</label>
+              <label>Carrier</label>
+              <input
+                type="text"
+                value={carrier}
+                onChange={(e) => setCarrier(e.target.value)}
+                onFocus={() => setHighlightText(carrier)}
+              />
+
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Subbroker</label>
                 <input
                   type="text"
-                  value={carrier}
-                  onChange={(e) => setCarrier(e.target.value)}
-                  onFocus={()=> setHighlightText(carrier)}
+                  value={subbroker}
+                  onChange={(e) => setSubbroker(e.target.value)}
                 />
-               
-            </div>
-             <div className="form-row">
+              </div>
               <div className="form-group">
-                  <label>Subbroker</label>
-                  <input
-                    type="text"
-                    value={subbroker}
-                    onChange={(e) => setSubbroker(e.target.value)}
-                  />
-               </div>
-               <div className="form-group">
-                  <label>Subbroker Commission</label>
-                  <input
-                    type="text"
-                    value={subbrokerCommission}
-                    onChange={(e) => setSubbrokerCommission(e.target.value)}
-                  />
-               </div>
+                <label>Subbroker Commission</label>
+                <input
+                  type="text"
+                  value={subbrokerCommission}
+                  onChange={(e) => setSubbrokerCommission(e.target.value)}
+                />
+              </div>
             </div>
             <div className="form-row">
 
@@ -305,7 +314,7 @@ export const Policy = forwardRef(
                   value={policyStart}
                   onChange={(e) => setPolicyStart(e.target.value)}
                 />
-                
+
               </div>
               <div className="form-group">
                 <label>Policy End Date</label>
@@ -314,7 +323,7 @@ export const Policy = forwardRef(
                   value={policyEnd}
                   onChange={(e) => setPolicyEnd(e.target.value)}
                 />
-               
+
               </div>
             </div>
 
@@ -349,7 +358,7 @@ export const Policy = forwardRef(
 
     return isEdit ? (
       <>
-      <input
+        <input
           type="file"
           id="file"
           accept=".pdf"
@@ -360,11 +369,11 @@ export const Policy = forwardRef(
           }}
 
         />
-      
-      {custInfo}</>
+
+        {custInfo}</>
     ) : (
       <>
-      <input
+        <input
           type="file"
           id="file"
           accept=".pdf"
@@ -375,13 +384,13 @@ export const Policy = forwardRef(
           }}
 
         />
-        {pdfUrl && 
-          <PdfViewer fileUrl={pdfUrl}/>
+        {pdfUrl &&
+          <PdfViewer fileUrl={pdfUrl} searchText={highlightText} />
         }
         <ConfirmationModal
           confirmButtonText="Save"
           onClose={Close}
-          showButton = {isManual !== null }
+          showButton={isManual !== null}
           maxWidth={showCustomerSearch ? "800px" : "430px"}
           rightOffset={pdfUrl ? "800px" : "0px"}
           onConfirm={CreateOrUpdatePolicy}

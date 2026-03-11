@@ -131,6 +131,7 @@ namespace InsTechClassesV2
                 PolicyStartDate = ParseDate(item.ContainsKey("PolicyStartDate") ? item["PolicyStartDate"].S : ""),
                 PolicyEndDate = ParseDate(item.ContainsKey("PolicyEndDate") ? item["PolicyEndDate"].S : ""),
                 PolicyDescription = item.ContainsKey("PolicyDescription") ? item["PolicyDescription"].S : "",
+                QuoteFileName = item.ContainsKey("QuoteFileName") ? item["QuoteFileName"].S : "",
                 SignPolicyLink = item.ContainsKey("SignPolicyLink") ? item["SignPolicyLink"].S : "",
                 DocumentId = item.ContainsKey("EntityType") ? item["EntityType"].S : "",
                 IsSignedAndPaid = item.ContainsKey("IsSignedAndPaid") && (item["IsSignedAndPaid"].BOOL ?? false) ? true : false,
@@ -190,6 +191,7 @@ namespace InsTechClassesV2
             AddNumber("SubBrokerAmount", SubBrokerAmount);
             AddString("PolicyCode", PolicyCode);
             AddString("PolicyDescription", PolicyDescription);
+            AddString("QuoteFileName", QuoteFileName);
             AddString("EntityType", DocumentId);
             AddString ("SignPolicyLink", SignPolicyLink);
             AddString("SubBrokerName", SubBrokerName);
