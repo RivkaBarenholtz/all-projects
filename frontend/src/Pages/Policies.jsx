@@ -188,7 +188,12 @@ export default function Policies() {
                 PayableAmount: policy.Amount - policy.CommissionAmount,
                 PolicyId: policy.Id, 
                 SubBrokerAmountString : FormatCurrency(policy.SubbrokerAmount),
-
+                PaidToCarrierString : FormatCurrency(policy.PaidToCarrier), 
+                OwedAmountString: FormatCurrency(policy.Amount - policy.CommissionAmount- policy.PaidToCarrier),
+                CustomerPaidString : FormatCurrency(policy.PaidByCustomer), 
+                CustomerBalanceString : FormatCurrency(policy.Amount - policy.PaidByCustomer),
+                CustomerBalance : policy.Amount - policy.PaidByCustomer, 
+                OwedAmount:policy.Amount - policy.CommissionAmount- policy.PaidToCarrier
 
             }
       })

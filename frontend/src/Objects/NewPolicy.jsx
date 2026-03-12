@@ -11,7 +11,7 @@ import { PdfViewer } from "./PdfViewer";
 import { X } from "lucide-react";
 
 export const Policy = forwardRef(
-  ({ Close, OnSuccess, isEdit, policyId, policy, }, ref) => {
+  ({ Close, OnSuccess, isEdit, policyId, policy,hideCustomer }, ref) => {
 
     const fileInputRef = useRef(null);
 
@@ -29,6 +29,7 @@ export const Policy = forwardRef(
     const [zip, setZip] = useState(policy?.Customer?.BillZip ?? "");
     const [phone, setPhone] = useState(policy?.Customer?.BillPhone ?? "");
     const [email, setEmail] = useState(policy?.Customer?.Email ?? "");
+    const [customerId , setCustomerId]= useState(policy?.Customer?.CustomerId??"") ;
     const [file, setFile] = useState(null);
     const [policyCode, setPolicyCode] = useState(policy?.PolicyCode ?? "");
     const [policyDescription, setPolicyDescription] = useState(policy?.PolicyDescription ?? "");
@@ -40,11 +41,13 @@ export const Policy = forwardRef(
     const [pdfUrl, setPdfUrl] = useState(null);
     const [isManual, setIsManual] = useState(null);
     const [subbroker, setSubbroker] = useState("");
-    const [policyStart, setPolicyStart] = useState(new Date);
-    const [policyEnd, setPolicyEnd] = useState(new Date);
-    const [carrier, setCarrier] = useState("");
+    const [policyStart, setPolicyStart] = useState(policy.PolicyStartDate??new Date);
+    const [policyEnd, setPolicyEnd] = useState(policy.PolicyEndDate??new Date);
+    const [carrier, setCarrier] = useState(policy.CarrierName??"");
     const [subbrokerCommission, setSubbrokerCommission] = useState(0);
     const [highlightText, setHighlightText] = useState("")
+    const [paidToCarrier, setPaidToCarrier] = useState(policy?.PaidToCarrier)
+    const [customerPaid, setCustomerPaid] = useState(policy?.PaidByCustomer)
 
 
 
@@ -133,6 +136,7 @@ export const Policy = forwardRef(
 
 
       const NewCustomer = {
+        CustomerId : customerId, 
         CustomerNumber: customerNumber,
         CustomerNotes: note,
         Email: email,
@@ -158,6 +162,8 @@ export const Policy = forwardRef(
         CommissionAmount: commissionAmount,
         QuoteFileName: file ? file.name : "",
         Customer: premadeCustomer ?? NewCustomer,
+        PaidToCarrier: paidToCarrier,
+        PaidByCustomer: customerPaid,
         ... (isEdit ? { PolicyId: policy.PolicyId } : {})
       };
 
@@ -326,31 +332,80 @@ export const Policy = forwardRef(
 
               </div>
             </div>
+            {isEdit && <>
+             <div className="form-row">
+
+              
+             <div className="form-group">
+                <label>Customer Paid</label>
+                <input
+                  type="number"
+                  value={customerPaid}
+                  onChange={(e) => setCustomerPaid(e.target.value)}
+                />
+
+              </div>
+              <div className="form-group">
+                <label>Customer Balance</label>
+                <input
+                  type="text"
+                  disabled
+                  value={policyAmount- (customerPaid??0)}
+                  
+                  
+                />
+              </div>
+              </div>
+              <div className="form-row">
+
+              <div className="form-group">
+                <label>Paid to Carrier</label>
+                <input
+                  type="number"
+                  value={paidToCarrier}
+                  onChange={(e) => setPaidToCarrier(e.target.value)}
+                />
+
+              </div>
+              <div className="form-group">
+                <label>Owed to Carrier</label>
+                <input
+                  type="number"
+                  disabled
+                  value={(policyAmount - commissionAmount)- (paidToCarrier??0)}
+                  onChange={(e) => setPaidToCarrier(e.target.value)}
+                />
+
+              </div>
+              </div>
+            </>}
 
           </section>
-          {premadeCustomer && !isEdit && <div>
-            Using preexisting customer {premadeCustomer.BillCompany || premadeCustomer.BillFirstName}
-            <span style={{ fontWeight: "bold", paddingLeft: "10px", cursor: "pointer" }} title="">
-              <X size={11} onClick={() => setPremadeCustomer(null)} />
-            </span>
-          </div>}
-          {!premadeCustomer && <> {!isEdit && <ActionButton onClick={() => setShowCustomerSearch(true)}>
-            Existing Customer
-          </ActionButton>}
-            <CustomerInfo
-              firstName={firstName} setFirstName={setFirstName}
-              lastName={lastName} setLastName={setLastName}
-              company={company} setCompany={setCompany}
-              note={note} setNote={setNote}
-              customerNumber={customerNumber} setCustomerNumber={setCustomerNumber}
-              street={street} setStreet={setStreet}
-              city={city} setCity={setCity}
-              state={state} setState={setState}
-              zip={zip} setZip={setZip}
-              phone={phone} setPhone={setPhone}
-              email={email} setEmail={setEmail}
-              submitPressed={submitPressed}
-            />
+          { !hideCustomer &&  <>
+            {premadeCustomer && !isEdit && <div>
+              Using preexisting customer {premadeCustomer.BillCompany || premadeCustomer.BillFirstName}
+              <span style={{ fontWeight: "bold", paddingLeft: "10px", cursor: "pointer" }} title="">
+                <X size={11} onClick={() => setPremadeCustomer(null)} />
+              </span>
+            </div>}
+            {!premadeCustomer && <> {!isEdit && <ActionButton onClick={() => setShowCustomerSearch(true)}>
+              Existing Customer
+            </ActionButton>}
+              <CustomerInfo
+                firstName={firstName} setFirstName={setFirstName}
+                lastName={lastName} setLastName={setLastName}
+                company={company} setCompany={setCompany}
+                note={note} setNote={setNote}
+                customerNumber={customerNumber} setCustomerNumber={setCustomerNumber}
+                street={street} setStreet={setStreet}
+                city={city} setCity={setCity}
+                state={state} setState={setState}
+                zip={zip} setZip={setZip}
+                phone={phone} setPhone={setPhone}
+                email={email} setEmail={setEmail}
+                submitPressed={submitPressed}
+              />
+            </>}
           </>}
         </>}
       </>

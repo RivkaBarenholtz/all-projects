@@ -28,6 +28,6 @@ namespace InsTechClassesV2.TransactionRequests
 
         public bool SavePaymentMethod { get; set; } = false;
         public bool IsDefault { get; set;  }
-
+        public string PolicyId { get; set; }
     }
 }

@@ -55,7 +55,7 @@ export function TextractBedrockProcessor({ jobId , bedrockResult, setBedrockResu
 
   if (error) return <div>Error: {error}</div>;
   if (!bedrockResult && !error)
-    return <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' , zIndex: 100000, background: "#ffffff", position: "fixed", width: "100%", height:"100%" }}>
+    return <div style={{ display: 'flex',justifyContent:"center", overflow:"hidden", alignItems: 'center', gap: '0.5rem' , zIndex: 100000, background: "#ffffff", position: "absolute", width: "100%", height:"100%" }}>
         <Loader/>
 
          Analyzing document... 

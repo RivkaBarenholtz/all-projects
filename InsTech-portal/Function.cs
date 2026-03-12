@@ -920,6 +920,14 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(rsp);
                 return response;
             }
+            else if (lastSegment == "get-customer-policies")
+            {
+                var customerId = request.QueryStringParameters["customerid"];
+                var policies = await Policy.GetPoliciesByCustomerIDAsync(customerId);
+                response.Body = JsonConvert.SerializeObject(policies);
+                return response;
+            }
+
             return response;
         }
         catch (Exception ex)

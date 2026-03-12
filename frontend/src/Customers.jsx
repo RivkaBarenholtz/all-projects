@@ -3,7 +3,7 @@ import {NewCustomer} from "./Objects/NewCustomer";
 import { fetchWithAuth, FormatCurrency, Sort } from "./Utilities";
 import { useSuccessModal } from "./Objects/SuccessModal";
 import { Grid } from './Objects/Grid';
-import { CustomerDetail } from "./Objects/CustomerDetail";
+import { CustomerDetail } from "./Objects/Details/CustomerDetail";
 
 export default function Customers() {
    const [showNewCustomer, setShowNewCustomer] = useState(false);

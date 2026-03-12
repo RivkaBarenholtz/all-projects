@@ -34,7 +34,8 @@ export const CheckTab = forwardRef(( {
         submitPressed, setSubmitPressed, 
         subdomain,
         showProcess = true  , 
-        hidePaymentButton = false
+        hidePaymentButton = false, 
+        policyId
     }, ref) => {
 
     
@@ -112,6 +113,7 @@ export const CheckTab = forwardRef(( {
             CSRCode: csrCode,
             CSREmail: csrEmail,
             CaptchaToken: captchaToken,
+            PolicyId: policyId,
             Software: isPortal ? "Instech-Pay-Portal" : "Instech-Payment-Site",
             isDevelopment: import.meta.env.VITE_ENV === 'development'
         };

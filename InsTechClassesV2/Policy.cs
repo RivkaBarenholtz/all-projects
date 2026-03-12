@@ -19,6 +19,9 @@ namespace InsTechClassesV2
 
         public CustomerFilters Customer { get; set; }
         public decimal SubBrokerAmount { get; set; }
+        public decimal PaidByCustomer { get; set; }
+        public decimal PaidToCarrier { get; set; }
+                        
         public string SubBrokerName { get; set; }
         
         public string  CarrierName { get; set; }
@@ -51,10 +54,10 @@ namespace InsTechClassesV2
         {
             var expressionAttributeValues = new Dictionary<string, AttributeValue>
             {
-                {":entityType", new AttributeValue { S = documentid}}
+                {":index1", new AttributeValue { S = documentid}}
             };
-            string keyExpression = "EntityType = :entityType";
-            var result = await DynamoDatabaseTransactions.QueryTableUsingIndexAsync(keyExpression, expressionAttributeValues);
+            string keyExpression = "Index1 = :index1";
+            var result = await DynamoDatabaseTransactions.QueryTableUsingIndexAsync(keyExpression, expressionAttributeValues, "Index-1");
             if (result != null && result.Count > 0)
             {
                 var item = result.FirstOrDefault();
@@ -66,8 +69,26 @@ namespace InsTechClassesV2
             }
             return null;
 
+        }   
+        public static async Task<List<Policy>> GetPoliciesByCustomerIDAsync(string customerId)
+        {
+            List<Policy> policies = new();
+            var expressionAttributeValues = new Dictionary<string, AttributeValue>
+            {
+                {":index2", new AttributeValue { S = customerId}}
+            };
+            string keyExpression = "Index2 = :index2";
+            var result = await DynamoDatabaseTransactions.QueryTableUsingIndexAsync(keyExpression, expressionAttributeValues, "Index-2");
+            foreach (var item  in result)
+            {
+              policies.Add(MapFromDynamoItem(item));
+
+            }
+
+            return policies;
+
         }
-        public static async Task<Policy?> GetPolicyByIdAsync(string vendorId, string policyId, string templateId, int merchantid )
+        public static async Task<Policy?> GetPolicyByIdWithDocumentAsync(string vendorId, string policyId, string templateId, int merchantid )
         {
             var item = await DynamoDatabaseTransactions.GetItemByIdAsync(vendorId, policyId, "Policy");
            
@@ -124,6 +145,12 @@ namespace InsTechClassesV2
                 SubBrokerAmount = item.ContainsKey("SubBrokerAmount") && !string.IsNullOrEmpty(item["SubBrokerAmount"].N)
                     ? decimal.Parse(item["SubBrokerAmount"].N)
                     : 0,
+                PaidByCustomer = item.ContainsKey("PaidByCustomer") && !string.IsNullOrEmpty(item["PaidByCustomer"].N)
+                    ? decimal.Parse(item["PaidByCustomer"].N)
+                    : 0,
+                PaidToCarrier = item.ContainsKey("PaidToCarrier") && !string.IsNullOrEmpty(item["PaidToCarrier"].N)
+                    ? decimal.Parse(item["PaidToCarrier"].N)
+                    : 0,
                 
                 PolicyCode = item.ContainsKey("PolicyCode") ? item["PolicyCode"].S : "",
                 CarrierName = item.ContainsKey("CarrierName") ? item["CarrierName"].S : "",
@@ -133,7 +160,7 @@ namespace InsTechClassesV2
                 PolicyDescription = item.ContainsKey("PolicyDescription") ? item["PolicyDescription"].S : "",
                 QuoteFileName = item.ContainsKey("QuoteFileName") ? item["QuoteFileName"].S : "",
                 SignPolicyLink = item.ContainsKey("SignPolicyLink") ? item["SignPolicyLink"].S : "",
-                DocumentId = item.ContainsKey("EntityType") ? item["EntityType"].S : "",
+                DocumentId = item.ContainsKey("Index1") ? item["Index1"].S : "",
                 IsSignedAndPaid = item.ContainsKey("IsSignedAndPaid") && (item["IsSignedAndPaid"].BOOL ?? false) ? true : false,
                 IsSigned = item.ContainsKey("IsSigned") && (item["IsSigned"].BOOL ?? false) ? true : false,
                 VendorId = item["PK"].S.Replace("Vendor#", ""),
@@ -146,6 +173,7 @@ namespace InsTechClassesV2
                     Email = item.ContainsKey("Email") ? item["Email"].S : "",
                     BillFirstName = item.ContainsKey("FirstName") ? item["FirstName"].S : "",
                     BillLastName = item.ContainsKey("LastName") ? item["LastName"].S : "",
+                    BillCompany = item.ContainsKey("BillCompany") ? item["BillCompany"].S : "",
                     BillMiddleName = item.ContainsKey("MiddleName") ? item["MiddleName"].S : "",
                     BillMobile = item.ContainsKey("Mobile") ? item["Mobile"].S : "",
                     BillStreet = item.ContainsKey("Address") ? item["Address"].S : "",
@@ -189,10 +217,12 @@ namespace InsTechClassesV2
             AddNumber("Amount", Amount);
             AddNumber("CommissionAmount", CommissionAmount);
             AddNumber("SubBrokerAmount", SubBrokerAmount);
+            AddNumber("PaidToCarrier", PaidToCarrier);
+            AddNumber("PaidByCustomer", PaidByCustomer);
             AddString("PolicyCode", PolicyCode);
             AddString("PolicyDescription", PolicyDescription);
             AddString("QuoteFileName", QuoteFileName);
-            AddString("EntityType", DocumentId);
+            AddString("Index1", DocumentId);
             AddString ("SignPolicyLink", SignPolicyLink);
             AddString("SubBrokerName", SubBrokerName);
             AddString("CarrierName", CarrierName);
@@ -201,10 +231,12 @@ namespace InsTechClassesV2
             if (Customer != null)
             {
                 AddString("CardknoxCustomerId", Customer.CustomerId);
+                AddString("Index2", Customer.CustomerId);
                 AddString("CustomerNumber", Customer.CustomerNumber);
                 AddString("Phone", Customer.BillPhoneNumber);
                 AddString("Email", Customer.Email);
                 AddString("FirstName", Customer.BillFirstName);
+                AddString("BillCompany", Customer.BillCompany);
                 AddString("LastName", Customer.BillLastName);
                 AddString("MiddleName", Customer.BillMiddleName);
                 AddString("Mobile", Customer.BillMobile);
@@ -225,7 +257,7 @@ namespace InsTechClassesV2
             var newId = await WireRefNumGenerator.GenerateRefNumberAsync();
             
 
-            newItem.Add("Date", new AttributeValue { S = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssZ") });
+            newItem.Add("Date", new AttributeValue { S = Customer.CustomerId });
 
             await DynamoDatabaseTransactions.InsertItemAsync(
                 vendor.Id.ToString(),

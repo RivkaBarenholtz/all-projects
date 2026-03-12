@@ -153,6 +153,7 @@ namespace InsTechClassesV2.Services
             apiRequest.xSoftwareName = request?.Software ?? "Insure-Tech"; 
 
             var rsp = await apiRequest.SendRequest(vendor);
+            if (rsp.xResult == "A") await ApplyPaymentToPolicy(request.PolicyId, vendor.Id.ToString(), apiRequest.xAmount);
             if (request.SavePaymentMethod && rsp.xResult != "E")
             {
                 SavedMethods savedMethods = new SavedMethods()
@@ -167,6 +168,20 @@ namespace InsTechClassesV2.Services
                 await s3.AppendRecordAsync(savedMethods);
             }
             return rsp;
+        }
+
+        private static async Task ApplyPaymentToPolicy (string policyId ,string  vendorid, decimal amount )
+        { 
+            try
+            {
+                if (string.IsNullOrEmpty(policyId)) return; 
+                var policy = await Policy.GetPolicyByIdAsync(vendorid, policyId);
+                policy.PaidByCustomer += amount;
+                await policy.UpdateDynamoAsync(vendorid); 
+            }
+            catch (Exception ex){
+                Console.WriteLine(ex);
+            }
         }
 
         public async static Task<List<SavedMethods>> SaveDefaultPaymentMethod(string token, string accountId, Vendor vendor)
@@ -269,6 +284,7 @@ namespace InsTechClassesV2.Services
                 apiRequest.xSplitInstruction = GetSplitInstructions(request?.Subtotal ?? 0, vendor, apiRequest.xAmount);
             }
             var rsp = await apiRequest.SendRequest(vendor);
+            if(rsp.xResult == "A") await ApplyPaymentToPolicy(request.PolicyId, vendor.Id.ToString(), apiRequest.xAmount);
             if (request.SavePaymentMethod && rsp.xResult != "E")
             {
                 SavedMethods savedMethods = new SavedMethods()

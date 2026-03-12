@@ -74,6 +74,7 @@ public class Function
                 response.Body = body;
                 return response;
             }
+            
             if(lastSegment == "post-boldsign-event")
             {
                 var eventObject = JsonConvert.DeserializeObject<BoldSignWebhookEvent>(request.Body);
@@ -118,7 +119,7 @@ public class Function
             {
                 var policyId = request.QueryStringParameters != null &&
                          request.QueryStringParameters.TryGetValue("policyid", out var value) ? value : "";
-                var policy = await Policy.GetPolicyByIdAsync(vendor.Id.ToString(), policyId, vendor.PolicyTemplateId, vendor.CardknoxMerchantId);
+                var policy = await Policy.GetPolicyByIdWithDocumentAsync(vendor.Id.ToString(), policyId, vendor.PolicyTemplateId, vendor.CardknoxMerchantId);
                 response.Body = JsonConvert.SerializeObject(policy);
                 return response;
             }
@@ -152,8 +153,7 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(openInvoices);
                 return response;
             }
-
-            else if (lastSegment == "save-surcharge")
+           else if (lastSegment == "save-surcharge")
             {
                 try
                 {
@@ -197,8 +197,8 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(clientResponse);
                 return response;
             }
-          
-            
+
+
             else if (lastSegment == "make-check-payment-to-cardknox")
             {
                 var cardknoxResponse = await MakePaymentService.MakeCheckPaymentToCardknox(request.Body, vendor);
@@ -217,10 +217,10 @@ public class Function
             {
                 var digitalPaymentResponse = await MakePaymentService.MakeDigitalWalletPaymentToCardknox(request.Body, vendor);
                 var body = await digitalPaymentResponse.Content.ReadAsStringAsync();
-                response.Body = body;   
+                response.Body = body;
                 return response;
             }
-            
+
             //else if (lastSegment == "void-transaction")
             //{
             //    var paymentResponse = await MakePaymentService.VoidTransaction(request.Body, vendor);
@@ -242,19 +242,19 @@ public class Function
                 var body = await AppliedEpicDataService.GetInvoiceFromInvoiceNumberAndLookupCode(vendor, request.Body);
                 response.Body = JsonConvert.SerializeObject(body);
                 return response;
-                   
-            
+
+
             }
             else if (lastSegment == "submit-wire")
             {
                 await MakePaymentService.SaveWireTransaction(request.Body, vendor);
-                response.Body = JsonConvert.SerializeObject( new { message="Success" });
+                response.Body = JsonConvert.SerializeObject(new { message = "Success" });
                 return response;
             }
             else if (lastSegment == "get-ref-num")
-            { 
+            {
                 var refNum = await WireRefNumGenerator.GenerateRefNumberAsync();
-                response.Body = JsonConvert.SerializeObject(new{ refNum });
+                response.Body = JsonConvert.SerializeObject(new { refNum });
             }
             
            

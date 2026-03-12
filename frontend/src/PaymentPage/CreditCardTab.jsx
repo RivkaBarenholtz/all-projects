@@ -43,7 +43,8 @@ export const CreditCardTab = forwardRef((
         isSigned = true, 
         subdomain,
         submitPressed, setSubmitPressed, 
-        hidePaymentButton = false
+        hidePaymentButton = false, 
+        policyId
 
     }, ref) => {
 
@@ -170,7 +171,8 @@ export const CreditCardTab = forwardRef((
             CaptchaToken: captchaToken,
             submitPressed, setSubmitPressed,
             Software: isPortal ? "Instech-Pay-Portal" : "Instech-Payment-Site",
-            isDevelopment: import.meta.env.VITE_ENV === 'development'
+            isDevelopment: import.meta.env.VITE_ENV === 'development', 
+            PolicyId : policyId
         
         };
        

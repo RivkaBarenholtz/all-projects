@@ -106,6 +106,22 @@ export function PolicyDetail({ policy, onClose }) {
                         <span className="trd-value">{policy.PayableAmountString}</span>
                     </div>
                     <div className="trd-info-row">
+                        <span className="trd-label">Paid To Carrier</span>
+                        <span className="trd-value">{policy.PaidToCarrierString}</span>
+                    </div>
+                    <div className="trd-info-row">
+                        <span className="trd-label">Owed To Carrier</span>
+                        <span className="trd-value">{policy.OwedAmountString}</span>
+                    </div>
+                    <div className="trd-info-row">
+                        <span className="trd-label">Customer Paid</span>
+                        <span className="trd-value">{policy.CustomerPaidString}</span>
+                    </div>
+                    <div className="trd-info-row">
+                        <span className="trd-label">Customer Balance</span>
+                        <span className="trd-value">{policy.CustomerBalanceString}</span>
+                    </div>
+                    <div className="trd-info-row">
                         <span className="trd-label">Sub-broker:</span>
                         <span className="trd-value">{policy.SubBrokerName}</span>
                     </div>

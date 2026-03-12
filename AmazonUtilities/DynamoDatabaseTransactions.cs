@@ -244,14 +244,16 @@ namespace AmazonUtilities
             return results;
         }
 
-        public static async Task<List<Dictionary<string, AttributeValue>>> QueryTableUsingIndexAsync ( string keyConditionExpression, Dictionary<string, AttributeValue> expressionAttributeValues)
+        public static async Task<List<Dictionary<string, AttributeValue>>> QueryTableUsingIndexAsync ( string keyConditionExpression, Dictionary<string, AttributeValue> expressionAttributeValues, string indexName)
         {
             var request = new QueryRequest
             {
                 TableName = tableName,
-                IndexName = "EntityType-Date-index",
+                IndexName = indexName,
                 KeyConditionExpression = keyConditionExpression,
-                ExpressionAttributeValues = expressionAttributeValues
+                ExpressionAttributeValues = expressionAttributeValues,
+               
+
             };
             var results = new List<Dictionary<string, AttributeValue>>();
             QueryResponse response;

@@ -1079,7 +1079,7 @@ input[type="date"],
 .trd-tabs {
   display: flex;
   justify-content: space-between;
-  background: #e4e5e6;
+  background: #ffffff;
   color: gray;
   /* padding: 5px 25px; */
   align-items: stretch;
@@ -1093,18 +1093,20 @@ input[type="date"],
   margin-bottom: 16px;
 }
 
-.active-tab {
+.active-tab.tab {
   background: white;
   top: 2px;
 
-  border-radius: 10px 10px 0 0;
-  border-top: 2px solid #3665b7;
+   border-top: 2px solid #3665b7;
 
 }
 
 .tab {
   width: 50%;
   padding: 5px 10px;
+border-radius: 10px 10px 0 0;
+ font-size: small;
+ background-color: lightgray;
 }
 
 .transaction-action {

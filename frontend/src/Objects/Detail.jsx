@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 
-export default function Detail({title, body, onClose}) {
+export default function Detail({title, body, onClose, header}) {
     return (
         <AnimatePresence>
      
@@ -36,7 +36,7 @@ export default function Detail({title, body, onClose}) {
                             </div>
 
                         </div>
-                       
+                       {header}
                         {/* Body */}
                         <div className="trd-body">
                             {body}
