@@ -88,6 +88,16 @@ namespace InsTechClassesV2
             return policies;
 
         }
+        public static async Task<Policy?> GetPolicyByIdAsync(string vendorId, string policyId)
+        {
+            var item = await DynamoDatabaseTransactions.GetItemByIdAsync(vendorId, policyId, "Policy");
+
+            var policy = MapFromDynamoItem(item);
+
+            return policy;
+        }
+
+
         public static async Task<Policy?> GetPolicyByIdWithDocumentAsync(string vendorId, string policyId, string templateId, int merchantid )
         {
             var item = await DynamoDatabaseTransactions.GetItemByIdAsync(vendorId, policyId, "Policy");
