@@ -4,29 +4,18 @@ using AmazonUtilities;
 using InsTechClassesV2.Services;
 using Newtonsoft.Json;
 using InsTechClassesV2.AppliedEpic;
-using System.Reflection.PortableExecutable;
-using Amazon.SecretsManager.Model.Internal.MarshallTransformations;
-using  InsTechClassesV2;
+using InsTechClassesV2;
 using AmazonUtilities.DynamoDatabase;
 using InsTechClassesV2.Cardknox;
 using InsTechClassesV2.TransactionRequests;
-using InsTechClassesV2.BoldSign;
-using InsTechClassesV2.BoldSignApi;
+using InsTechClassesV2.ESign;
 
-// Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
 namespace InsTechReceivePayment;
 
 public class Function
 {
-    
-    /// <summary>
-    /// A simple function that takes a string and does a ToUpper
-    /// </summary>
-    /// <param name="input">The event for the Lambda function handler to process.</param>
-    /// <param name="context">The ILambdaContext that provides methods for logging and describing the Lambda environment.</param>
-    /// <returns></returns
     public async Task<System.Object> FunctionHandler(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
     {
         try
@@ -37,9 +26,7 @@ public class Function
 
             Console.WriteLine($"Received request: {JsonConvert.SerializeObject(request)}");
 
-
             string fullPath = request.RawPath ?? "";
-
             string[] segments = fullPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
             string lastSegment = "";
@@ -47,113 +34,187 @@ public class Function
 
             if (segments.Length >= 2)
             {
-                secondToLastSegment = segments[^2]; // second to last
-                lastSegment = segments[^1];         // last
+                secondToLastSegment = segments[^2];
+                lastSegment = segments[^1];
             }
             else if (segments.Length == 1)
             {
                 secondToLastSegment = segments[0];
                 lastSegment = "";
             }
+
             APIGatewayHttpApiV2ProxyResponse response = new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = 200,
                 Headers = new Dictionary<string, string>
-                    {
-                        { "Access-Control-Allow-Origin", "*" },
-                        { "Access-Control-Allow-Headers", "Content-Type" },
-                        { "Access-Control-Allow-Methods", "POST, OPTIONS, GET" }
-                    }
+                {
+                    { "Access-Control-Allow-Origin", "*" },
+                    { "Access-Control-Allow-Headers", "Content-Type" },
+                    { "Access-Control-Allow-Methods", "POST, OPTIONS, GET" }
+                }
             };
+
             if (lastSegment == "get-subdomain")
             {
-
                 string subdomain = request.QueryStringParameters?["subdomain"] ?? "";
                 string clientLookup = request.QueryStringParameters?["accountid"] ?? "";
                 string body = await AppliedEpicDataService.GetSubdomain(subdomain, clientLookup);
                 response.Body = body;
                 return response;
             }
-            
-            if(lastSegment == "post-boldsign-event")
-            {
-                var eventObject = JsonConvert.DeserializeObject<BoldSignWebhookEvent>(request.Body);
-                if (eventObject != null)
-                {
-                    if(eventObject.Event.EventType == "Signed")
-                    {
-                        var policy = await Policy.GetPolicyByDocumentIdAsync(eventObject.Data.DocumentId);
-                        policy.IsSigned = true;
-                        await policy.UpdateDynamoAsync(policy.VendorId);
-                    }
-                }
-                return response; 
-            }
 
             vendor = await Utilities.GetVendor(secondToLastSegment);
-         
-
 
             if (vendor == null)
             {
-                var email = new SimpleEmail(new List<string>() { "instech101@gmail.com" }, "No vendor Found", $" Error retrieving vendor. {Environment.NewLine} Input object: {JsonConvert.SerializeObject(request)}", new List<string>() { "instech101@gmail.com" });
+                var email = new SimpleEmail(new List<string>() { "instech101@gmail.com" }, "No vendor Found", $"Error retrieving vendor.{Environment.NewLine}Input: {JsonConvert.SerializeObject(request)}", new List<string>() { "instech101@gmail.com" });
                 await email.Send();
                 return "ERROR: No vendor found";
             }
 
-
             Console.WriteLine($"Last segment: {lastSegment}");
-      
 
             if (lastSegment == "get-vendor")
             {
-
-                vendor.PaymentSiteSettings.subdomain = vendor.subdomain; 
+                vendor.PaymentSiteSettings.subdomain = vendor.subdomain;
                 response.Body = JsonConvert.SerializeObject(vendor.PaymentSiteSettings);
-
                 return response;
-                    
-
             }
             else if (lastSegment == "get-policy-by-id")
             {
-                var policyId = request.QueryStringParameters != null &&
-                         request.QueryStringParameters.TryGetValue("policyid", out var value) ? value : "";
-                var policy = await Policy.GetPolicyByIdWithDocumentAsync(vendor.Id.ToString(), policyId, vendor.PolicyTemplateId, vendor.CardknoxMerchantId);
-                response.Body = JsonConvert.SerializeObject(policy);
+                var policyId = request.QueryStringParameters?.TryGetValue("policyid", out var pid) == true ? pid : "";
+                var result = await Policy.GetPolicyByIdWithPdfUrlAsync(vendor.Id.ToString(), policyId, vendor.CardknoxMerchantId);
+                response.Body = JsonConvert.SerializeObject(result);
                 return response;
             }
-            else if (lastSegment == "download-signed-policy-doc")
+            else if (lastSegment == "get-signed-doc-url")
             {
-                var documentId = request.QueryStringParameters["documentid"];
-                var base64 = await BoldSignClient.DownloadSignedDocument(documentId);
-                return new APIGatewayProxyResponse
+                var policyId = request.QueryStringParameters?.TryGetValue("policyid", out var pid) == true ? pid : "";
+                var policy = await Policy.GetPolicyByIdAsync(vendor.Id.ToString(), policyId);
+                if (policy == null || string.IsNullOrEmpty(policy.SignedPdfKey))
                 {
-                    StatusCode = 200,
-                    IsBase64Encoded = true,
-                    Headers = new Dictionary<string, string>
+                    response.StatusCode = 404;
+                    response.Body = JsonConvert.SerializeObject(new { message = "Signed document not found" });
+                    return response;
+                }
+                var s3 = new AmzS3Bucket("policy-uploads", policy.SignedPdfKey);
+                response.Body = JsonConvert.SerializeObject(new { url = s3.GetDownloadPreSignedUrl() });
+                return response;
+            }
+            else if (lastSegment == "sign-policy")
+            {
+                dynamic body = JsonConvert.DeserializeObject<dynamic>(request.Body)!;
+                string policyId    = body["policyId"]?.ToString() ?? "";
+                string sigData     = body["signatureData"]?.ToString() ?? "";
+                string signerName  = body["signerName"]?.ToString() ?? "";
+                string signerEmail = body["signerEmail"]?.ToString() ?? "";
+                string sigType     = body["signatureType"]?.ToString() ?? "Drawn";
+                var frontendEvents = body["auditTrail"] != null
+                    ? JsonConvert.DeserializeObject<List<ESignAuditEvent>>(body["auditTrail"].ToString()) ?? new()
+                    : new List<ESignAuditEvent>();
+                // Enrich frontend events with server-captured IP (client cannot know its own public IP)
+                foreach (var ev in frontendEvents) ev.IPAddress = ip;
+
+                if (string.IsNullOrEmpty(policyId) || string.IsNullOrEmpty(sigData))
                 {
-                    { "Content-Type", "application/pdf" },
-                    { "Content-Disposition", $"inline; filename=signed_{documentId}.pdf" }
-                },
-                    Body = base64
+                    response.StatusCode = 400;
+                    response.Body = JsonConvert.SerializeObject(new { message = "Missing policyId or signatureData" });
+                    return response;
+                }
+
+                var policy = await Policy.GetPolicyByIdAsync(vendor.Id.ToString(), policyId);
+                if (policy == null)
+                {
+                    response.StatusCode = 404;
+                    response.Body = JsonConvert.SerializeObject(new { message = "Policy not found" });
+                    return response;
+                }
+
+                if (policy.IsSigned)
+                {
+                    response.Body = JsonConvert.SerializeObject(new { success = true, message = "Already signed" });
+                    return response;
+                }
+
+                // Download original PDF
+                var originalS3 = new AmzS3Bucket("policy-uploads", $"{vendor.CardknoxMerchantId}/{policyId}");
+                byte[] originalBytes = await originalS3.ReadS3FileBytes();
+                string originalHash = ESignRequest.ComputeHash(originalBytes);
+
+                // Embed signature + date into PDF at stored field positions
+                byte[] signedBytes = PdfSigningService.EmbedSignatures(
+                    originalBytes,
+                    policy.SignatureFields ?? new List<PolicySignatureField>(),
+                    sigData,
+                    signerName,
+                    DateTime.UtcNow);
+
+                string signedHash = ESignRequest.ComputeHash(signedBytes);
+
+                // Upload signed PDF to S3
+                string signedKey = $"{vendor.CardknoxMerchantId}/{policyId}-signed";
+                var signedS3 = new AmzS3Bucket("policy-uploads", signedKey);
+                await signedS3.UploadFileToS3(Convert.ToBase64String(signedBytes), "application/pdf");
+
+                // Create audit record
+                string ip = request.RequestContext?.Http?.SourceIp ?? "";
+                caseInsensitiveHeaders.TryGetValue("user-agent", out var userAgent);
+
+                var esignReq = new ESignRequest
+                {
+                    VendorId = vendor.Id.ToString(),
+                    PolicyId = policy.Id,
+                    PolicyCode = policy.PolicyCode,
+                    SignerName = signerName,
+                    SignerEmail = signerEmail,
+                    DocumentHash = originalHash,
+                    SignedDocumentHash = signedHash,
+                    Status = "Completed",
+                    Parties = new List<ESignParty>
+                    {
+                        new ESignParty
+                        {
+                            Name = signerName,
+                            Email = signerEmail,
+                            Role = "Insured",
+                            Order = 1,
+                            Status = "Signed",
+                            SignedAt = DateTime.UtcNow.ToString("o"),
+                            IPAddress = ip,
+                            UserAgent = userAgent,
+                            SignatureType = sigType
+                        }
+                    },
+                    AuditEvents = new List<ESignAuditEvent>(frontendEvents)
+                    {
+                        new ESignAuditEvent { EventType = "Signed", IPAddress = ip, UserAgent = userAgent,
+                            SignerName = signerName, SignerEmail = signerEmail,
+                            Metadata = $"{signerName} signed on payment page | IP: {ip} | Type: {sigType}" }
+                    }
                 };
+                await esignReq.SaveAsync();
+
+                // Mark policy as signed
+                policy.IsSigned = true;
+                policy.SignedPdfKey = signedKey;
+                await policy.UpdateDynamoAsync(vendor.Id.ToString());
+
+                response.Body = JsonConvert.SerializeObject(new { success = true });
+                return response;
             }
             else if (lastSegment == "get-surcharge")
             {
                 var surcharge = await MakePaymentService.GetClientSurcharge(request.Body, vendor);
-                var responseBody = new { surcharge = surcharge, vendorSurcharge = vendor.InsureTechFeePercentage };
-                response.Body = JsonConvert.SerializeObject(responseBody);
+                response.Body = JsonConvert.SerializeObject(new { surcharge, vendorSurcharge = vendor.InsureTechFeePercentage });
                 return response;
             }
             else if (lastSegment == "get-open-invoices")
             {
                 var openInvoices = await AppliedEpicDataService.GetInvoiceList(vendor, request.Body);
-
                 response.Body = JsonConvert.SerializeObject(openInvoices);
                 return response;
             }
-           else if (lastSegment == "save-surcharge")
+            else if (lastSegment == "save-surcharge")
             {
                 try
                 {
@@ -175,75 +236,47 @@ public class Function
                         }
                     };
                 }
-
             }
             else if (lastSegment == "get-client-from-epic")
             {
-                var id = int.Parse(request.QueryStringParameters != null &&
-                         request.QueryStringParameters.TryGetValue("ClientID", out var value)
-                ? value
-                : "-1");
-                string lookupCode = request.QueryStringParameters != null &&
-                request.QueryStringParameters.TryGetValue("LookupCode", out var lookup)
-                        ? lookup
-                        : "";
-                AppliedGetClientRequest clientResponse = new AppliedGetClientRequest();
+                var id = int.Parse(request.QueryStringParameters?.TryGetValue("ClientID", out var cid) == true ? cid : "-1");
+                string lookupCode = request.QueryStringParameters?.TryGetValue("LookupCode", out var lc) == true ? lc : "";
+                AppliedGetClientRequest clientResponse;
                 if (id > 0)
                     clientResponse = await AppliedGetClientRequest.CreateFromID(id, vendor);
                 else
                     clientResponse = await AppliedGetClientRequest.Create(lookupCode, vendor, new GlobalLog());
 
-                if (!string.IsNullOrEmpty(clientResponse.CSRLookupCode)) clientResponse.CSREmailAddress = await AppliedEpicReceiptService.GetCSREmailAddress(clientResponse.CSRLookupCode, vendor);
+                if (!string.IsNullOrEmpty(clientResponse.CSRLookupCode))
+                    clientResponse.CSREmailAddress = await AppliedEpicReceiptService.GetCSREmailAddress(clientResponse.CSRLookupCode, vendor);
+
                 response.Body = JsonConvert.SerializeObject(clientResponse);
                 return response;
             }
-
-
             else if (lastSegment == "make-check-payment-to-cardknox")
             {
                 var cardknoxResponse = await MakePaymentService.MakeCheckPaymentToCardknox(request.Body, vendor);
                 response.Body = JsonConvert.SerializeObject(cardknoxResponse);
                 return response;
             }
-
             else if (lastSegment == "make-payment-cardknox")
             {
                 var pamntResponse = await MakePaymentService.MakePaymentToCardknox(request.Body, vendor);
                 response.Body = JsonConvert.SerializeObject(pamntResponse);
-
                 return response;
             }
             else if (lastSegment == "make-digital-payment")
             {
                 var digitalPaymentResponse = await MakePaymentService.MakeDigitalWalletPaymentToCardknox(request.Body, vendor);
-                var body = await digitalPaymentResponse.Content.ReadAsStringAsync();
-                response.Body = body;
+                var b = await digitalPaymentResponse.Content.ReadAsStringAsync();
+                response.Body = b;
                 return response;
             }
-
-            //else if (lastSegment == "void-transaction")
-            //{
-            //    var paymentResponse = await MakePaymentService.VoidTransaction(request.Body, vendor);
-            //    var body = await paymentResponse.Content.ReadAsStringAsync();
-            //    response.Body = body;
-            //    return response;
-            //}
-
-            //else if (lastSegment == "issue-refund-cardknox")
-            //{
-            //    var refundResponse = await MakePaymentService.IssueRefund(request.Body, vendor);
-            //    var body = await refundResponse.Content.ReadAsStringAsync();
-            //    response.Body= body;
-            //    return response;
-            //}
             else if (lastSegment == "get-invoice")
             {
-
-                var body = await AppliedEpicDataService.GetInvoiceFromInvoiceNumberAndLookupCode(vendor, request.Body);
-                response.Body = JsonConvert.SerializeObject(body);
+                var b = await AppliedEpicDataService.GetInvoiceFromInvoiceNumberAndLookupCode(vendor, request.Body);
+                response.Body = JsonConvert.SerializeObject(b);
                 return response;
-
-
             }
             else if (lastSegment == "submit-wire")
             {
@@ -256,10 +289,8 @@ public class Function
                 var refNum = await WireRefNumGenerator.GenerateRefNumberAsync();
                 response.Body = JsonConvert.SerializeObject(new { refNum });
             }
-            
-           
+
             return response;
-            
         }
         catch (Exception ex)
         {
@@ -268,13 +299,12 @@ public class Function
                 StatusCode = 500,
                 Body = $"Error: {ex.Message}",
                 Headers = new Dictionary<string, string>
-                    {
-                        { "Access-Control-Allow-Origin", "*" },
-                        { "Access-Control-Allow-Headers", "Content-Type" },
-                        { "Access-Control-Allow-Methods", "POST, OPTIONS, GET" }
-                    }
+                {
+                    { "Access-Control-Allow-Origin", "*" },
+                    { "Access-Control-Allow-Headers", "Content-Type" },
+                    { "Access-Control-Allow-Methods", "POST, OPTIONS, GET" }
+                }
             };
-          
         }
     }
 }

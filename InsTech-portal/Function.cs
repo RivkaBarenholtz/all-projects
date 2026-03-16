@@ -8,7 +8,7 @@ using AmazonUtilities;
 using AmazonUtilities.DynamoDatabase;
 using InsTechClassesV2;
 using InsTechClassesV2.AppliedEpic;
-using InsTechClassesV2.BoldSignApi;
+using InsTechClassesV2.ESign;
 using InsTechClassesV2.Cardknox;
 using InsTechClassesV2.Services;
 using InsTechClassesV2.TransactionRequests;
@@ -57,10 +57,6 @@ public class Function
             //    }
             //};
 
-            // You would need to refactor BoldSignClient to inject dependencies for proper mocking.
-            // For now, this test will only show the structure.
-            // Act
-           // var result = await BoldSignClient.GenerateBoldSignUrl(apolicy);
 
             APIGatewayHttpApiV2ProxyResponse response = new APIGatewayHttpApiV2ProxyResponse
             {
@@ -390,23 +386,6 @@ public class Function
                 return response;
             }
 
-            //else if (lastSegment == "void-policy-document")
-            //{
-            //    var docRequest = JsonConvert.DeserializeObject<dynamic>(request.Body);
-            //    var docid = docRequest?["documentId"]?.ToString();
-            //    if (!string.IsNullOrEmpty(docid))
-            //    {
-            //        var policy =await Policy.GetPolicyByDocumentIdAsync(docid);
-            //        var voidDocResponse = await BoldSignClient.VoidDocument(docid, vendor);
-            //        response.Body = JsonConvert.SerializeObject(new { success = voidDocResponse });
-            //        return response;
-            //    }
-            //    else
-            //    {
-            //        response.Body = JsonConvert.SerializeObject(new { success = false, message = "Missing documentId in request body" });
-            //        return response;
-            //    }
-            //}
 
             else if (lastSegment == "issue-refund-cardknox")
             {
@@ -925,6 +904,39 @@ public class Function
                 var customerId = request.QueryStringParameters["customerid"];
                 var policies = await Policy.GetPoliciesByCustomerIDAsync(customerId);
                 response.Body = JsonConvert.SerializeObject(policies);
+                return response;
+            }
+            else if (lastSegment == "save-policy-fields")
+            {
+                dynamic reqBody = JsonConvert.DeserializeObject<dynamic>(request.Body)!;
+                string policyId = reqBody["policyId"]?.ToString() ?? "";
+                var fieldsJson = reqBody["fields"]?.ToString() ?? "[]";
+                var fields = JsonConvert.DeserializeObject<List<InsTechClassesV2.ESign.PolicySignatureField>>(fieldsJson) ?? new List<InsTechClassesV2.ESign.PolicySignatureField>();
+
+                var policy = await Policy.GetPolicyByIdAsync(vendor.Id.ToString(), policyId);
+                if (policy == null)
+                {
+                    response.StatusCode = 404;
+                    response.Body = JsonConvert.SerializeObject(new { message = "Policy not found" });
+                    return response;
+                }
+                policy.SignatureFields = fields;
+                await policy.UpdateDynamoAsync(vendor.Id.ToString());
+                response.Body = JsonConvert.SerializeObject(new { success = true });
+                return response;
+            }
+            else if (lastSegment == "get-signed-doc-url")
+            {
+                var policyId = request.QueryStringParameters?["policyid"] ?? "";
+                var policy = await Policy.GetPolicyByIdAsync(vendor.Id.ToString(), policyId);
+                if (policy == null || string.IsNullOrEmpty(policy.SignedPdfKey))
+                {
+                    response.StatusCode = 404;
+                    response.Body = JsonConvert.SerializeObject(new { message = "Signed document not found" });
+                    return response;
+                }
+                var s3 = new AmzS3Bucket("policy-uploads", policy.SignedPdfKey);
+                response.Body = JsonConvert.SerializeObject(new { url = s3.GetDownloadPreSignedUrl() });
                 return response;
             }
 

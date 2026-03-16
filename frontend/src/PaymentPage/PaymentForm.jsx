@@ -14,6 +14,7 @@ import Loader from './Loader.jsx';
 import { set } from 'date-fns';
 import { ConfirmationModal } from '../Objects/ConfimationModal.jsx';
 import { FinanceTab } from './FinanceTab.jsx';
+import { PolicySigner } from './PolicySigner.jsx';
 
 
 
@@ -292,37 +293,6 @@ export default function PaymentForm({ isPortal, onSuccess }) {
     }
   }, [policyId, vendor?.subdomain])
 
-    useEffect(() => {
-    const handleBoldSignMessage = async(event) => {
-      // Verify it's from BoldSign
-      if (!event.origin.includes('boldsign.com')) return;
-      
-      const { action, data } = event.data;
-
-      if(action == "onDocumentSigned")
-        {
-          let result = ""; 
-          setIsSigned(true);
-          if(activeTab  == "Credit Card") result = cardtabRef.current?.submitToGateway();
-          else if(activeTab == "eCheck") result = checktabRef.current?.submitToGateway();
-          else if(activeTab == "Wire Funds") result=  wiretabRef.current?.submitToGateway();
-          if(result == "Approved") window.location.href = `https://${vendor.subdomain}.instechpay.co/app/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
-          else {
-            // alert (result);
-            // const  resp = await fetchWithAuth("void-policy-document", {documentId: policy?.DocumentId})
-            // setPolicy({...policy, SignPolicyLink: resp?.NewUrl, DocumentId: resp?.DocumentId});
-
-          }
-        } 
-
-
-        console.log('Received message from BoldSign:', action, data);
-      }
-    
-
-    window.addEventListener('message', handleBoldSignMessage);
-    return () => window.removeEventListener('message', handleBoldSignMessage);
-  }, []);
 
   useEffect(() => {
     if (accountCode.trim() == "" || accountCode == null || amount == 0) {
@@ -840,34 +810,19 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
           </div>
           
-           {
-          policy?.SignPolicyLink 
-          && policy?.SignPolicyLink != "" 
-          && !isSigned 
-          && !policy.isSignedAndPaid 
-          &&
-          <div style={{ position: "relative", marginTop: "20px"}}>
-          <iframe 
-            src={policy.SignPolicyLink} 
-            style={{ width: "100%", height: "1000px", border: "none" }} title="Sign Policy">
-
-            </iframe>
-
-                <div style={{
-                  transform: "translateX(-50%)",
-                  position: "absolute",
-                  left: "50%",
-                 
-                  top: "960px",
-                  zIndex: "10000000",
-                  fontWeight: "bold",
-                  background: "#fad014"
-
-                }}> Finish and Pay</div>
-            </div>
-        }
           
         </div>
+        {policy && !policy.IsSignedAndPaid && policy.SignatureFields?.length > 0 && policy.PdfUrl &&
+            <PolicySigner
+              pdfUrl={policy.PdfUrl}
+              policy={policy}
+              subdomain={vendor.subdomain}
+              signerName={cardholderName}
+              signerEmail={email}
+              onSigned={() => setIsSigned(true)}
+            />
+          }
+          
       </div>
       {(isLoading || isInvLoading) && <Loader />}
     </div>   </>);
