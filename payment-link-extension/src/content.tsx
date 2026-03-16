@@ -1,4 +1,4 @@
-import React ,{useState} from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { MainPage } from './components/MainPage';
 import { getAccountLookupCode } from './utils/api';
