@@ -14,7 +14,7 @@ export function TextractBedrockProcessor({ jobId , bedrockResult, setBedrockResu
     }
 
   useEffect(() => {
-    if (!jobId) return;
+    if (!jobId || jobId== "xxxxxxx") return;
 
     
     const pollTextract = async () => {
@@ -54,8 +54,8 @@ export function TextractBedrockProcessor({ jobId , bedrockResult, setBedrockResu
   }, [jobId]);
 
   if (error) return <div>Error: {error}</div>;
-  if (!bedrockResult && !error)
-    return <div style={{ display: 'flex',justifyContent:"center", overflow:"hidden", alignItems: 'center', gap: '0.5rem' , zIndex: 100000, background: "#ffffff", position: "absolute", width: "100%", height:"100%" }}>
+  if (!bedrockResult && !error )
+    return <div style={{ display: 'flex',justifyContent:"center",  alignItems: 'center', gap: '0.5rem' , zIndex: 100000, background: "#ffffff", position: "absolute", width: "100%", height:"100%" }}>
         <Loader/>
 
          Analyzing document... 

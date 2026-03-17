@@ -190,7 +190,7 @@ export function PolicyDetail({ policy, onClose }) {
 
                             {policy.QuoteFileName &&
                                 <ActionButton onClick={downloadFile}>
-                                    <Download /> Download Original Document
+                                    <Download /> Download Policy Quote
                                 </ActionButton>
                             }
 

@@ -255,7 +255,7 @@ export function PolicyFieldPlacer({ pdfUrl, policyId, initialFields = [], onClos
                 background: activeType === t ? FIELD_COLORS[t].border : "#f0f0f0",
                 color:      activeType === t ? "#fff" : "#444",
               }}>
-                {t === "signature" ? "✍ Signature" : "📅 Date"}
+                {t === "signature" ? " Signature" : " Date"}
               </button>
             ))}
 

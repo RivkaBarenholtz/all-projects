@@ -748,7 +748,7 @@ public class Function
             else if (lastSegment == "get-invoice")
             {
 
-                var body = await AppliedEpicDataService.GetInvoiceFromInvoiceNumberAndLookupCode(vendor, request.Body);
+              List<  InsTechClassesV2.AppliedEpic.Invoice> body = await AppliedEpicDataService.GetInvoiceFromInvoiceNumberAndLookupCode(vendor, request.Body);
                 response.Body = JsonConvert.SerializeObject(body);
                 return response;
 
@@ -757,7 +757,7 @@ public class Function
 
             else if (lastSegment == "get-open-invoices")
             {
-                var openInvoices = await AppliedEpicDataService.GetInvoiceList(vendor, request.Body);
+               List<InsTechClassesV2.AppliedEpic.Invoice> openInvoices = await AppliedEpicDataService.GetInvoiceList(vendor, request.Body);
 
                 response.Body = JsonConvert.SerializeObject(openInvoices);
                 return response;
@@ -1011,6 +1011,39 @@ public class Function
                 }
                 var s3 = new AmzS3Bucket("policy-uploads", policy.SignedPdfKey);
                 response.Body = JsonConvert.SerializeObject(new { url = s3.GetDownloadPreSignedUrl() });
+                return response;
+            }
+            else if (lastSegment == "get-invoices")
+            {
+                var invoices = await InsTechClassesV2.Invoice.GetListAsync(vendor.Id.ToString());
+                response.Body = JsonConvert.SerializeObject(invoices);
+                return response;
+            }
+            else if (lastSegment == "get-invoice-by-id")
+            {
+                var invoiceId = request.QueryStringParameters?["id"] ?? "";
+                var invoice = await InsTechClassesV2.Invoice.GetByIdAsync(vendor.Id.ToString(), invoiceId);
+                if (invoice == null)
+                {
+                    response.StatusCode = 404;
+                    response.Body = JsonConvert.SerializeObject(new { message = "Invoice not found" });
+                    return response;
+                }
+                response.Body = JsonConvert.SerializeObject(invoice);
+                return response;
+            }
+            else if (lastSegment == "create-invoice")
+            {
+                var invoice = JsonConvert.DeserializeObject<InsTechClassesV2.Invoice>(request.Body);
+                await invoice.InsertAsync(vendor.Id);
+                response.Body = JsonConvert.SerializeObject(invoice);
+                return response;
+            }
+            else if (lastSegment == "update-invoice")
+            {
+                var invoice = JsonConvert.DeserializeObject<InsTechClassesV2.Invoice>(request.Body);
+                await invoice.UpdateAsync(vendor.Id.ToString());
+                response.Body = JsonConvert.SerializeObject(new { success = true });
                 return response;
             }
 

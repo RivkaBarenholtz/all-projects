@@ -13,6 +13,7 @@ import PaymentForm from "./PaymentPage/PaymentForm";
 import ThankYouPage from "./PaymentPage/ThankYouPage";
 import { Settings } from "./Settings";
 import Policies from "./Pages/Policies";
+import Invoices from "./Pages/Invoices";
 import Vendors from "./Vendors";
 import Payables from "./Payables";
 import SSO from "./SSO";
@@ -45,11 +46,13 @@ function ContextLayout({ isAuthenticated, setIsAuthenticated }) {
           <Route path="dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="transactions" element={<PrivateRoute><Transactions user={user} /></PrivateRoute>} />
           <Route path="policies" element={<PrivateRoute><Policies /></PrivateRoute>} />
-          
-          {(user?.Role?.toLowerCase() === "admin" || user?.Role?.toLowerCase() === "user") && 
+          <Route path="invoices" element={<PrivateRoute><Invoices /></PrivateRoute>} />
+
+          {(user?.Role?.toLowerCase() === "admin" || user?.Role?.toLowerCase() === "user") &&
           <>
           <Route path="customers" element={<PrivateRoute><Customers /></PrivateRoute>} />
           <Route path="policies" element={<PrivateRoute><Policies /></PrivateRoute>} />
+          <Route path="invoices" element={<PrivateRoute><Invoices /></PrivateRoute>} />
           <Route path="schedules" element={<PrivateRoute><Schedules /></PrivateRoute>} />
           <Route path="vendors" element={<PrivateRoute><Vendors /></PrivateRoute>} />
           <Route path="payables" element={<PrivateRoute><Payables /></PrivateRoute>} />

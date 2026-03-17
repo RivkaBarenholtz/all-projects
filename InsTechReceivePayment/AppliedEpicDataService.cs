@@ -58,7 +58,7 @@ namespace InsTechReceivePayment
             }
         }
 
-        public static async Task<List<Invoice>> GetInvoiceList(Vendor vendor , string requestBody)
+        public static async Task<List<InsTechClassesV2.AppliedEpic.Invoice>> GetInvoiceList(Vendor vendor , string requestBody)
         {
             var InvoiceRequest =  Newtonsoft.Json.JsonConvert.DeserializeObject<InsTechClassesV2.TransactionRequests.InvoiceRequest> (requestBody);
             if (InvoiceRequest == null) throw new Exception("Invalid Request");
@@ -69,7 +69,7 @@ namespace InsTechReceivePayment
             }
             return await GetInvoiceList(vendor, InvoiceRequest.AccountId, InvoiceRequest.LookupCode);
         }
-        private static async Task<List<Invoice>> GetInvoiceList(Vendor vendor, int accountID , string lookupCode )
+        private static async Task<List<InsTechClassesV2.AppliedEpic.Invoice>> GetInvoiceList(Vendor vendor, int accountID , string lookupCode )
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>()
             {
@@ -83,10 +83,10 @@ namespace InsTechReceivePayment
             List<Transaction> EpicTransactions = await AppliedEpicTransactionRequest.GetTransactionsFromEpic(vendor, parameters);
             if (EpicTransactions == null)
             {
-                return new List<Invoice>(); 
+                return new List<InsTechClassesV2.AppliedEpic.Invoice>(); 
             }
             var groups = EpicTransactions.GroupBy(x => x.InvoiceValue.SendInvoiceTos.SendInvoiceToItem?.InvoiceNumber??0);
-            var invoices = groups.Select(x => new Invoice() 
+            var invoices = groups.Select(x => new InsTechClassesV2.AppliedEpic.Invoice() 
             { 
                 AppliedEpicInvoiceNumber = x.Key, 
                 Balance = x.Sum(a => a.Balance) , 
@@ -109,7 +109,7 @@ namespace InsTechReceivePayment
             return invoices;
         }
 
-        public static async Task<List<Invoice>?> GetInvoiceFromInvoiceNumberAndLookupCode(Vendor vendor,  string requestBody  )
+        public static async Task<List<InsTechClassesV2.AppliedEpic.Invoice>?> GetInvoiceFromInvoiceNumberAndLookupCode(Vendor vendor,  string requestBody  )
         {
             var InvoiceRequest = Newtonsoft.Json.JsonConvert.DeserializeObject<InsTechClassesV2.TransactionRequests.InvoiceByNumberRequest>(requestBody);
             if (InvoiceRequest == null) throw new Exception("Invalid Request");

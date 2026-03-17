@@ -64,6 +64,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const [amountIsEditable, setAmountIsEditable] = useState(true);
   const [eSignData, setESignData] = useState(null); // { capturedSignature, signerName, signerEmail, auditTrail }
   const [submitPressed, setSubmitPressed] = useState(false);
+  const [showSigner, setShowSigner] = useState(false);
 
 
   const [focusedField, setFocusedField] = useState('')
@@ -590,12 +591,8 @@ export default function PaymentForm({ isPortal, onSuccess }) {
     {showModal && <ConfirmationModal onClose={() => setShowModal(false)} showButton={false} >
       <div style={{ margin: '5px' }}>{message}</div>
     </ConfirmationModal>} <div style={{
-      display: "flex",
       margin: "auto",
-      maxWidth:
-        policy && !policy.IsSignedAndPaid && policy.SignatureFields?.length > 0 && policy.PdfUrl
-          ? "1900px"
-          : "1000px"
+      maxWidth : "1000px"
     }}>   <div>
 
         {
@@ -610,6 +607,45 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           </div>
         }
         <div className='main' >
+
+
+          {hasESign && !policy.IsSignedAndPaid && (
+      <>
+        {/* Signature banner */}
+        <div style={{ padding: "16px 24px", background: "#fff", borderTop: "1px solid #e5e7eb" }}>
+          {eSignData ? (
+            <p style={{ color: "#16a34a", fontWeight: 600, margin: 0 }}>✓ Policy signed — ready to submit payment</p>
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                justifyContent:"center", 
+                width:"100%",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 18px",
+                borderRadius: 6,
+                border: `2px solid ${submitPressed ? "#dc2626" : "#f59e0b"}`,
+                background: submitPressed ? "#fef2f2" : "#fffbeb",
+                transition: "border-color 0.2s, background 0.2s",
+              }}
+            >
+              <span style={{ color: submitPressed ? "#dc2626" : "#b45309", fontSize: 13, fontWeight: 600 }}>
+                Signature is required before paying.
+              </span>
+              <button
+                onClick={() => setShowSigner(true)}
+                style={{ background: "none", border: "none", padding: 0, color: "#148dc2", fontSize: 13, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
+              >
+                Click here to sign
+              </button>
+            </div>
+          )}
+        </div>
+
+       
+      </>
+    )}
 
         {/* {isSigned && <div style={{backgroundColor: "white", padding: "4px"}}> ✅Policy signed successfully. Please proceed to payment.
             <a onClick={() => DownloadPolicyDocument(policy.DocumentId, policy.PolicyId, vendor.subdomain)} style={{paddingLeft:"20px", cursor:"pointer", textDecoration: "underline", color: "#148dc2", fontWeight: "600"}}> Download Signed Policy</a>
@@ -868,16 +904,53 @@ export default function PaymentForm({ isPortal, onSuccess }) {
       {(isLoading || isInvLoading) && <Loader />}
     </div>
 
-    {policy && !policy.IsSignedAndPaid && policy.SignatureFields?.length > 0 && policy.PdfUrl &&
-      <PolicySigner
-        pdfUrl={policy.PdfUrl}
-        policy={policy}
-        signerName={cardholderName}
-        signerEmail={email}
-        onReady={setESignData}
-        onPay={handleSignAndPay}
-      />
-    }
+    {hasESign && !policy.IsSignedAndPaid && (
+      <>
+        {/* Signature banner */}
+
+
+        {/* Full-width submit button */}
+        <div style={{ padding: "0 24px 24px" }}>
+          <button
+            onClick={() => {
+              if (!eSignData) {
+                setSubmitPressed(true);
+                return;
+              }
+              handleSignAndPay();
+            }}
+            style={{
+              width: "100%",
+              padding: "14px",
+              background: eSignData ? "#148dc2" : "#b0c4d4",
+              color: "#fff",
+              border: "none",
+              borderRadius: 6,
+              fontSize: 15,
+              fontWeight: 700,
+              cursor: "pointer",
+              transition: "background 0.2s",
+              boxShadow: eSignData ? "0 2px 8px rgba(20,141,194,0.3)" : "none",
+            }}
+          >
+            Submit Signature and Pay
+          </button>
+        </div>
+
+        {/* PolicySigner modal */}
+        {showSigner && (
+          <PolicySigner
+            pdfUrl={policy.PdfUrl}
+            policy={policy}
+            signerName={cardholderName}
+            signerEmail={email}
+            onReady={(data) => { setESignData(data); }}
+            onClose={() => setShowSigner(false)}
+            submitPressed={submitPressed}
+          />
+        )}
+      </>
+    )}
   </div >
      </>);
 }

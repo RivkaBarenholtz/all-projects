@@ -11,7 +11,7 @@ import { AiField } from "./AiField";
 import { X } from "lucide-react";
 
 export const Policy = forwardRef(
-  ({ Close, OnSuccess, isEdit, policyId, policy,hideCustomer }, ref) => {
+  ({ Close, OnSuccess, isEdit, policyId, policy, hideCustomer, embedded }, ref) => {
 
     const fileInputRef = useRef(null);
 
@@ -39,7 +39,7 @@ export const Policy = forwardRef(
     const [showCustomerSearch, setShowCustomerSearch] = useState(false);
     const [premadeCustomer, setPremadeCustomer] = useState(null);
     const [pdfUrl, setPdfUrl] = useState(null);
-    const [isManual, setIsManual] = useState(null);
+    const analyzeModeRef = useRef(false);
     const [subbroker, setSubbroker] = useState("");
     const [policyStart, setPolicyStart] = useState(policy?.PolicyStartDate??new Date);
     const [policyEnd, setPolicyEnd] = useState(policy?.PolicyEndDate??new Date);
@@ -99,11 +99,9 @@ export const Policy = forwardRef(
     //   });
     // }
 
-    const openFileDialog = () => {
-      if (fileInputRef.current) {
-        fileInputRef.current.click();
-      }
-
+    const openFileDialog = (analyze = false) => {
+      analyzeModeRef.current = analyze;
+      fileInputRef.current?.click();
     };
 
 
@@ -111,7 +109,10 @@ export const Policy = forwardRef(
 
 
     const analyzePDF = async (file) => {
+      try
+      {
       if (!file) return;
+      setJobId("xxxxxxx")
       const presignedRsp = await fetchWithAuth("get-presigned-url", {});
       const { uploadUrl, fileName } = presignedRsp;
 
@@ -120,6 +121,11 @@ export const Policy = forwardRef(
       const policy = await fetchWithAuth("analyze-policy-document", { fileName: `temp-${fileName}` });
       setJobId(policy.jobId);
       setBedrockResult(null);
+      }
+      catch 
+      {
+        setJobId("")
+      }
     };
 
     const SaveFile = async (file, url) => {
@@ -134,13 +140,12 @@ export const Policy = forwardRef(
 
     const handleFileChange = async (e) => {
       const selectedFile = e.target.files[0];
+      if (!selectedFile) return;
       setFile(selectedFile);
       setPdfUrl(URL.createObjectURL(selectedFile));
-      if (!isManual) {
-        setIsManual(false);//if it was null 
+      if (analyzeModeRef.current) {
         await analyzePDF(selectedFile);
       }
-
     }
 
 
@@ -198,240 +203,199 @@ export const Policy = forwardRef(
     // Expose function to parent
     // ------------------------
     useImperativeHandle(ref, () => ({
-      submit: CreateOrUpdatePolicy
+      submit: CreateOrUpdatePolicy,
+      getValues: () => ({
+        PolicyId: policy?.PolicyId ?? null,
+        PolicyCode: policyCode,
+        PolicyDescription: policyDescription,
+        PolicyAmount: Number(policyAmount) || 0,
+        CommissionAmount: Number(commissionAmount) || 0,
+        CarrierName: carrier,
+        SubbrokerName: subbroker,
+        SubbrokerAmount: Number(subbrokerCommission) || 0,
+        PolicyStartDate: policyStart,
+        PolicyEndDate: policyEnd,
+        Customer: premadeCustomer ?? {
+          CustomerId: customerId,
+          CustomerNumber: customerNumber,
+          Email: email,
+          BillFirstName: firstName,
+          BillLastName: lastName,
+          BillCompany: company,
+          BillStreet: street,
+          BillCity: city,
+          BillState: state,
+          BillZip: zip,
+          BillPhone: phone,
+        },
+      }),
     }));
 
     const custInfo = (
       <>
-        {
-          !isManual && !isEdit && jobId && jobId != "" && <TextractBedrockProcessor bedrockResult={bedrockResult} setBedrockResult={setBedrockResult} jobId={jobId} />
-        }
+        {jobId && jobId !== "" && (
+          <TextractBedrockProcessor bedrockResult={bedrockResult} setBedrockResult={setBedrockResult} jobId={jobId} />
+        )}
 
-        {
-          showCustomerSearch &&
+        {showCustomerSearch && (
           <CustomerSearch
-            onSelectCustomer={(a) => { setPremadeCustomer(a); setShowCustomerSearch(false) }}
-            onClose={() => setShowCustomerSearch(false)} />
-        }
+            onSelectCustomer={(a) => { setPremadeCustomer(a); setShowCustomerSearch(false); }}
+            onClose={() => setShowCustomerSearch(false)}
+          />
+        )}
 
-        {
-          isManual == null && !isEdit && <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <div>
-              <ActionButton style={{ width: "100%" }} onClick={() => setIsManual(true)} >
-                Enter Manually
-              </ActionButton >
-
-            </div>
-            <div>
-              <ActionButton style={{ width: "100%" }} onClick={() => openFileDialog()} >
-                AI Analyze Pdf
-              </ActionButton>
-            </div>
-          </div>}
-        {(isManual !== null || isEdit) && <>
-          <section className="form-section">
-            <h3>Policy Info</h3>
-
-
-
-            {
-              !file && <div className="form-group">
-                <label>Policy Contract</label>
-                <button type="button" style={{ width: "100%", borderRadius: "5px", padding: "10px", cursor: "pointer" }} onClick={openFileDialog} >
+        <section className="form-section">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <h3 style={{ margin: 0 }}>Policy Info</h3>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button type="button" className="btn btn-secondary" onClick={() => openFileDialog(true)}>
+                Analyze from PDF
+              </button>
+              {!file && (
+                <button type="button" className="btn btn-secondary" onClick={() => openFileDialog(false)}>
                   Upload Document
                 </button>
-              </div>
-            }
+              )}
+            </div>
+          </div>
 
-
-            {file && <div className="form-group"><span style={{ fontWeight: "bold" }}>Selected file:</span> {file.name}
-              <span style={{ fontWeight: "bold", paddingLeft: "10px", cursor: "pointer" }} title="Remove file">
-                <X size={11} onClick={() => { setFile(null); setPdfUrl("") }} />
-              </span> </div>}
-
-
+          {file && (
             <div className="form-group">
-              <label>Policy Code</label>
+              <span style={{ fontWeight: "bold" }}>Selected file:</span> {file.name}
+              <span style={{ fontWeight: "bold", paddingLeft: "10px", cursor: "pointer" }} title="Remove file">
+                <X size={11} onClick={() => { setFile(null); setPdfUrl(""); }} />
+              </span>
+            </div>
+          )}
+
+          {/* 2-column grid when no PDF loaded; single column when PDF is shown alongside */}
+          <div style={file ? {} : { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div className="form-group">
+              <label>Policy Code *</label>
               <AiField field="policyCode" locked={isLocked('policyCode')} onUnlock={unlockField} onHighlight={setHighlightText}>
-                <input
-                  type="text"
-                  value={policyCode}
-                  onChange={(e) => setPolicyCode(e.target.value)}
-                  onFocus={() => setHighlightText(policyCode)}
-                />
+                <input type="text" value={policyCode} onChange={(e) => setPolicyCode(e.target.value)} onFocus={() => setHighlightText(policyCode)} />
               </AiField>
-              {submitPressed && policyCode == "" ? <div className="toast show" id="toast-for-account-holder">Policy Code required.</div> : ''}
+              {submitPressed && policyCode === "" && <div className="toast show">Policy Code required.</div>}
             </div>
 
             <div className="form-group">
               <label>Policy Description *</label>
               <AiField field="policyDescription" locked={isLocked('policyDescription')} onUnlock={unlockField} onHighlight={setHighlightText}>
-                <input
-                  type="text"
-                  value={policyDescription}
-                  onChange={(e) => setPolicyDescription(e.target.value)}
-                  onFocus={() => setHighlightText(policyDescription)}
-                />
+                <input type="text" value={policyDescription} onChange={(e) => setPolicyDescription(e.target.value)} onFocus={() => setHighlightText(policyDescription)} />
               </AiField>
-              {submitPressed && policyDescription == "" ? <div className="toast show" id="toast-for-account-holder">Policy Description required.</div> : ''}
+              {submitPressed && policyDescription === "" && <div className="toast show">Policy Description required.</div>}
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Amount *</label>
-                <AiField field="policyAmount" locked={isLocked('policyAmount')} onUnlock={unlockField} onHighlight={setHighlightText}>
-                  <input
-                    type="text"
-                    value={policyAmount}
-                    onChange={(e) => setPolicyAmount(e.target.value)}
-                    onFocus={() => setHighlightText(FormatCurrency(policyAmount))}
-                  />
-                </AiField>
-                {submitPressed && policyAmount == "" ? <div className="toast show" id="toast-for-account-holder">Amount required.</div> : ''}
-              </div>
-              <div className="form-group">
-                <label>Commission Amount</label>
-                <input
-                  type="text"
-                  value={commissionAmount}
-                  onChange={(e) => setCommissionAmount(e.target.value)}
-                />
-              </div>
+            <div className="form-group">
+              <label>Amount *</label>
+              <AiField field="policyAmount" locked={isLocked('policyAmount')} onUnlock={unlockField} onHighlight={setHighlightText}>
+                <input type="text" value={policyAmount} onChange={(e) => setPolicyAmount(e.target.value)} onFocus={() => setHighlightText(FormatCurrency(policyAmount))} />
+              </AiField>
+              {submitPressed && policyAmount === "" && <div className="toast show">Amount required.</div>}
+            </div>
+
+            <div className="form-group">
+              <label>Commission Amount</label>
+              <input type="text" value={commissionAmount} onChange={(e) => setCommissionAmount(e.target.value)} />
             </div>
 
             <div className="form-group">
               <label>Carrier</label>
               <AiField field="carrier" locked={isLocked('carrier')} onUnlock={unlockField} onHighlight={setHighlightText}>
-                <input
-                  type="text"
-                  value={carrier}
-                  onChange={(e) => setCarrier(e.target.value)}
-                  onFocus={() => setHighlightText(carrier)}
-                />
+                <input type="text" value={carrier} onChange={(e) => setCarrier(e.target.value)} onFocus={() => setHighlightText(carrier)} />
               </AiField>
             </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Subbroker</label>
-                <input
-                  type="text"
-                  value={subbroker}
-                  onChange={(e) => setSubbroker(e.target.value)}
-                />
-              </div>
-              <div className="form-group">
-                <label>Subbroker Commission</label>
-                <input
-                  type="text"
-                  value={subbrokerCommission}
-                  onChange={(e) => setSubbrokerCommission(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="form-row">
 
-              <div className="form-group">
-                <label>Policy Start Date</label>
-                <AiField field="policyStart" locked={isLocked('policyStart')} onUnlock={unlockField} onHighlight={setHighlightText}>
-                  <input
-                    type="date"
-                    value={policyStart}
-                    onChange={(e) => setPolicyStart(e.target.value)}
-                  />
-                </AiField>
-              </div>
-              <div className="form-group">
-                <label>Policy End Date</label>
-                <AiField field="policyEnd" locked={isLocked('policyEnd')} onUnlock={unlockField} onHighlight={setHighlightText}>
-                  <input
-                    type="date"
-                    value={policyEnd}
-                    onChange={(e) => setPolicyEnd(e.target.value)}
-                  />
-                </AiField>
-              </div>
+            <div className="form-group">
+              <label>Subbroker</label>
+              <input type="text" value={subbroker} onChange={(e) => setSubbroker(e.target.value)} />
             </div>
+
+            <div className="form-group">
+              <label>Policy Start Date</label>
+              <AiField field="policyStart" locked={isLocked('policyStart')} onUnlock={unlockField} onHighlight={setHighlightText}>
+                <input type="date" value={policyStart} onChange={(e) => setPolicyStart(e.target.value)} />
+              </AiField>
+            </div>
+
+            <div className="form-group">
+              <label>Policy End Date</label>
+              <AiField field="policyEnd" locked={isLocked('policyEnd')} onUnlock={unlockField} onHighlight={setHighlightText}>
+                <input type="date" value={policyEnd} onChange={(e) => setPolicyEnd(e.target.value)} />
+              </AiField>
+            </div>
+
+            <div className="form-group">
+              <label>Subbroker Commission</label>
+              <input type="text" value={subbrokerCommission} onChange={(e) => setSubbrokerCommission(e.target.value)} />
+            </div>
+
             {isEdit && <>
-             <div className="form-row">
-
-              
-             <div className="form-group">
+              <div className="form-group">
                 <label>Customer Paid</label>
-                <input
-                  type="number"
-                  value={customerPaid}
-                  onChange={(e) => setCustomerPaid(e.target.value)}
-                />
-
+                <input type="number" value={customerPaid} onChange={(e) => setCustomerPaid(e.target.value)} />
               </div>
               <div className="form-group">
                 <label>Customer Balance</label>
-                <input
-                  type="text"
-                  disabled
-                  value={policyAmount- (customerPaid??0)}
-                  
-                  
-                />
+                <input type="text" disabled value={policyAmount - (customerPaid ?? 0)} />
               </div>
-              </div>
-              <div className="form-row">
-
               <div className="form-group">
                 <label>Paid to Carrier</label>
-                <input
-                  type="number"
-                  value={paidToCarrier}
-                  onChange={(e) => setPaidToCarrier(e.target.value)}
-                />
-
+                <input type="number" value={paidToCarrier} onChange={(e) => setPaidToCarrier(e.target.value)} />
               </div>
               <div className="form-group">
                 <label>Owed to Carrier</label>
-                <input
-                  type="number"
-                  disabled
-                  value={(policyAmount - commissionAmount)- (paidToCarrier??0)}
-                  onChange={(e) => setPaidToCarrier(e.target.value)}
-                />
-
-              </div>
+                <input type="number" disabled value={(policyAmount - commissionAmount) - (paidToCarrier ?? 0)} />
               </div>
             </>}
+          </div>
+        </section>
 
-          </section>
-          { !hideCustomer &&  <>
-            {premadeCustomer && !isEdit && <div>
+        {!hideCustomer && <>
+          {premadeCustomer && !isEdit && (
+            <div>
               Using preexisting customer {premadeCustomer.BillCompany || premadeCustomer.BillFirstName}
-              <span style={{ fontWeight: "bold", paddingLeft: "10px", cursor: "pointer" }} title="">
+              <span style={{ fontWeight: "bold", paddingLeft: "10px", cursor: "pointer" }}>
                 <X size={11} onClick={() => setPremadeCustomer(null)} />
               </span>
-            </div>}
-            {!premadeCustomer && <> {!isEdit && <ActionButton onClick={() => setShowCustomerSearch(true)}>
-              Existing Customer
-            </ActionButton>}
-              <CustomerInfo
-                firstName={firstName} setFirstName={setFirstName}
-                lastName={lastName} setLastName={setLastName}
-                company={company} setCompany={setCompany}
-                note={note} setNote={setNote}
-                customerNumber={customerNumber} setCustomerNumber={setCustomerNumber}
-                street={street} setStreet={setStreet}
-                city={city} setCity={setCity}
-                state={state} setState={setState}
-                zip={zip} setZip={setZip}
-                phone={phone} setPhone={setPhone}
-                email={email} setEmail={setEmail}
-                submitPressed={submitPressed}
-                isLocked={isLocked}
-                unlockField={unlockField}
-                onHighlight={setHighlightText}
-              />
-            </>}
+            </div>
+          )}
+          {!premadeCustomer && <>
+            {!isEdit && <ActionButton onClick={() => setShowCustomerSearch(true)}>Existing Customer</ActionButton>}
+            <CustomerInfo
+              firstName={firstName} setFirstName={setFirstName}
+              lastName={lastName} setLastName={setLastName}
+              company={company} setCompany={setCompany}
+              note={note} setNote={setNote}
+              customerNumber={customerNumber} setCustomerNumber={setCustomerNumber}
+              street={street} setStreet={setStreet}
+              city={city} setCity={setCity}
+              state={state} setState={setState}
+              zip={zip} setZip={setZip}
+              phone={phone} setPhone={setPhone}
+              email={email} setEmail={setEmail}
+              submitPressed={submitPressed}
+              isLocked={isLocked}
+              unlockField={unlockField}
+              onHighlight={setHighlightText}
+            />
           </>}
         </>}
       </>
     );
+
+    if (embedded) {
+      return (
+        <>
+          <input type="file" id="file" accept=".pdf" ref={fileInputRef} onChange={handleFileChange} style={{ display: "none" }} />
+             <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+           
+            <div style={{ width: "364px", flexShrink: 0 }}>{custInfo}</div>
+             {pdfUrl && <PdfViewer fileUrl={pdfUrl} searchText={highlightText} />}
+          </div>
+        </>
+      );
+    }
 
     return isEdit ? (
       <>
@@ -464,7 +428,7 @@ export const Policy = forwardRef(
         <ConfirmationModal
           confirmButtonText="Save"
           onClose={Close}
-          showButton={isManual !== null}
+          showButton={true}
           maxWidth={pdfUrl ? "1400px" : (showCustomerSearch ? "800px" : "430px")}
           onConfirm={CreateOrUpdatePolicy}
         >

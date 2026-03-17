@@ -11,7 +11,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 const COLORS = { signature: "rgba(20,141,194,0.18)", date: "rgba(34,197,94,0.18)" };
 const BORDER = { signature: "#148dc2", date: "#16a34a" };
 
-export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady, onPay }) {
+export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady, onClose, submitPressed }) {
   const containerRef = useRef(null);
   const fieldRefs    = useRef({});
   const [pages, setPages] = useState([]);
@@ -55,13 +55,17 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
   // Render PDF pages
   useEffect(() => {
     if (!pdfUrl) return;
-     setPages([]);
+    setPages([]);
+    let cancelled = false;
     const load = async () => {
       const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+      if (cancelled) return;
       const container = containerRef.current;
+      if (!container) return;
       container.innerHTML = "";
       const dims = [];
       for (let i = 1; i <= pdf.numPages; i++) {
+        if (cancelled) return;
         const page = await pdf.getPage(i);
         const viewport = page.getViewport({ scale: 1.5 });
         const wrap = document.createElement("div");
@@ -73,11 +77,13 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
         wrap.appendChild(canvas);
         container.appendChild(wrap);
         await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+        if (cancelled) return;
         dims.push({ width: viewport.width, height: viewport.height });
       }
       setPages(dims);
     };
     load();
+    return () => { cancelled = true; };
   }, [pdfUrl]);
 
   // Track page positions for overlay rendering
@@ -138,7 +144,8 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
   }, [allSigned, capturedSignature]);
 
   return (
-    <div style={{ marginTop: 24 }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", overflowY: "auto", padding: "24px 16px" }}>
+    <div style={{ background: "#fff", borderRadius: 8, width: "100%", maxWidth: 900, boxShadow: "0 8px 40px rgba(0,0,0,0.3)", marginBottom: 24 }}>
       {/* ESIGN consent overlay */}
       {!agreedToSign && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 99998, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -172,9 +179,9 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
       )}
 
       <div style={headerBar}>
-        <span style={{ fontWeight: 600, color: "#148dc2" }}>Review &amp; Sign Policy</span>
+        <span style={{ fontWeight: 600, color: "#fff" }}>Review &amp; Sign Policy</span>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 12, color: "#666" }}>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.8)" }}>
             {fields.filter(f => f.type === "signature").length} signature field(s) · click to sign
           </span>
           {!allSigned && (
@@ -183,10 +190,17 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
                 const first = fields.find(f => !fieldValues[f.id]);
                 if (first) fieldRefs.current[first.id]?.scrollIntoView({ behavior: "smooth", block: "center" });
               }}
-              style={{ padding: "4px 12px", background: "#fff", color: "#148dc2", border: "1px solid #148dc2", borderRadius: 4, cursor: "pointer", fontSize: 12, fontWeight: 600 }}
+              style={{ padding: "4px 12px", background: "#fff", color: "#148dc2", border: "1px solid #fff", borderRadius: 4, cursor: "pointer", fontSize: 12, fontWeight: 600 }}
             >
               ↓ Jump to Signature
             </button>
+          )}
+          {onClose && (
+            <button
+              onClick={onClose}
+              style={{ padding: "4px 10px", background: "rgba(255,255,255,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.4)", borderRadius: 4, cursor: "pointer", fontSize: 13, fontWeight: 700, lineHeight: 1 }}
+              title="Close"
+            >✕</button>
           )}
         </div>
       </div>
@@ -261,37 +275,25 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
         })}
       </div>
 
-      {/* Signing status + pay button */}
+      {/* Signing status */}
       <div style={{ padding: "16px 0 24px", textAlign: "center" }}>
-        {!allSigned && (
-          <p style={{ color: "#888", fontSize: 13, margin: "0 0 14px" }}>
-            Please sign all fields above before submitting payment
-          </p>
-        )}
-        {onPay && (
-          <button
-            onClick={onPay}
-            disabled={!allSigned}
-            style={{
-              padding: "14px 32px",
-              background: allSigned ? "#148dc2" : "#b0c4d4",
-              color: "#fff",
-              border: "none",
-              borderRadius: 6,
-              fontSize: 15,
-              fontWeight: 700,
-              cursor: allSigned ? "pointer" : "not-allowed",
-              transition: "background 0.2s",
-              boxShadow: allSigned ? "0 2px 8px rgba(20,141,194,0.3)" : "none",
-            }}
-          >
-            Finish Signing and Remit Payment
-          </button>
-        )}
-        {allSigned && !onPay && (
-          <p style={{ color: "#16a34a", fontWeight: 600, margin: 0 }}>✓ All fields signed — proceed to payment below</p>
+        {allSigned ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+            <p style={{ color: "#16a34a", fontWeight: 600, margin: 0 }}>✓ All fields signed</p>
+            {onClose && (
+              <button
+                onClick={onClose}
+                style={{ padding: "12px 32px", background: "#16a34a", color: "#fff", border: "none", borderRadius: 6, fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 2px 8px rgba(22,163,74,0.3)" }}
+              >
+                Done — Close &amp; Pay
+              </button>
+            )}
+          </div>
+        ) : (
+          <p style={{ color: "#888", fontSize: 13, margin: 0 }}>Please sign all fields above to continue</p>
         )}
       </div>
+    </div>
     </div>
   );
 }
