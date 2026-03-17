@@ -1,11 +1,13 @@
 import Detail from "../Detail"
 import { useEffect, useState, useRef } from "react";
 import { ActionButton } from "../../Components/UI/actionButton";
-import { Link, Check, Download } from "lucide-react";
+import { Link, Check, Download, Mail, Pencil, Send} from "lucide-react";
 import { fetchWithAuth } from "../../Utilities";
 import { useSuccessModal } from "../SuccessModal";
 import { Policy } from "../NewPolicy";
 import { PolicyFieldPlacer } from "../PolicyFieldPlacer";
+import { SignPayEmailModal } from "../SignPayEmailModal";
+import { NewPayable } from "../NewPayable";
 
 export function PolicyDetail({ policy, onClose }) {
 
@@ -15,6 +17,8 @@ export function PolicyDetail({ policy, onClose }) {
     const [isEditMode, setIsEditMode] = useState(false);
     const [showFieldPlacer, setShowFieldPlacer] = useState(false);
     const [pdfUrl, setPdfUrl] = useState(null);
+    const [showEmailModal, setShowEmailModal] = useState(false);
+    const [showRemitPayable, setShowRemitPayable] = useState(false);
 
     useEffect(() => {
         const getVendor = async () => {
@@ -30,17 +34,15 @@ export function PolicyDetail({ policy, onClose }) {
         return `https://pay.instechpay.co/${vendor?.subdomain}?policyid=${policy.PolicyId.replace("Policy#", "")}&amount=${policy.PolicyAmount}`;
     }
 
-    const handleSignAndPayClick = async () => {
-        // If the policy has a PDF, open the field placer first
-        if (policy.QuoteFileName) {
-            const data = await fetchWithAuth(`get-policy-doc-url?policyid=${policy.PolicyId.replace("Policy#", "")}`);
-            setPdfUrl(data.download);
-            setShowFieldPlacer(true);
-        } else {
-            // No PDF — just copy the link directly
-            navigator.clipboard.writeText(generateSignAndPayLink());
-            showSuccess("Pay link copied to clipboard");
-        }
+    const openFieldPlacer = async () => {
+        const data = await fetchWithAuth(`get-policy-doc-url?policyid=${policy.PolicyId.replace("Policy#", "")}`);
+        setPdfUrl(data.download);
+        setShowFieldPlacer(true);
+    }
+
+    const copyLink = () => {
+        navigator.clipboard.writeText(generateSignAndPayLink());
+        showSuccess("Pay link copied to clipboard");
     }
 
     const handleFieldsSaved = (fields) => {
@@ -87,6 +89,19 @@ export function PolicyDetail({ policy, onClose }) {
 
     const body = () => {
         return <>
+            {showRemitPayable && (
+                <NewPayable
+                    Close={() => setShowRemitPayable(false)}
+                    OnSuccess={() => {
+                        setShowRemitPayable(false);
+                        showSuccess("Payment remitted to carrier successfully");
+                    }}
+                    initialCarrierName={policy.CarrierName}
+                    initialAmount={policy.OwedAmount}
+                    initialPolicyId={policy.PolicyId.replace("Policy#", "")}
+                />
+            )}
+
             {showFieldPlacer && pdfUrl && (
                 <PolicyFieldPlacer
                     pdfUrl={pdfUrl}
@@ -148,17 +163,8 @@ export function PolicyDetail({ policy, onClose }) {
                         <div className="trd-info-row"><span className="trd-label">Phone:</span><span className="trd-value">{policy.BillPhone}</span></div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {!policy.IsSignedAndPaid ? <>
-                                <ActionButton onClick={handleSignAndPayClick}>
-                                    <Link /> {policy.QuoteFileName ? "Place Fields & Copy Sign+Pay Link" : "Copy Sign & Pay Link"}
-                                </ActionButton>
-                                {policy.QuoteFileName &&
-                                    <ActionButton onClick={downloadFile}>
-                                        <Download /> Download Policy Document
-                                    </ActionButton>
-                                }
-                            </> : <>
-                                <span style={{ display: "flex", justifyContent: "center", gap: "5px", backgroundColor: "#185c3f", color: "white", padding: "6px" }}>
+                            {policy.IsSignedAndPaid ? <>
+                                <span style={{ display: "flex", justifyContent: "center", gap: "5px", backgroundColor: "#185c3f", color: "white", padding: "6px", borderRadius: 4 }}>
                                     <Check /> Policy Signed &amp; Paid
                                 </span>
                                 {policy.SignedPdfKey &&
@@ -166,7 +172,33 @@ export function PolicyDetail({ policy, onClose }) {
                                         <Download /> Download Signed Document
                                     </ActionButton>
                                 }
-                            </>}
+                            </> : policy.QuoteFileName && !policy.SignatureFields?.length ? <>
+                                <ActionButton onClick={openFieldPlacer}>
+                                   <Pencil/> Prepare for Signing
+                                </ActionButton>
+                            </> : policy.QuoteFileName && policy.SignatureFields?.length > 0 ? <>
+                                <ActionButton onClick={copyLink}>
+                                    <Link /> Copy Sign &amp; Pay Link
+                                </ActionButton>
+                                <ActionButton onClick={() => setShowEmailModal(true)}>
+                                    <Mail /> Email Sign &amp; Pay Link
+                                </ActionButton>
+                                <ActionButton onClick={openFieldPlacer}>
+                                   <Pencil/>  Edit eSign Fields
+                                </ActionButton>
+                            </> : null}
+
+                            {policy.QuoteFileName &&
+                                <ActionButton onClick={downloadFile}>
+                                    <Download /> Download Original Document
+                                </ActionButton>
+                            }
+
+                            {policy.OwedAmount > 0 &&
+                                <ActionButton onClick={() => setShowRemitPayable(true)}>
+                                    <Send /> Pay Carrier
+                                </ActionButton>
+                            }
                         </div>
                     </div>
                 </div>
@@ -180,5 +212,16 @@ export function PolicyDetail({ policy, onClose }) {
         </>
     }
 
-    return <><SuccessModal /><Detail title={"Policy Info"} body={body()} onClose={onClose} /></>
+    return <>
+        <SuccessModal />
+        {showEmailModal && (
+            <SignPayEmailModal
+                policy={policy}
+                vendor={vendor}
+                link={generateSignAndPayLink()}
+                close={() => setShowEmailModal(false)}
+            />
+        )}
+        <Detail title={"Policy Info"} body={body()} onClose={onClose} />
+    </>
 }

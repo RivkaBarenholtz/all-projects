@@ -26,7 +26,6 @@ export const WireTab = forwardRef(({
     submitPressed, setSubmitPressed,
     subdomain,
     hidePaymentButton = false,
-    isSigned = true
 }, ref) => {
     const [confNumber, setConfNumber] = useState("");
     //const [accountName , setAccountName] =  useState("");
@@ -43,7 +42,7 @@ export const WireTab = forwardRef(({
         setShowSubmit(false);
         setSubmitPressed(true);
         validateAmount();
-        if (confNumber == "" || !isSigned || amount <= 0 || (!import.meta.env.VITE_ENV === 'development' && (captchaToken == null || captchaToken == '' || captchaToken == ""))) {
+        if (confNumber == "" || amount <= 0 || (!import.meta.env.VITE_ENV === 'development' && (captchaToken == null || captchaToken == '' || captchaToken == ""))) {
             setShowSubmit(true);
             return;
         }

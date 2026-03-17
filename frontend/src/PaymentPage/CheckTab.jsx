@@ -30,11 +30,11 @@ export const CheckTab = forwardRef(( {
         onFinish,
         onError, 
         ifieldsKey,
-        isSigned = true,
-        submitPressed, setSubmitPressed, 
+        submitPressed, setSubmitPressed,
         subdomain,
-        showProcess = true  , 
-        hidePaymentButton = false, 
+        showProcess = true,
+        hidePaymentButton = false,
+        onPaymentApproved,
         policyId
     }, ref) => {
 
@@ -79,13 +79,14 @@ export const CheckTab = forwardRef(( {
             //alert("Please agree to terms and conditions");
             return false;
         }
-        if ((captchaToken == "" || captchaToken == null) && !isPortal && import.meta.env.VITE_ENV !== 'development') {
+        if ((captchaToken == "" || captchaToken == null) && !isPortal && !hidePaymentButton && import.meta.env.VITE_ENV !== 'development') {
             //alert("Please verify that you are not a robot");
-            return;
-        }
-        if (checkToken == "" || routingNumber == "" || accountCode == "" || !isSigned) {
             return false;
         }
+        if (checkToken == "" || routingNumber == "" || accountCode == "") {
+            return false;
+        }
+        return true; 
     }
 
 
@@ -132,9 +133,10 @@ export const CheckTab = forwardRef(( {
             });
              responseBody = await response.json();
         }
-            if (responseBody.xStatus == "Approved" ) {
-               if(!isPortal && !hidePaymentButton) window.location.href = `https://${subdomain}.instechpay.co/app/thank-you?amount=${amount}`;
-               else onFinish(); 
+            if (responseBody.xStatus == "Approved") {
+              if (onPaymentApproved) { onPaymentApproved(parseFloat(amount)); }
+              else if (!isPortal) window.location.href = `https://${subdomain}.instechpay.co/app/thank-you?amount=${amount}`;
+              else onFinish();
                 
             }
             
@@ -263,14 +265,14 @@ export const CheckTab = forwardRef(( {
 
                             <br />
                         </div>
-                        <div style={{ padding: "25px" }} >
+                        {!hidePaymentButton && <div style={{ padding: "25px" }} >
                             <ReCAPTCHA
                                 sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
                                 onChange={(token) => setCaptchaToken(token)}
                             />
                             {(captchaToken == '' || captchaToken == null) && submitPressed ? <div className="toast show" id="toast-for-recap">Recaptcha check required.</div> : ''}
 
-                        </div>
+                        </div>}
                     </>
                 }
                 {showProcess &&<> <div id="total">

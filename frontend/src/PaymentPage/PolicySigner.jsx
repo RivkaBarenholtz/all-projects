@@ -11,7 +11,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 const COLORS = { signature: "rgba(20,141,194,0.18)", date: "rgba(34,197,94,0.18)" };
 const BORDER = { signature: "#148dc2", date: "#16a34a" };
 
-export function PolicySigner({ pdfUrl, policy, subdomain, signerName, signerEmail, onSigned }) {
+export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady, onPay }) {
   const containerRef = useRef(null);
   const fieldRefs    = useRef({});
   const [pages, setPages] = useState([]);
@@ -21,7 +21,6 @@ export function PolicySigner({ pdfUrl, policy, subdomain, signerName, signerEmai
   const [showCanvas, setShowCanvas] = useState(false);
   const [activeFieldId, setActiveFieldId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
   const [agreedToSign, setAgreedToSign] = useState(false);
   const viewedAtRef      = useRef(new Date().toISOString());
   const consentShownRef  = useRef(new Date().toISOString());
@@ -118,51 +117,25 @@ export function PolicySigner({ pdfUrl, policy, subdomain, signerName, signerEmai
     setActiveFieldId(null);
   };
 
-  const handleSubmit = async () => {
-    setSubmitting(true);
-    setError("");
-    try {
-      const ua = navigator.userAgent;
-      const makeEvent = (eventType, timestamp, metadata) => ({
-        eventType, timestamp, metadata,
-        signerName, signerEmail, userAgent: ua,
-      });
-
-      const auditTrail = [
-        makeEvent("Viewed",        viewedAtRef.current,      "Signer opened document"),
-        makeEvent("ConsentShown",  consentShownRef.current,  "Electronic signature consent dialog displayed"),
-        makeEvent("ConsentAgreed", consentTimestamp.current, `${signerName} agreed to sign electronically`),
-        ...fields.map(f => makeEvent(
-          f.type === "signature" ? "FieldSigned" : "FieldDateConfirmed",
-          fieldValues[f.id],
-          `${f.type} field on page ${f.page} confirmed`
-        )),
-      ];
-
-      const res = await fetch(`${BaseUrl()}/pay/${subdomain}/sign-policy`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          policyId: policy.Id.replace("Policy#", ""),
-          signatureData: capturedSignature?.data,
-          signatureType: capturedSignature?.type,
-          signerName,
-          signerEmail,
-          auditTrail,
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        onSigned();
-      } else {
-        setError(data.message || "Signing failed. Please try again.");
-      }
-    } catch {
-      setError("Network error. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  useEffect(() => {
+    if (!allSigned || !capturedSignature) return;
+    const ua = navigator.userAgent;
+    const makeEvent = (eventType, timestamp, metadata) => ({
+      eventType, timestamp, metadata,
+      signerName, signerEmail, userAgent: ua,
+    });
+    const auditTrail = [
+      makeEvent("Viewed",        viewedAtRef.current,      "Signer opened document"),
+      makeEvent("ConsentShown",  consentShownRef.current,  "Electronic signature consent dialog displayed"),
+      makeEvent("ConsentAgreed", consentTimestamp.current, `${signerName} agreed to sign electronically`),
+      ...fields.map(f => makeEvent(
+        f.type === "signature" ? "FieldSigned" : "FieldDateConfirmed",
+        fieldValues[f.id],
+        `${f.type} field on page ${f.page} confirmed`
+      )),
+    ];
+    onReady?.({ capturedSignature, signerName, signerEmail, auditTrail });
+  }, [allSigned, capturedSignature]);
 
   return (
     <div style={{ marginTop: 24 }}>
@@ -200,9 +173,22 @@ export function PolicySigner({ pdfUrl, policy, subdomain, signerName, signerEmai
 
       <div style={headerBar}>
         <span style={{ fontWeight: 600, color: "#148dc2" }}>Review &amp; Sign Policy</span>
-        <span style={{ fontSize: 12, color: "#666" }}>
-          {fields.filter(f => f.type === "signature").length} signature field(s) · click to sign
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 12, color: "#666" }}>
+            {fields.filter(f => f.type === "signature").length} signature field(s) · click to sign
+          </span>
+          {!allSigned && (
+            <button
+              onClick={() => {
+                const first = fields.find(f => !fieldValues[f.id]);
+                if (first) fieldRefs.current[first.id]?.scrollIntoView({ behavior: "smooth", block: "center" });
+              }}
+              style={{ padding: "4px 12px", background: "#fff", color: "#148dc2", border: "1px solid #148dc2", borderRadius: 4, cursor: "pointer", fontSize: 12, fontWeight: 600 }}
+            >
+              ↓ Jump to Signature
+            </button>
+          )}
+        </div>
       </div>
 
       {/* PDF + field overlays */}
@@ -275,18 +261,36 @@ export function PolicySigner({ pdfUrl, policy, subdomain, signerName, signerEmai
         })}
       </div>
 
-      {/* Sign button */}
-      <div style={{ padding: "16px 0", display: "flex", flexDirection: "column", gap: 8, marginBottom: "20px" }}>
-        {error && <p style={{ color: "#ef4444", fontSize: 13, margin: 0 }}>{error}</p>}
-        <p style={{ fontSize: 11, color: "#888", margin: 0 }}>
-          By clicking "Sign Document" you are signing this policy electronically. This constitutes a legally binding signature under the ESIGN Act.
-        </p>
-        <button
-          onClick={handleSubmit}
-          disabled={!allSigned || submitting}
-          style={{ ...signBtn, opacity: allSigned && !submitting ? 1 : 0.5, cursor: allSigned && !submitting ? "pointer" : "not-allowed" }}>
-          {submitting ? "Submitting…" : "Sign Document"}
-        </button>
+      {/* Signing status + pay button */}
+      <div style={{ padding: "16px 0 24px", textAlign: "center" }}>
+        {!allSigned && (
+          <p style={{ color: "#888", fontSize: 13, margin: "0 0 14px" }}>
+            Please sign all fields above before submitting payment
+          </p>
+        )}
+        {onPay && (
+          <button
+            onClick={onPay}
+            disabled={!allSigned}
+            style={{
+              padding: "14px 32px",
+              background: allSigned ? "#148dc2" : "#b0c4d4",
+              color: "#fff",
+              border: "none",
+              borderRadius: 6,
+              fontSize: 15,
+              fontWeight: 700,
+              cursor: allSigned ? "pointer" : "not-allowed",
+              transition: "background 0.2s",
+              boxShadow: allSigned ? "0 2px 8px rgba(20,141,194,0.3)" : "none",
+            }}
+          >
+            Finish Signing and Remit Payment
+          </button>
+        )}
+        {allSigned && !onPay && (
+          <p style={{ color: "#16a34a", fontWeight: 600, margin: 0 }}>✓ All fields signed — proceed to payment below</p>
+        )}
       </div>
     </div>
   );

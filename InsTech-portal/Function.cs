@@ -208,10 +208,10 @@ public class Function
             }
             else if (lastSegment == "get-policy-list")
             {
-                //will become too slow hopefully by that time a new employee will deal with this 
+                //will become too slow hopefully by that time a new employee will deal with this
                 var result= await Policy.GetListOfPoliciesFromDb(vendor.Id.ToString());
                 response.Body = JsonConvert.SerializeObject(result);
-                return response; 
+                return response;
             }
             else if (lastSegment == "create-policy")
             {
@@ -470,9 +470,83 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(scheduleResponseObj);
                 return response;
             }
+            else if (lastSegment == "get-customervendor-by-name")
+            {
+                string name = request.QueryStringParameters?["name"] ?? "";
+                var cv = await CustomerVendor.GetByNameAsync(name);
+                response.Body = JsonConvert.SerializeObject(cv);
+                return response;
+            }
+            else if (lastSegment == "list-customervendors")
+            {
+                var customerVendors = await CustomerVendor.GetListFromDb(vendor.Id.ToString());
+                response.Body = JsonConvert.SerializeObject(customerVendors);
+                return response;
+            }
+            else if (lastSegment == "create-customervendor")
+            {
+                var cv = JsonConvert.DeserializeObject<CustomerVendor>(request.Body);
+                await cv.InsertIntoDynamo(vendor.Id.ToString());
+                response.Body = JsonConvert.SerializeObject(new { Message = "Success", Id = cv.Id });
+                return response;
+            }
+            else if (lastSegment == "update-customervendor")
+            {
+                var cv = JsonConvert.DeserializeObject<CustomerVendor>(request.Body);
+                await cv.UpdateDynamoAsync(vendor.Id.ToString());
+                response.Body = JsonConvert.SerializeObject(new { Message = "Success" });
+                return response;
+            }
+            else if (lastSegment == "list-payables")
+            {
+                var payables = await Payable.GetListFromDb(vendor.Id.ToString());
+                response.Body = JsonConvert.SerializeObject(payables);
+                return response;
+            }
+            else if (lastSegment == "create-payable")
+            {
+                var payable = JsonConvert.DeserializeObject<Payable>(request.Body);
+
+                // If no existing vendor was selected, save the on-the-fly vendor as a CustomerVendor first
+                if (string.IsNullOrEmpty(payable.CustomerVendorId))
+                {
+                    var newVendor = new CustomerVendor
+                    {
+                        Name = payable.VendorName,
+                        PaymentAccountNumber = payable.PaymentAccountNumber,
+                        PaymentRoutingNumber = payable.PaymentRoutingNumber,
+                        Address = payable.VendorAddress,
+                        Notes = payable.VendorNotes,
+                    };
+                    await newVendor.InsertIntoDynamo(vendor.Id.ToString());
+                    payable.CustomerVendorId = newVendor.Id;
+                }
+
+                // TODO: Call payment gateway here to obtain a ref number before saving
+                // Example (wire/ACH gateway call):
+                // var gatewayRequest = new { AccountNumber = payable.PaymentAccountNumber, RoutingNumber = payable.PaymentRoutingNumber, Amount = payable.Amount };
+                // var gatewayResponse = await SomeGatewayClient.RemitAsync(gatewayRequest);
+                // payable.PaymentRefNum = gatewayResponse.RefNum;
+
+                await payable.InsertIntoDynamo(vendor.Id.ToString());
+
+                // If linked to a policy, add this payment to PaidToCarrier
+                if (!string.IsNullOrEmpty(payable.PolicyId))
+                {
+                    var linkedPolicy = await Policy.GetPolicyByIdAsync(vendor.Id.ToString(), payable.PolicyId);
+                    if (linkedPolicy != null)
+                    {
+                        linkedPolicy.PaidToCarrier += payable.Amount;
+                        await linkedPolicy.UpdateDynamoAsync(vendor.Id.ToString());
+                    }
+                }
+
+                response.Body = JsonConvert.SerializeObject(new { Message = "Success", Id = payable.Id, PaymentRefNum = payable.PaymentRefNum });
+                return response;
+            }
             else if (lastSegment == "create-customer")
             {
-                //save all customers to dynamo db here 
+                //save all customers to dynamo db here
 
                 var createCustomerRequest = JsonConvert.DeserializeObject<CardknoxNewCustomerApiRequest>(request.Body);
                 //

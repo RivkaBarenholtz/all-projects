@@ -1,17 +1,28 @@
-import { CheckCircle2, FileText, Shield, ArrowRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CheckCircle2, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
-// import { Button } from './components/ui/button';
 import { Card, CardContent } from '../Components/UI/card';
 import { Separator } from '../Components/UI/separator';
 import '../Styles/payment-success.css';
-import { FormatCurrency } from '../Utilities';
+import { FormatCurrency, BaseUrl } from '../Utilities';
 
 export default function ThankYouPage() {
-  // Get amount from URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   const amount = urlParams.get('amount') || 0;
   const amountString = FormatCurrency(amount);
   const method = urlParams.get('method') || '';
+  const policyId = urlParams.get('policyid') || '';
+  const subdomain = urlParams.get('subdomain') || '';
+
+  const [signedDocUrl, setSignedDocUrl] = useState(null);
+
+  useEffect(() => {
+    if (!policyId || !subdomain) return;
+    fetch(`${BaseUrl()}/pay/${subdomain}/get-signed-doc-url?policyid=${policyId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.url) setSignedDocUrl(data.url); })
+      .catch(() => {});
+  }, [policyId, subdomain]);
   
   
   const paymentDate = new Date().toLocaleDateString('en-US', { 
@@ -90,6 +101,26 @@ export default function ThankYouPage() {
                 </CardContent>
               </Card>
             </motion.div>
+
+            {/* Signed Document Download */}
+            {signedDocUrl && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.4 }}
+                style={{ marginTop: 16, textAlign: 'center' }}
+              >
+                <a
+                  href={signedDocUrl}
+                  download
+                  className="btn btn-primary"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}
+                >
+                  <Download size={16} />
+                  Download Signed Policy
+                </a>
+              </motion.div>
+            )}
 
             {/* What's Next Section */}
             {/* <motion.div

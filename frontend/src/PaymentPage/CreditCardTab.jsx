@@ -40,11 +40,11 @@ export const CreditCardTab = forwardRef((
         onFinish,
         onError,
         showProcess = true, 
-        isSigned = true, 
         subdomain,
         submitPressed, setSubmitPressed, 
-        hidePaymentButton = false, 
-        policyId
+        hidePaymentButton = false,
+        policyId,
+        onPaymentApproved,
 
     }, ref) => {
 
@@ -145,11 +145,11 @@ export const CreditCardTab = forwardRef((
 
         setInvalidFields();
         //setAccountFocused(true); //even if it wasn't focused on yet we want it to behave as if it was because submit was pressed 
-        if ((captchaToken == "" || captchaToken == null) && !isPortal && import.meta.env.VITE_ENV !== 'development') {
+        if ((captchaToken == "" || captchaToken == null) && !isPortal && !hidePaymentButton && import.meta.env.VITE_ENV !== 'development') {
             // alert("Please verify that you are not a robot");
             return;
         }
-        if (!ccValid || expMonth == '' || expYear == '' || !cvvValid || !accountValid || !isSigned) return;
+        if (!ccValid || expMonth == '' || expYear == '' || !cvvValid || !accountValid) return;
         let request = {
             CardHolderName: cardHolderName,
             Zip: zip,
@@ -192,12 +192,13 @@ export const CreditCardTab = forwardRef((
                 responseBody = await response.json();
             }
             if (responseBody.xStatus == "Approved") {
-                if (!isPortal && !hidePaymentButton) window.location.href = `https://${subdomain}.instechpay.co/app/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
+                if (onPaymentApproved) { onPaymentApproved(parseFloat(amount) + surchargeAmount); }
+                else if (!isPortal && !hidePaymentButton) window.location.href = `https://${subdomain}.instechpay.co/app/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
                 else onFinish();
             }
             else {
                 
-                 onError(`❌ ${responseBody.xMessage || "Payment was not approved." }`);
+                 onError(`❌ ${responseBody.xError || "Payment was not approved." }`);
 
             }
             if (responseBody.xResult === 'V')
@@ -317,7 +318,7 @@ export const CreditCardTab = forwardRef((
             </div>
 
             {
-                !isPortal &&
+                !isPortal && !hidePaymentButton &&
                 <div style={{ padding: "25px" }} >
                     <ReCAPTCHA
                         sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}

@@ -13,6 +13,8 @@ import PaymentForm from "./PaymentPage/PaymentForm";
 import ThankYouPage from "./PaymentPage/ThankYouPage";
 import { Settings } from "./Settings";
 import Policies from "./Pages/Policies";
+import Vendors from "./Vendors";
+import Payables from "./Payables";
 import SSO from "./SSO";
 
 /* ---------- Context-based layout ---------- */
@@ -26,13 +28,13 @@ function ContextLayout({ isAuthenticated, setIsAuthenticated }) {
 
   return (
     <>
-      {isAuthenticated && !currentPath.includes("/pay") && <Navbar setTitle={setTitle} open={open} setOpen={setOpen} user={user} setUser={setUser}/>}
+      {isAuthenticated &&( !currentPath.includes("/pay")|| currentPath.includes("payables") )&& <Navbar setTitle={setTitle} open={open} setOpen={setOpen} user={user} setUser={setUser}/>}
      
-      <div className={isAuthenticated && !currentPath.includes("/pay")
+      <div className={isAuthenticated && ( !currentPath.includes("/pay")|| currentPath.includes("payables") )
         ? "main-content"
-        : "main-content-no-auth"
+        : ""
       }>
-         {isAuthenticated && !currentPath.includes("/pay") && <Header title={title} openNav={open} setOpenNav={setOpen} />}
+         {isAuthenticated && ( !currentPath.includes("/pay")|| currentPath.includes("payables") ) && <Header title={title} openNav={open} setOpenNav={setOpen} />}
 
         <Routes>
           <Route path="pay" element={<PaymentForm subdomain={context} isPortal={false} />} />
@@ -49,6 +51,8 @@ function ContextLayout({ isAuthenticated, setIsAuthenticated }) {
           <Route path="customers" element={<PrivateRoute><Customers /></PrivateRoute>} />
           <Route path="policies" element={<PrivateRoute><Policies /></PrivateRoute>} />
           <Route path="schedules" element={<PrivateRoute><Schedules /></PrivateRoute>} />
+          <Route path="vendors" element={<PrivateRoute><Vendors /></PrivateRoute>} />
+          <Route path="payables" element={<PrivateRoute><Payables /></PrivateRoute>} />
           </>
 }
           <Route path="settings" element={<PrivateRoute><Settings /></PrivateRoute>} />

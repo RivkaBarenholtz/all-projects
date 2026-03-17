@@ -91,6 +91,7 @@ export function PdfViewer({ fileUrl, searchText }) {
           highlight.style.height = `${item.height}px`;
           highlight.style.background = "rgba(255,255,0,0.4)";
           highlight.style.pointerEvents = "none";
+          highlight.dataset.highlight = "1";
 
           textLayerDiv.appendChild(highlight);
 
@@ -99,19 +100,25 @@ export function PdfViewer({ fileUrl, searchText }) {
         }
       });
     });
+
+    // scroll to first highlight
+    const firstHighlight = containerRef.current?.querySelector("[data-highlight]");
+    if (firstHighlight) {
+      firstHighlight.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   }, [searchText]);
   
   return (
     <div
       ref={containerRef}
       style={{
-        width: "800px",
-        height: "100%",
-        position: "fixed",
-        right: 0,
-        top: 0,
-        overflowY: "scroll",
-        zIndex:10000
+        width: "920px",
+        maxHeight: "85vh",
+        overflowY: "auto",
+        flexShrink: 0,
+        background: "#f5f5f5",
+        borderRadius: 6,
+        padding: 8,
       }}
     />
   );

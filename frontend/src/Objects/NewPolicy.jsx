@@ -6,7 +6,7 @@ import { TextractBedrockProcessor } from "./BedrockProcessor";
 import { CustomerSearch } from "../Objects/CustomerSearch";
 import { ActionButton } from "../Components/UI/actionButton";
 import { PdfViewer } from "./PdfViewer";
-
+import { AiField } from "./AiField";
 
 import { X } from "lucide-react";
 
@@ -52,24 +52,39 @@ export const Policy = forwardRef(
 
 
     const [bedrockResult, setBedrockResult] = useState(null);
+    const [bedrockFilledFields, setBedrockFilledFields] = useState(new Set());
+    const [editingFields, setEditingFields] = useState(new Set());
+
+    const isLocked = (field) => bedrockFilledFields.has(field) && !editingFields.has(field);
+    const unlockField = (field) => setEditingFields(prev => new Set([...prev, field]));
 
     const [submitPressed, setSubmitPressed] = useState(false);
 
     useEffect(() => {
       if (bedrockResult && file) {
-        setPolicyCode(bedrockResult.PolicyId ?? "");
-        setStreet(bedrockResult.CustomerAddressLine1 ?? "");
-        setPolicyDescription(bedrockResult.PolicyName ?? "");
-        setState(bedrockResult.CustomerState ?? "");
-        setCity(bedrockResult.CustomerCity ?? "");
-        setZip(bedrockResult.CustomerZip ?? "");
-        setEmail(bedrockResult.CustomerEmail ?? "");
-        setPhone(bedrockResult.CustomerPhone ?? "");
-        setCompany(bedrockResult.CustomerName ?? "");
-        setPolicyAmount(bedrockResult.TotalPremiumAmount.replace('$', '').replace(',', '') ?? 0);
-        setPolicyStart(bedrockResult.PolicyStartDate);
-        setPolicyEnd(bedrockResult.PolicyEndDate);
-        setCarrier(bedrockResult.Carrier)
+        const filled = new Set();
+
+        const applyField = (setter, value, field) => {
+          setter(value ?? "");
+          if (value) filled.add(field);
+        };
+
+        applyField(setPolicyCode,        bedrockResult.PolicyId,                                                          'policyCode');
+        applyField(setPolicyDescription, bedrockResult.PolicyName,                                                       'policyDescription');
+        applyField(setPolicyAmount,      bedrockResult.TotalPremiumAmount ? bedrockResult.TotalPremiumAmount.replace('$', '').replace(',', '') : "", 'policyAmount');
+        applyField(setCarrier,           bedrockResult.Carrier,                                                          'carrier');
+        applyField(setPolicyStart,       bedrockResult.PolicyStartDate,                                                  'policyStart');
+        applyField(setPolicyEnd,         bedrockResult.PolicyEndDate,                                                    'policyEnd');
+        applyField(setStreet,            bedrockResult.CustomerAddressLine1,                                             'street');
+        applyField(setState,             bedrockResult.CustomerState,                                                    'state');
+        applyField(setCity,              bedrockResult.CustomerCity,                                                     'city');
+        applyField(setZip,               bedrockResult.CustomerZip,                                                      'zip');
+        applyField(setEmail,             bedrockResult.CustomerEmail,                                                    'email');
+        applyField(setPhone,             bedrockResult.CustomerPhone,                                                    'phone');
+        applyField(setCompany,           bedrockResult.CustomerName,                                                     'company');
+
+        setBedrockFilledFields(filled);
+        setEditingFields(new Set());
       }
     }, [bedrockResult])
 
@@ -237,41 +252,42 @@ export const Policy = forwardRef(
 
             <div className="form-group">
               <label>Policy Code</label>
-              <input
-                type="text"
-                value={policyCode}
-                onChange={(e) => setPolicyCode(e.target.value)}
-                onFocus={() => setHighlightText(policyCode)}
-              />
+              <AiField field="policyCode" locked={isLocked('policyCode')} onUnlock={unlockField} onHighlight={setHighlightText}>
+                <input
+                  type="text"
+                  value={policyCode}
+                  onChange={(e) => setPolicyCode(e.target.value)}
+                  onFocus={() => setHighlightText(policyCode)}
+                />
+              </AiField>
               {submitPressed && policyCode == "" ? <div className="toast show" id="toast-for-account-holder">Policy Code required.</div> : ''}
-
             </div>
 
             <div className="form-group">
               <label>Policy Description *</label>
-              <input
-                type="text"
-                value={policyDescription}
-                onChange={(e) => setPolicyDescription(e.target.value)}
-                onFocus={() => setHighlightText(policyDescription)}
-              />
-              {submitPressed && policyDescription == "" ? <div className="toast show" id="toast-for-account-holder">Policy Description required.</div> : ''}
-
-            </div>
-
-
-            <div className="form-row">
-
-              <div className="form-group">
-                <label>Amount *</label>
+              <AiField field="policyDescription" locked={isLocked('policyDescription')} onUnlock={unlockField} onHighlight={setHighlightText}>
                 <input
                   type="text"
-                  value={policyAmount}
-                  onChange={(e) => setPolicyAmount(e.target.value)}
-                  onFocus={() => setHighlightText(FormatCurrency(policyAmount))}
+                  value={policyDescription}
+                  onChange={(e) => setPolicyDescription(e.target.value)}
+                  onFocus={() => setHighlightText(policyDescription)}
                 />
-                {submitPressed && policyAmount == "" ? <div className="toast show" id="toast-for-account-holder">Amount required.</div> : ''}
+              </AiField>
+              {submitPressed && policyDescription == "" ? <div className="toast show" id="toast-for-account-holder">Policy Description required.</div> : ''}
+            </div>
 
+            <div className="form-row">
+              <div className="form-group">
+                <label>Amount *</label>
+                <AiField field="policyAmount" locked={isLocked('policyAmount')} onUnlock={unlockField} onHighlight={setHighlightText}>
+                  <input
+                    type="text"
+                    value={policyAmount}
+                    onChange={(e) => setPolicyAmount(e.target.value)}
+                    onFocus={() => setHighlightText(FormatCurrency(policyAmount))}
+                  />
+                </AiField>
+                {submitPressed && policyAmount == "" ? <div className="toast show" id="toast-for-account-holder">Amount required.</div> : ''}
               </div>
               <div className="form-group">
                 <label>Commission Amount</label>
@@ -280,18 +296,19 @@ export const Policy = forwardRef(
                   value={commissionAmount}
                   onChange={(e) => setCommissionAmount(e.target.value)}
                 />
-
               </div>
             </div>
+
             <div className="form-group">
               <label>Carrier</label>
-              <input
-                type="text"
-                value={carrier}
-                onChange={(e) => setCarrier(e.target.value)}
-                onFocus={() => setHighlightText(carrier)}
-              />
-
+              <AiField field="carrier" locked={isLocked('carrier')} onUnlock={unlockField} onHighlight={setHighlightText}>
+                <input
+                  type="text"
+                  value={carrier}
+                  onChange={(e) => setCarrier(e.target.value)}
+                  onFocus={() => setHighlightText(carrier)}
+                />
+              </AiField>
             </div>
             <div className="form-row">
               <div className="form-group">
@@ -315,21 +332,23 @@ export const Policy = forwardRef(
 
               <div className="form-group">
                 <label>Policy Start Date</label>
-                <input
-                  type="date"
-                  value={policyStart}
-                  onChange={(e) => setPolicyStart(e.target.value)}
-                />
-
+                <AiField field="policyStart" locked={isLocked('policyStart')} onUnlock={unlockField} onHighlight={setHighlightText}>
+                  <input
+                    type="date"
+                    value={policyStart}
+                    onChange={(e) => setPolicyStart(e.target.value)}
+                  />
+                </AiField>
               </div>
               <div className="form-group">
                 <label>Policy End Date</label>
-                <input
-                  type="date"
-                  value={policyEnd}
-                  onChange={(e) => setPolicyEnd(e.target.value)}
-                />
-
+                <AiField field="policyEnd" locked={isLocked('policyEnd')} onUnlock={unlockField} onHighlight={setHighlightText}>
+                  <input
+                    type="date"
+                    value={policyEnd}
+                    onChange={(e) => setPolicyEnd(e.target.value)}
+                  />
+                </AiField>
               </div>
             </div>
             {isEdit && <>
@@ -404,6 +423,9 @@ export const Policy = forwardRef(
                 phone={phone} setPhone={setPhone}
                 email={email} setEmail={setEmail}
                 submitPressed={submitPressed}
+                isLocked={isLocked}
+                unlockField={unlockField}
+                onHighlight={setHighlightText}
               />
             </>}
           </>}
@@ -439,20 +461,18 @@ export const Policy = forwardRef(
           }}
 
         />
-        {pdfUrl &&
-          <PdfViewer fileUrl={pdfUrl} searchText={highlightText} />
-        }
         <ConfirmationModal
           confirmButtonText="Save"
           onClose={Close}
           showButton={isManual !== null}
-          maxWidth={showCustomerSearch ? "800px" : "430px"}
-          rightOffset={pdfUrl ? "800px" : "0px"}
+          maxWidth={pdfUrl ? "1400px" : (showCustomerSearch ? "800px" : "430px")}
           onConfirm={CreateOrUpdatePolicy}
         >
-
-
-          {custInfo}
+          <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+           
+            <div style={{ width: "364px", flexShrink: 0 }}>{custInfo}</div>
+             {pdfUrl && <PdfViewer fileUrl={pdfUrl} searchText={highlightText} />}
+          </div>
         </ConfirmationModal>
       </>
     );

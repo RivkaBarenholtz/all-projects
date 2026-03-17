@@ -24,6 +24,20 @@ public class Function
 
             var caseInsensitiveHeaders = new Dictionary<string, string>(request.Headers, StringComparer.OrdinalIgnoreCase);
 
+            if (request.RequestContext?.Http?.Method?.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                return new APIGatewayHttpApiV2ProxyResponse
+                {
+                    StatusCode = 200,
+                    Headers = new Dictionary<string, string>
+                    {
+                        { "Access-Control-Allow-Origin", "*" },
+                        { "Access-Control-Allow-Headers", "Content-Type,Authorization" },
+                        { "Access-Control-Allow-Methods", "POST, OPTIONS, GET" }
+                    }
+                };
+            }
+
             Console.WriteLine($"Received request: {JsonConvert.SerializeObject(request)}");
 
             string fullPath = request.RawPath ?? "";
@@ -110,9 +124,10 @@ public class Function
                 string signerEmail = body["signerEmail"]?.ToString() ?? "";
                 string sigType     = body["signatureType"]?.ToString() ?? "Drawn";
                 var frontendEvents = body["auditTrail"] != null
-                    ? JsonConvert.DeserializeObject<List<ESignAuditEvent>>(body["auditTrail"].ToString()) ?? new()
+                    ? JsonConvert.DeserializeObject<List<ESignAuditEvent>>(body["auditTrail"].ToString()) ?? new List<ESignAuditEvent>()
                     : new List<ESignAuditEvent>();
                 // Enrich frontend events with server-captured IP (client cannot know its own public IP)
+                string ip = request.RequestContext?.Http?.SourceIp ?? "";
                 foreach (var ev in frontendEvents) ev.IPAddress = ip;
 
                 if (string.IsNullOrEmpty(policyId) || string.IsNullOrEmpty(sigData))
@@ -157,8 +172,7 @@ public class Function
                 await signedS3.UploadFileToS3(Convert.ToBase64String(signedBytes), "application/pdf");
 
                 // Create audit record
-                string ip = request.RequestContext?.Http?.SourceIp ?? "";
-                caseInsensitiveHeaders.TryGetValue("user-agent", out var userAgent);
+               caseInsensitiveHeaders.TryGetValue("user-agent", out var userAgent);
 
                 var esignReq = new ESignRequest
                 {
@@ -198,6 +212,26 @@ public class Function
                 policy.IsSigned = true;
                 policy.SignedPdfKey = signedKey;
                 await policy.UpdateDynamoAsync(vendor.Id.ToString());
+
+                // Email signed document to signer
+                if (!string.IsNullOrEmpty(signerEmail))
+                {
+                    var emailBody = $@"<p>Dear {signerName},</p>
+<p>Thank you for signing your policy document. Your signed policy is attached for your records.</p>
+<p>If you have any questions, please contact your insurance agent.</p>";
+                    var notification = new SimpleEmail(
+                        new List<string> { signerEmail },
+                        "Your Signed Policy Document",
+                        emailBody,
+                        new List<string>()
+                    );
+                    notification.attachmentFiles.Add(new SimpleEmail.AttachmentFile
+                    {
+                        FileName = $"signed_policy_{policy.PolicyCode}.pdf",
+                        FileContent = signedBytes
+                    });
+                    await notification.Send();
+                }
 
                 response.Body = JsonConvert.SerializeObject(new { success = true });
                 return response;

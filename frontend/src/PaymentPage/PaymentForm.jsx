@@ -1,6 +1,6 @@
 import React, { use, useRef, useState, useEffect } from 'react';
 import { useMediaQuery } from 'react-responsive';
-import { FormatCurrency, BaseUrl, fetchWithAuth , DownloadPolicyDocument} from '../Utilities';
+import { FormatCurrency, BaseUrl, fetchWithAuth, DownloadPolicyDocument } from '../Utilities';
 import { useSearchParams, useParams } from 'react-router-dom';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -39,7 +39,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const errorCode = searchParams.get("error") ?? "";
   const csrEmail = searchParams.get("csremail")
   const csrCode = searchParams.get("csrcode")
-  
+
 
   const isTabletOrMobile = useMediaQuery({ query: '(max-width: 768px)' });
 
@@ -62,13 +62,13 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const [email, setEmail] = useState("");
   const [invoiceID, setInvoiceID] = useState(invoiceIDparam ?? "");
   const [amountIsEditable, setAmountIsEditable] = useState(true);
-  const [isSigned , setIsSigned] = useState(false);
+  const [eSignData, setESignData] = useState(null); // { capturedSignature, signerName, signerEmail, auditTrail }
   const [submitPressed, setSubmitPressed] = useState(false);
 
 
   const [focusedField, setFocusedField] = useState('')
   const [accountFocused, setAccountFocused] = useState(false);
-  const [policy , setPolicy ] = useState(null);
+  const [policy, setPolicy] = useState(null);
   const [amountFocused, setAmountFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isInvLoading, setIsInvLoading] = useState(false);
@@ -78,7 +78,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
   const [refNum, setRefNum] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [message , setMessage] = useState("");
+  const [message, setMessage] = useState("");
 
 
   const setEverythingFocused = () => {
@@ -101,16 +101,56 @@ export default function PaymentForm({ isPortal, onSuccess }) {
     setInvoice(updated);
   };
 
-  
-  const onError =(message) => {
+
+  const onError = (message) => {
     setMessage(message);
     setShowModal(true);
   }
 
+  const hasESign = !!(policy?.SignatureFields?.length > 0 && policy?.PdfUrl);
+
+  const handlePaymentApproved = async (totalAmount) => {
+    if (eSignData) {
+      try {
+        const res = await fetch(`${BaseUrl()}/pay/${vendor?.subdomain}/sign-policy`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            policyId: policy.PolicyId.replace("Policy#", ""),
+            signatureData: eSignData.capturedSignature.data,
+            signatureType: eSignData.capturedSignature.type,
+            signerName: eSignData.signerName,
+            signerEmail: eSignData.signerEmail,
+            auditTrail: eSignData.auditTrail,
+          }),
+        });
+        if (!res.ok) {
+          onError("❌ Payment was approved but signature submission failed. Please contact support.");
+          return;
+        }
+      } catch {
+        onError("❌ Payment was approved but signature submission failed. Please contact support.");
+        return;
+      }
+    }
+    if (!isPortal) {
+      const policyParam = hasESign && policy?.PolicyId ? `&policyid=${policy.PolicyId.replace("Policy#", "")}` : "";
+      window.location.href = `https://${vendor?.subdomain}.instechpay.co/app/thank-you?amount=${totalAmount}&subdomain=${vendor?.subdomain}${policyParam}`;
+    } else {
+      onSuccess();
+    }
+  };
+
+
+  const handleSignAndPay = () => {
+    if (activeTab === "Credit Card") cardtabRef.current?.submitToGateway();
+    else if (activeTab === "eCheck") checktabRef.current?.submitToGateway();
+    else if (activeTab === "Wire Funds") wiretabRef.current?.submitToGateway();
+  };
 
   const [accountValid, setAccountValid] = useState(true);
 
-    const amountRef = useRef(null);
+  const amountRef = useRef(null);
   const accountRef = useRef(null);
 
   const checktabRef = useRef(null);
@@ -223,7 +263,9 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         subdomain={vendor.subdomain}
         submitPressed={submitPressed}
         setSubmitPressed={setSubmitPressed}
-        isSigned={isSigned || isPortal || !policy}
+        hidePaymentButton={hasESign}
+        onPaymentApproved={hasESign ? handlePaymentApproved : undefined}
+        policyId={policyId}
         ref={cardtabRef}
       />,
     "eCheck":
@@ -249,11 +291,13 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         subdomain={vendor.subdomain}
         submitPressed={submitPressed}
         setSubmitPressed={setSubmitPressed}
-        isSigned={isSigned || isPortal || !policy}
+        hidePaymentButton={hasESign}
+        policyId={policyId}
+        onPaymentApproved={hasESign ? handlePaymentApproved : undefined}
         ref={checktabRef}
       />,
-    "Finance": <FinanceTab submitPressed={submitPressed} setSubmitPressed={setSubmitPressed} amount={amount}/>,
-    ...(vendor.BankInfo && !isPortal &&  {
+    "Finance": <FinanceTab submitPressed={submitPressed} setSubmitPressed={setSubmitPressed} amount={amount} />,
+    ...(vendor.BankInfo && !isPortal && {
       "Wire Funds":
         <WireTab
           refNum={refNum}
@@ -274,7 +318,8 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           subdomain={vendor.subdomain}
           submitPressed={submitPressed}
           setSubmitPressed={setSubmitPressed}
-          isSigned={isSigned || isPortal || !policy}
+          hidePaymentButton={hasESign}
+          onPaymentApproved={hasESign ? handlePaymentApproved : undefined}
           ref={wiretabRef}
           invoiceNumber={invoiceID} />
     })
@@ -286,8 +331,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
       const fetchPolicy = async () => {
         const result = await fetch(`${BaseUrl()}/pay/${vendor?.subdomain}/get-policy-by-id?policyid=${policyId}`);
         const json = await result.json();
-        setPolicy(json)
-        setIsSigned(json.IsSigned);
+        setPolicy(json);
       }
       fetchPolicy();
     }
@@ -323,8 +367,8 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           (context ?? "app") === "app"
             ? BaseUrl().split('.')[0].split('//')[1]
             : (context ?? "ins-dev");
-        
-        if(clientid == "127") clientid = "ins-dev"
+
+        if (clientid == "127") clientid = "ins-dev"
 
         const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/get-vendor`);
 
@@ -361,7 +405,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
               result = await fetchWithAuth("get-invoice", { LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(Number(epicClientNumber)) ? null : epicClientNumber });
             }
             else {
-            
+
               const response = await fetch(`${BaseUrl()}/pay/${vendor.subdomain}/get-invoice`, {
                 method: 'POST',
                 body: JSON.stringify({ LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(Number(epicClientNumber)) ? null : epicClientNumber }),
@@ -406,7 +450,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           result = await fetchWithAuth("get-surcharge", { ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID) || invoiceID == "" ? -1 : invoiceID });
         }
         else {
-         
+
           const response = await fetch(`${BaseUrl()}/pay/${vendor.subdomain}/get-surcharge`, {
             method: 'POST',
             body: JSON.stringify({ ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID) || invoiceID == "" ? -1 : invoiceID }),
@@ -425,7 +469,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
       }
 
     };
-    if(vendor?.subdomain) fetchData();
+    if (vendor?.subdomain) fetchData();
   }, [accountCode, invoiceID, vendor?.subdomain])
   // let style = {
   //     border: '1px solid black',
@@ -439,15 +483,15 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   useEffect(() => {
     const GetRefNum = async () => {
 
-     
-     const response = await fetch(`${BaseUrl()}/pay/${vendor.subdomain}/get-ref-num`, {
+
+      const response = await fetch(`${BaseUrl()}/pay/${vendor.subdomain}/get-ref-num`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
       const refNumObj = await response.json();
       setRefNum(refNumObj.refNum)
     }
-    if(vendor?.subdomain) GetRefNum();
+    if (vendor?.subdomain) GetRefNum();
   }
     , [vendor?.subdomain]
   )
@@ -543,31 +587,37 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   }, []);
 
   return (<>
-    {showModal && <ConfirmationModal onClose={()=> setShowModal(false)} showButton={false} > 
-       <div style={{margin:'5px'}}>{message}</div>  
-      </ConfirmationModal>}   <div>
-      
-      {
-        !isPortal &&
-        <div className='logo-header'>
-          <div className='logo-container'>
+    {showModal && <ConfirmationModal onClose={() => setShowModal(false)} showButton={false} >
+      <div style={{ margin: '5px' }}>{message}</div>
+    </ConfirmationModal>} <div style={{
+      display: "flex",
+      margin: "auto",
+      maxWidth:
+        policy && !policy.IsSignedAndPaid && policy.SignatureFields?.length > 0 && policy.PdfUrl
+          ? "1900px"
+          : "1000px"
+    }}>   <div>
 
-            <img style={{ maxHeight: "100%" }} src={isTabletOrMobile ? vendor.MobileLogoUrl : vendor.LogoUrl}></img>
+        {
+          !isPortal &&
+          <div className='logo-header'>
+            <div className='logo-container'>
+
+              <img style={{ maxHeight: "100%" }} src={isTabletOrMobile ? vendor.MobileLogoUrl : vendor.LogoUrl}></img>
 
 
+            </div>
           </div>
-        </div>
-      }
-      <div className='main'>
-       
+        }
+        <div className='main' >
+
         {/* {isSigned && <div style={{backgroundColor: "white", padding: "4px"}}> ✅Policy signed successfully. Please proceed to payment.
             <a onClick={() => DownloadPolicyDocument(policy.DocumentId, policy.PolicyId, vendor.subdomain)} style={{paddingLeft:"20px", cursor:"pointer", textDecoration: "underline", color: "#148dc2", fontWeight: "600"}}> Download Signed Policy</a>
           </div>} */}
-        {error != "" && <div  style={{backgroundColor: "#b82630", color: 'white' , paddingLeft:"10px"}}>
+        {error != "" && <div style={{ backgroundColor: "#b82630", color: 'white', paddingLeft: "10px" }}>
           <p >{error}</p>
-         { submitPressed && !isSigned && policy && <p> Please sign document before proceeding to payment. </p>}
         </div>
-}
+        }
         <div className='payment-container'>
 
           <div className='payment-left-panel'>
@@ -809,21 +859,25 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
 
           </div>
-          
-          
+
+
         </div>
-        {policy && !policy.IsSignedAndPaid && policy.SignatureFields?.length > 0 && policy.PdfUrl &&
-            <PolicySigner
-              pdfUrl={policy.PdfUrl}
-              policy={policy}
-              subdomain={vendor.subdomain}
-              signerName={cardholderName}
-              signerEmail={email}
-              onSigned={() => setIsSigned(true)}
-            />
-          }
-          
+
+
       </div>
       {(isLoading || isInvLoading) && <Loader />}
-    </div>   </>);
+    </div>
+
+    {policy && !policy.IsSignedAndPaid && policy.SignatureFields?.length > 0 && policy.PdfUrl &&
+      <PolicySigner
+        pdfUrl={policy.PdfUrl}
+        policy={policy}
+        signerName={cardholderName}
+        signerEmail={email}
+        onReady={setESignData}
+        onPay={handleSignAndPay}
+      />
+    }
+  </div >
+     </>);
 }
