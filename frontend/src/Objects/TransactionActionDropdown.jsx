@@ -52,13 +52,11 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
             Amount: transaction.xAmount
         }
         if (refundOption == "Partial") {
-            const surchargePercent = RefundRequest.Surcharge / RefundRequest.Subtotal;
-            const surchargeAmount = surchargePercent * partialAmount;
             const subtotalAmount = partialAmount;
             RefundRequest = {
                 ...RefundRequest,
                 Subtotal: subtotalAmount,
-                Surcharge: surchargeAmount
+                Surcharge: 0
             }
         }
         await fetchWithAuth("issue-refund-cardknox", RefundRequest);
