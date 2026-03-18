@@ -1,6 +1,18 @@
 import { refreshSession } from "./AuthContext";
 
+/* ── Global loading counter ─────────────────────────────────────
+   Emits a custom DOM event so any component can listen without
+   being wired through props or context.
+   Uses a counter so concurrent requests don't cancel each other.
+────────────────────────────────────────────────────────────────── */
+let _loadingCount = 0;
+const _notifyLoading = () =>
+  window.dispatchEvent(new CustomEvent("instech:loading", { detail: { active: _loadingCount > 0 } }));
+const _loadStart = () => { _loadingCount++;                               _notifyLoading(); };
+const _loadEnd   = () => { _loadingCount = Math.max(0, _loadingCount - 1); _notifyLoading(); };
+
 export const fetchWithAuth = async (url, options = {}, isText = false, isBlob = false) => {
+  _loadStart();
   const token = localStorage.getItem('idToken');
   const userEmail = SafeParseJson(localStorage.getItem('User')).email;
   const vendor = new URLSearchParams(window.location.search).get("vendor") || localStorage.getItem("currentVendor");
@@ -26,32 +38,32 @@ export const fetchWithAuth = async (url, options = {}, isText = false, isBlob = 
     return response;
   };
 
-  let response = await makeRequest(token, userEmail, vendor);
+  try {
+    let response = await makeRequest(token, userEmail, vendor);
 
- if (response.status === 401) {
-    try {
-      const newToken = await refreshSession();
-      response = await makeRequest(newToken, userEmail, vendor);
-    } catch (err) {
-      console.error("Token refresh failed:", err);
-      handleUnauthorized(); // e.g., redirect to login
-      return;
+    if (response.status === 401) {
+      try {
+        const newToken = await refreshSession();
+        response = await makeRequest(newToken, userEmail, vendor);
+      } catch (err) {
+        console.error("Token refresh failed:", err);
+        handleUnauthorized();
+        return;
+      }
     }
-  }
 
     if (!response.ok) {
-      const errorText = await response.text(); // optional: get response body
+      const errorText = await response.text();
       throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
 
-    if (isText)
-      return await response.text();
-    if (isBlob)
-      return await response.blob();
-    // Return parsed response
-    //adding test comment to test git commit actions
-    return await response.json()
-  };
+    if (isText) return await response.text();
+    if (isBlob) return await response.blob();
+    return await response.json();
+  } finally {
+    _loadEnd();
+  }
+};
 
   export const  SafeParseJson= (jsonString)=> {
   try {
