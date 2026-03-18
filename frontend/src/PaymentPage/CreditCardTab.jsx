@@ -193,7 +193,7 @@ export const CreditCardTab = forwardRef((
             }
             if (responseBody.xStatus == "Approved") {
                 if (onPaymentApproved) { onPaymentApproved(parseFloat(amount) + surchargeAmount, responseBody.xRefNum); }
-                else if (!isPortal && !hidePaymentButton) window.location.href = `https://${subdomain}.instechpay.co/app/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
+                else if (!isPortal && !hidePaymentButton) window.location.href = `https://portal.instechpay.co/thank-you?amount=${parseFloat(amount) + (surchargeAmount)}`
                 else onFinish();
             }
             else {

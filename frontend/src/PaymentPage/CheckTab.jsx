@@ -135,7 +135,7 @@ export const CheckTab = forwardRef(( {
         }
             if (responseBody.xStatus == "Approved") {
               if (onPaymentApproved) { onPaymentApproved(parseFloat(amount), responseBody.xRefNum); }
-              else if (!isPortal) window.location.href = `https://${subdomain}.instechpay.co/app/thank-you?amount=${amount}`;
+              else if (!isPortal) window.location.href = `https://portal.instechpay.co/thank-you?amount=${amount}`;
               else onFinish();
                 
             }

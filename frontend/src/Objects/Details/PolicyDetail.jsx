@@ -35,7 +35,10 @@ export function PolicyDetail({ policy, onClose }) {
     const { showSuccess, SuccessModal } = useSuccessModal();
 
     const generateSignAndPayLink = () => {
-        return `https://pay.instechpay.co/${vendor?.subdomain}/checkout?policyid=${policy.PolicyId.replace("Policy#", "")}`;
+        const base = window.location.origin === "https://test.instechpay.co"
+            ? `https://test.instechpay.co/`
+            : `https://pay.instechpay.co/${vendor?.subdomain}`;
+        return `${base}/checkout?policyid=${policy.PolicyId.replace("Policy#", "")}`;
     }
 
     const openFieldPlacer = async () => {
@@ -249,11 +252,8 @@ export function PolicyDetail({ policy, onClose }) {
                                    <Pencil/> Prepare for Signing
                                 </ActionButton>
                             </> : policy.QuoteFileName && policy.SignatureFields?.length > 0 ? <>
-                                {/* <ActionButton onClick={copyLink}>
+                                <ActionButton onClick={copyLink}>
                                     <Link /> Copy Sign &amp; Pay Link
-                                </ActionButton> */}
-                                <ActionButton onClick={() => setShowEmailModal(true)}>
-                                    <Mail /> Email Sign &amp; Pay Link
                                 </ActionButton>
                                 <ActionButton onClick={openFieldPlacer}>
                                    <Pencil/>  Edit eSign Fields
