@@ -19,7 +19,7 @@ export function TextractBedrockProcessor({ jobId , bedrockResult, setBedrockResu
     
     const pollTextract = async () => {
       try {
-        const res = await fetchWithAuth("get-textract-result", { jobId });
+        const res = await fetchWithAuth("get-textract-result", { jobId }, false, false, true);
         const jobStatus = res.status; // "SUCCEEDED", "IN_PROGRESS", "FAILED"
         setStatus(jobStatus);
 

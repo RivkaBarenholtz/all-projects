@@ -26,7 +26,7 @@ export function PolicyDetail({ policy, onClose }) {
 
     useEffect(() => {
         const getVendor = async () => {
-            const result = await fetchWithAuth("get-vendor", {})
+            const result = await fetchWithAuth("get-vendor", {}, false, false, true)
             setVendor(result);
         }
         getVendor();

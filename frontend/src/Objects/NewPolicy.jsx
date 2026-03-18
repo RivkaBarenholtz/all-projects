@@ -324,7 +324,7 @@ export const Policy = forwardRef(
 
             <div className="form-group">
               <label>Amount *</label>
-              <AiField field="policyAmount" locked={isLocked('policyAmount')} onUnlock={unlockField} onHighlight={setHighlightText}>
+              <AiField field="policyAmount" locked={isLocked('policyAmount')} onUnlock={unlockField} onHighlight={()=>setHighlightText(FormatCurrency(policyAmount).replace(".00", ""))}>
                 <input type="text" value={policyAmount} onChange={(e) => setPolicyAmount(e.target.value)} onFocus={() => setHighlightText(FormatCurrency(policyAmount))} />
               </AiField>
               {submitPressed && policyAmount === "" && <div className="toast show">Amount required.</div>}
