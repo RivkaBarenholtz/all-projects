@@ -1013,37 +1013,29 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(new { url = s3.GetDownloadPreSignedUrl() });
                 return response;
             }
-            else if (lastSegment == "get-invoices")
+            // Invoice endpoints - commented out, functionality merged into Policies
+            // else if (lastSegment == "get-invoices") { ... }
+            // else if (lastSegment == "get-invoice-by-id") { ... }
+            // else if (lastSegment == "create-invoice") { ... }
+            // else if (lastSegment == "update-invoice") { ... }
+            // else if (lastSegment == "generate-invoice-pdf") { ... }
+            else if (lastSegment == "generate-policy-pdf")
             {
-                var invoices = await InsTechClassesV2.Invoice.GetListAsync(vendor.Id.ToString());
-                response.Body = JsonConvert.SerializeObject(invoices);
-                return response;
-            }
-            else if (lastSegment == "get-invoice-by-id")
-            {
-                var invoiceId = request.QueryStringParameters?["id"] ?? "";
-                var invoice = await InsTechClassesV2.Invoice.GetByIdAsync(vendor.Id.ToString(), invoiceId);
-                if (invoice == null)
+                var req = JsonConvert.DeserializeObject<dynamic>(request.Body);
+                string policyId = req?.PolicyId?.ToString() ?? "";
+                var policy = await Policy.GetPolicyByIdAsync(vendor.Id.ToString(), policyId);
+                if (policy == null)
                 {
                     response.StatusCode = 404;
-                    response.Body = JsonConvert.SerializeObject(new { message = "Invoice not found" });
+                    response.Body = JsonConvert.SerializeObject(new { message = "Policy not found" });
                     return response;
                 }
-                response.Body = JsonConvert.SerializeObject(invoice);
-                return response;
-            }
-            else if (lastSegment == "create-invoice")
-            {
-                var invoice = JsonConvert.DeserializeObject<InsTechClassesV2.Invoice>(request.Body);
-                await invoice.InsertAsync(vendor.Id);
-                response.Body = JsonConvert.SerializeObject(invoice);
-                return response;
-            }
-            else if (lastSegment == "update-invoice")
-            {
-                var invoice = JsonConvert.DeserializeObject<InsTechClassesV2.Invoice>(request.Body);
-                await invoice.UpdateAsync(vendor.Id.ToString());
-                response.Body = JsonConvert.SerializeObject(new { success = true });
+                var pdfBytes = await InsTechClassesV2.Services.InvoicePdfGenerator.Generate(policy, vendor);
+                var cleanId = policyId.Replace("Policy#", "");
+                var s3 = new AmazonUtilities.AmzS3Bucket(vendor.s3BucketName, $"policy-invoices/{cleanId}.pdf");
+                await s3.UploadBytesAsync(pdfBytes, "application/pdf");
+                var url = s3.GetDownloadPreSignedUrl();
+                response.Body = JsonConvert.SerializeObject(new { Url = url });
                 return response;
             }
 

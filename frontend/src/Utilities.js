@@ -164,13 +164,37 @@ export const Sort = ( data,  field, ascending = true) =>{
   };
 
   export const handleUnauthorized = () => {
-     
+
     localStorage.removeItem("idToken");
-    import.meta.env.MODE === 'development' 
-    || window.location.hostname === 'portal.instechpay.co' 
-    || window.location.hostname === 'pay.instechpay.co' 
+    import.meta.env.MODE === 'development'
+    || window.location.hostname === 'portal.instechpay.co'
+    || window.location.hostname === 'pay.instechpay.co'
     || window.location.hostname === 'test.instechpay.co' ?
     window.location.href = "/login":
     window.location.href = "/app/login"
     ;
   };
+
+export const FINANCE_COMPANIES = [
+  { name: "First Insurance Funding Corp (FIFC)", apr: 0.109,  downPct: 0.15, term: 10 },
+  { name: "AFCO Credit Corporation",             apr: 0.125,  downPct: 0.20, term: 10 },
+  { name: "Imperial Premium Finance",            apr: 0.1499, downPct: 0.25, term: 10 },
+];
+
+export function calcQuote(premiumBase, company) {
+  const { name, apr, downPct, term } = company;
+  const down     = premiumBase * downPct;
+  const financed = premiumBase - down;
+  const r        = apr / 12;
+  const monthly  = r === 0 ? financed / term : financed * r / (1 - Math.pow(1 + r, -term));
+  return {
+    company:            name,
+    downPaymentPercent: downPct * 100,
+    downPaymentAmount:  down,
+    amountFinanced:     financed,
+    monthlyPayment:     monthly,
+    apr:                apr * 100,
+    term,
+    totalAmount:        down + monthly * term,
+  };
+}

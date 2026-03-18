@@ -10,10 +10,11 @@ import Schedules from "./Schedules";
 import Transactions from "./Transactions";
 import Customers from "./Customers";
 import PaymentForm from "./PaymentPage/PaymentForm";
+import PolicyCheckout from "./PaymentPage/PolicyCheckout";
 import ThankYouPage from "./PaymentPage/ThankYouPage";
 import { Settings } from "./Settings";
 import Policies from "./Pages/Policies";
-import Invoices from "./Pages/Invoices";
+// import Invoices from "./Pages/Invoices";
 import Vendors from "./Vendors";
 import Payables from "./Payables";
 import SSO from "./SSO";
@@ -29,16 +30,17 @@ function ContextLayout({ isAuthenticated, setIsAuthenticated }) {
 
   return (
     <>
-      {isAuthenticated &&( !currentPath.includes("/pay")|| currentPath.includes("payables") )&& <Navbar setTitle={setTitle} open={open} setOpen={setOpen} user={user} setUser={setUser}/>}
-     
-      <div className={isAuthenticated && ( !currentPath.includes("/pay")|| currentPath.includes("payables") )
+      {isAuthenticated && (!currentPath.includes("/pay") || currentPath.includes("payables")) && !currentPath.includes("/checkout") && <Navbar setTitle={setTitle} open={open} setOpen={setOpen} user={user} setUser={setUser}/>}
+
+      <div className={isAuthenticated && (!currentPath.includes("/pay") || currentPath.includes("payables")) && !currentPath.includes("/checkout")
         ? "main-content"
         : ""
       }>
-         {isAuthenticated && ( !currentPath.includes("/pay")|| currentPath.includes("payables") ) && <Header title={title} openNav={open} setOpenNav={setOpen} />}
+        {isAuthenticated && (!currentPath.includes("/pay") || currentPath.includes("payables")) && !currentPath.includes("/checkout") && <Header title={title} openNav={open} setOpenNav={setOpen} />}
 
         <Routes>
           <Route path="pay" element={<PaymentForm subdomain={context} isPortal={false} />} />
+          <Route path="checkout" element={<PolicyCheckout />} />
           <Route path="thank-you" element={<ThankYouPage />} />
           <Route path="login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
           <Route path="sso" element={<SSO />} />
@@ -46,13 +48,13 @@ function ContextLayout({ isAuthenticated, setIsAuthenticated }) {
           <Route path="dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="transactions" element={<PrivateRoute><Transactions user={user} /></PrivateRoute>} />
           <Route path="policies" element={<PrivateRoute><Policies /></PrivateRoute>} />
-          <Route path="invoices" element={<PrivateRoute><Invoices /></PrivateRoute>} />
+          {/* <Route path="invoices" element={<PrivateRoute><Invoices /></PrivateRoute>} /> */}
 
           {(user?.Role?.toLowerCase() === "admin" || user?.Role?.toLowerCase() === "user") &&
           <>
           <Route path="customers" element={<PrivateRoute><Customers /></PrivateRoute>} />
           <Route path="policies" element={<PrivateRoute><Policies /></PrivateRoute>} />
-          <Route path="invoices" element={<PrivateRoute><Invoices /></PrivateRoute>} />
+          {/* <Route path="invoices" element={<PrivateRoute><Invoices /></PrivateRoute>} /> */}
           <Route path="schedules" element={<PrivateRoute><Schedules /></PrivateRoute>} />
           <Route path="vendors" element={<PrivateRoute><Vendors /></PrivateRoute>} />
           <Route path="payables" element={<PrivateRoute><Payables /></PrivateRoute>} />
@@ -87,6 +89,7 @@ function App() {
     return (
       <div className="main-content-no-auth">
         <Routes>
+          <Route path="/:context/checkout" element={<PolicyCheckout />} />
           <Route path="/:context" element={<PaymentForm isPortal={false}  />} />
           <Route path="/*" element={<PaymentForm isPortal={false}  />} />
         </Routes>

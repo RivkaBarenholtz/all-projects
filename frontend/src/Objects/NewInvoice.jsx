@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { ConfirmationModal } from "./ConfimationModal";
 import { PolicySearch } from "./PolicySearch";
 import { Policy } from "./NewPolicy";
+import { PdfViewer } from "./PdfViewer";
 import { fetchWithAuth, FormatCurrency } from "../Utilities";
 
 const FINANCE_COMPANIES = [
@@ -53,6 +54,7 @@ export function NewInvoice({ Close, OnSuccess, invoice: editInvoice }) {
   const [linkedPolicyCode, setLinkedPolicyCode] = useState(editInvoice?.PolicyNumber ?? "");
 
   const [showPolicySearch, setShowPolicySearch] = useState(false);
+  const [policyAmount, setPolicyAmount] = useState(Number(editInvoice?.PolicyAmount) || 0);
 
   const [lineItems, setLineItems] = useState(
     editInvoice?.LineItems?.length
@@ -67,7 +69,7 @@ export function NewInvoice({ Close, OnSuccess, invoice: editInvoice }) {
   const [saving,          setSaving]          = useState(false);
 
   const handlePolicySelect = (p) => {
-    setSelectedPolicy(p);
+    setSelectedPolicy({ ...p, PolicyAmount: p.PolicyAmount ?? p.Amount ?? 0 });
     setPolicyKey(k => k + 1);
     setLinkedPolicyCode(p.PolicyCode ?? "");
     setLineItems(prev => [
@@ -77,14 +79,12 @@ export function NewInvoice({ Close, OnSuccess, invoice: editInvoice }) {
     setShowPolicySearch(false);
   };
 
-  const premiumTotal = lineItems
-    .filter(x => x.type === "premium")
+  const grandTotal = policyAmount + lineItems
+    .filter(x => x.type !== "premium")
     .reduce((s, x) => s + (Number(x.amount) || 0), 0);
 
-  const grandTotal = lineItems.reduce((s, x) => s + (Number(x.amount) || 0), 0);
-
   const generateQuotes = () => {
-    setQuotes(FINANCE_COMPANIES.map(c => calcQuote(premiumTotal, c)));
+    setQuotes(FINANCE_COMPANIES.map(c => calcQuote(policyAmount, c)));
     setQuotesGenerated(true);
   };
 
@@ -100,7 +100,9 @@ export function NewInvoice({ Close, OnSuccess, invoice: editInvoice }) {
   const removeLineItem = (id) =>
     setLineItems(prev => prev.filter(x => x.id !== id));
 
-  const handleSave = async (status = "draft") => {
+  const [pdfUrl, setPdfUrl] = useState(null);
+
+  const handleSave = async () => {
     setSaving(true);
     try {
       const pVals = policyRef.current?.getValues() ?? {};
@@ -116,12 +118,19 @@ export function NewInvoice({ Close, OnSuccess, invoice: editInvoice }) {
         PolicyStartDate:   pVals.PolicyStartDate ?? "",
         PolicyEndDate:     pVals.PolicyEndDate ?? "",
         PolicyDescription: pVals.PolicyDescription ?? "",
-        LineItems:         lineItems.map(x => ({ ...x, amount: Number(x.amount) || 0 })),
+        LineItems:         [
+          { id: lineItems.find(x => x.type === "premium")?.id ?? crypto.randomUUID(), type: "premium", description: "Policy Premium", amount: policyAmount },
+          ...lineItems.filter(x => x.type !== "premium").map(x => ({ ...x, amount: Number(x.amount) || 0 })),
+        ],
         ShowLineItems:     showLineItems,
         AttachedFinanceQuote: attachedQuote,
-        Status:            status,
       };
       const result = await fetchWithAuth(isEdit ? "update-invoice" : "create-invoice", payload);
+      const invoiceId = result?.Id ?? editInvoice?.Id;
+      if (invoiceId) {
+        const pdfResult = await fetchWithAuth("generate-invoice-pdf", { InvoiceId: invoiceId });
+        if (pdfResult?.Url) { setPdfUrl(pdfResult.Url); setSaving(false); return; }
+      }
       OnSuccess(result);
     } catch (e) {
       console.error(e);
@@ -129,11 +138,22 @@ export function NewInvoice({ Close, OnSuccess, invoice: editInvoice }) {
     setSaving(false);
   };
 
+  if (pdfUrl) {
+    return (
+      <ConfirmationModal onClose={() => { OnSuccess(); setPdfUrl(null); }} maxWidth="900px" showButton={false}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <span style={{ fontWeight: 700, fontSize: 15 }}>Invoice Preview</span>
+        </div>
+        <PdfViewer fileUrl={pdfUrl} />
+      </ConfirmationModal>
+    );
+  }
+
   return (
     <>
       <ConfirmationModal
         onClose={Close}
-        maxWidth={"920px"}
+        maxWidth={"700px"}
         showButton={false}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: "4px 0" }}>
@@ -162,6 +182,7 @@ export function NewInvoice({ Close, OnSuccess, invoice: editInvoice }) {
               key={policyKey}
               Close={() => {}}
               OnSuccess={() => {}}
+              onAmountChange={setPolicyAmount}
             />
           </section>
 
@@ -199,13 +220,17 @@ export function NewInvoice({ Close, OnSuccess, invoice: editInvoice }) {
                       />
                     </td>
                     <td style={{ padding: "6px 10px" }}>
-                      <input
-                        style={{ border: "1px solid #ddd", borderRadius: 4, padding: "4px 8px", width: 110, fontSize: 13 }}
-                        type="number"
-                        step="0.01"
-                        value={item.amount}
-                        onChange={e => updateLineItem(item.id, "amount", e.target.value)}
-                      />
+                      {item.type === "premium" ? (
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#333" }}>{FormatCurrency(policyAmount)}</span>
+                      ) : (
+                        <input
+                          style={{ border: "1px solid #ddd", borderRadius: 4, padding: "4px 8px", width: 110, fontSize: 13 }}
+                          type="number"
+                          step="0.01"
+                          value={item.amount}
+                          onChange={e => updateLineItem(item.id, "amount", e.target.value)}
+                        />
+                      )}
                     </td>
                     <td style={{ padding: "6px 10px", textAlign: "center" }}>
                       {item.type !== "premium" && (
@@ -231,8 +256,8 @@ export function NewInvoice({ Close, OnSuccess, invoice: editInvoice }) {
               <SectionTitle>Finance Quotes</SectionTitle>
               <button
                 onClick={generateQuotes}
-                disabled={premiumTotal <= 0}
-                style={{ padding: "7px 16px", background: premiumTotal > 0 ? "#148dc2" : "#b0c4d4", color: "#fff", border: "none", borderRadius: 5, cursor: premiumTotal > 0 ? "pointer" : "not-allowed", fontSize: 13, fontWeight: 600 }}
+                disabled={policyAmount <= 0}
+                style={{ padding: "7px 16px", background: policyAmount > 0 ? "#148dc2" : "#b0c4d4", color: "#fff", border: "none", borderRadius: 5, cursor: policyAmount > 0 ? "pointer" : "not-allowed", fontSize: 13, fontWeight: 600 }}
               >
                 Generate Quotes
               </button>
@@ -240,7 +265,7 @@ export function NewInvoice({ Close, OnSuccess, invoice: editInvoice }) {
 
             {!quotesGenerated ? (
               <p style={{ color: "#999", fontSize: 13, margin: 0 }}>
-                {premiumTotal <= 0
+                {policyAmount <= 0
                   ? "Enter a premium amount in the line items above to generate finance quotes."
                   : "Click Generate Quotes to see financing options from 3 companies."}
               </p>
@@ -312,10 +337,7 @@ export function NewInvoice({ Close, OnSuccess, invoice: editInvoice }) {
             <button onClick={Close} style={{ padding: "10px 20px", background: "#f0f0f0", color: "#444", border: "none", borderRadius: 5, cursor: "pointer", fontSize: 14 }}>
               Cancel
             </button>
-            <button onClick={() => handleSave("draft")} disabled={saving} style={{ padding: "10px 20px", background: "#fff", color: "#148dc2", border: "1px solid #148dc2", borderRadius: 5, cursor: "pointer", fontSize: 14, fontWeight: 600 }}>
-              {saving ? "Saving…" : "Save Draft"}
-            </button>
-            <button onClick={() => handleSave("sent")} disabled={saving} style={{ padding: "10px 24px", background: "#148dc2", color: "#fff", border: "none", borderRadius: 5, cursor: "pointer", fontSize: 14, fontWeight: 700 }}>
+            <button onClick={handleSave} disabled={saving} style={{ padding: "10px 24px", background: "#148dc2", color: "#fff", border: "none", borderRadius: 5, cursor: saving ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 700 }}>
               {saving ? "Saving…" : "Save"}
             </button>
           </div>

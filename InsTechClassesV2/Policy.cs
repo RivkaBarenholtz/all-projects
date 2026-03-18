@@ -35,6 +35,9 @@ namespace InsTechClassesV2
         public string Id { get; set;  }
         public bool IsSigned { get; set; } = false;
         public bool IsSignedAndPaid { get; set; } = false;
+        public List<InvoiceLineItem> LineItems { get; set; } = new();
+        public bool ShowLineItems { get; set; } = true;
+        public FinanceQuote AttachedFinanceQuote { get; set; }
 
         public static async Task<List<Policy>> GetListOfPoliciesFromDb(string vendorId)
         {
@@ -134,6 +137,20 @@ namespace InsTechClassesV2
                 catch { return new(); }
             }
 
+            List<InvoiceLineItem> ParseLineItems(string json)
+            {
+                if (string.IsNullOrWhiteSpace(json)) return new();
+                try { return JsonConvert.DeserializeObject<List<InvoiceLineItem>>(json) ?? new(); }
+                catch { return new(); }
+            }
+
+            FinanceQuote ParseFinanceQuote(string json)
+            {
+                if (string.IsNullOrWhiteSpace(json)) return null;
+                try { return JsonConvert.DeserializeObject<FinanceQuote>(json); }
+                catch { return null; }
+            }
+
             var policy = new Policy
             {
                 Id = item["SK"].S,
@@ -160,6 +177,9 @@ namespace InsTechClassesV2
                 SignatureFields = ParseFields(item.ContainsKey("SignatureFields") ? item["SignatureFields"].S : ""),
                 IsSignedAndPaid = item.ContainsKey("IsSignedAndPaid") && (item["IsSignedAndPaid"].BOOL ?? false),
                 IsSigned = item.ContainsKey("IsSigned") && (item["IsSigned"].BOOL ?? false),
+                LineItems = ParseLineItems(item.ContainsKey("LineItems") ? item["LineItems"].S : ""),
+                ShowLineItems = !item.ContainsKey("ShowLineItems") || (item["ShowLineItems"].BOOL ?? true),
+                AttachedFinanceQuote = ParseFinanceQuote(item.ContainsKey("AttachedFinanceQuote") ? item["AttachedFinanceQuote"].S : ""),
                 VendorId = item["PK"].S.Replace("Vendor#", ""),
                 Customer = new CustomerFilters
                 {
@@ -240,6 +260,11 @@ namespace InsTechClassesV2
 
             newItem["IsSignedAndPaid"] = new AttributeValue { BOOL = IsSignedAndPaid };
             newItem["IsSigned"] = new AttributeValue { BOOL = IsSigned };
+            newItem["ShowLineItems"] = new AttributeValue { BOOL = ShowLineItems };
+            if (LineItems?.Count > 0)
+                AddString("LineItems", JsonConvert.SerializeObject(LineItems));
+            if (AttachedFinanceQuote != null)
+                AddString("AttachedFinanceQuote", JsonConvert.SerializeObject(AttachedFinanceQuote));
             return newItem;
         }
 

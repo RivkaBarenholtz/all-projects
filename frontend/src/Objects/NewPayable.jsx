@@ -5,15 +5,16 @@ import { VendorSearch } from "./VendorSearch";
 
 export function NewPayable({ Close, OnSuccess, initialCarrierName, initialAmount, initialPolicyId }) {
     // Vendor fields
-    const [vendorId, setVendorId] = useState("");
-    const [vendorName, setVendorName] = useState(initialCarrierName ?? "");
-    const [paymentAccountNumber, setPaymentAccountNumber] = useState("");
-    const [paymentRoutingNumber, setPaymentRoutingNumber] = useState("");
-    const [vendorAddress, setVendorAddress] = useState("");
-    const [vendorNotes, setVendorNotes] = useState("");
-
+    // const [vendorId, setVendorId] = useState("");
+    // const [vendorName, setVendorName] = useState(initialCarrierName ?? "");
+    // const [paymentAccountNumber, setPaymentAccountNumber] = useState("");
+    // const [paymentRoutingNumber, setPaymentRoutingNumber] = useState("");
+    // const [vendorAddress, setVendorAddress] = useState("");
+     
     // Payable fields
     const [amount, setAmount] = useState(initialAmount != null ? String(initialAmount) : "");
+    const [notes, setNotes] = useState("");
+
     const [invoiceId, setInvoiceId] = useState("");
     const [policyId, setPolicyId] = useState(initialPolicyId ?? "");
 
@@ -28,15 +29,15 @@ export function NewPayable({ Close, OnSuccess, initialCarrierName, initialAmount
             .catch(() => {});
     }, []);
 
-    function applyVendor(v) {
-        setVendorId(v.Id ?? "");
-        setVendorName(v.Name ?? "");
-        setPaymentAccountNumber(v.PaymentAccountNumber ?? "");
-        setPaymentRoutingNumber(v.PaymentRoutingNumber ?? "");
-        setVendorAddress(v.Address ?? "");
-        setVendorNotes(v.Notes ?? "");
-        setShowVendorSearch(false);
-    }
+    // function applyVendor(v) {
+    //     setVendorId(v.Id ?? "");
+    //     setVendorName(v.Name ?? "");
+    //     setPaymentAccountNumber(v.PaymentAccountNumber ?? "");
+    //     setPaymentRoutingNumber(v.PaymentRoutingNumber ?? "");
+    //     setVendorAddress(v.Address ?? "");
+    //     setVendorNotes(v.Notes ?? "");
+    //     setShowVendorSearch(false);
+    // }
 
     const remitPayment = async () => {
         setSubmitPressed(true);
@@ -51,7 +52,7 @@ export function NewPayable({ Close, OnSuccess, initialCarrierName, initialAmount
             PaymentAccountNumber: paymentAccountNumber,
             PaymentRoutingNumber: paymentRoutingNumber,
             VendorAddress: vendorAddress,
-            VendorNotes: vendorNotes,
+            VendorNotes: notes,
             // PaymentRefNum will be set by backend once gateway call is implemented
         };
 
@@ -70,7 +71,7 @@ export function NewPayable({ Close, OnSuccess, initialCarrierName, initialAmount
             )}
 
             <ConfirmationModal confirmButtonText="Remit Payment" onClose={Close} onConfirm={remitPayment}>
-                <section className="form-section">
+                {/* <section className="form-section">
                     <h3>Vendor</h3>
 
                     <div style={{ marginBottom: 12 }}>
@@ -103,11 +104,8 @@ export function NewPayable({ Close, OnSuccess, initialCarrierName, initialAmount
                         <label>Address</label>
                         <input type="text" value={vendorAddress} onChange={e => setVendorAddress(e.target.value)} />
                     </div>
-                    <div className="form-group">
-                        <label>Notes</label>
-                        <textarea value={vendorNotes} onChange={e => setVendorNotes(e.target.value)} />
-                    </div>
-                </section>
+                   
+                </section> */}
 
                 <section className="form-section">
                     <h3>Payment Details</h3>
@@ -116,12 +114,12 @@ export function NewPayable({ Close, OnSuccess, initialCarrierName, initialAmount
                         <input type="number" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" />
                         {submitPressed && !amount && <div className="toast show">Amount required.</div>}
                     </div>
+                     <div className="form-group">
+                        <label>Notes</label>
+                        <textarea value={notes} onChange={e => setNotes(e.target.value)} />
+                    </div>
                     <div className="form-row">
-                        <div className="form-group">
-                            <label>Invoice ID</label>
-                            <input type="text" value={invoiceId} onChange={e => setInvoiceId(e.target.value)} />
-                        </div>
-                        <div className="form-group">
+                       <div className="form-group">
                             <label>Policy ID</label>
                             <input type="text" value={policyId} onChange={e => setPolicyId(e.target.value)} />
                         </div>

@@ -11,19 +11,21 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 const COLORS = { signature: "rgba(20,141,194,0.18)", date: "rgba(34,197,94,0.18)" };
 const BORDER = { signature: "#148dc2", date: "#16a34a" };
 
-export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady, onClose, submitPressed }) {
-  const containerRef = useRef(null);
-  const fieldRefs    = useRef({});
-  const [pages, setPages] = useState([]);
-  const [pageRects, setPageRects] = useState([]);
-  const [capturedSignature, setCapturedSignature] = useState(null); // { data, type }
-  const [fieldValues, setFieldValues] = useState({});              // fieldId → true
-  const [showCanvas, setShowCanvas] = useState(false);
+export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady, onClose, submitPressed, inline = false }) {
+  const containerRef  = useRef(null);
+  const fieldRefs     = useRef({});
+  const consentRef    = useRef(null);
+  const doneButtonRef = useRef(null);
+  const [pages, setPages]               = useState([]);
+  const [pageRects, setPageRects]       = useState([]);
+  const [capturedSignature, setCapturedSignature] = useState(null);
+  const [fieldValues, setFieldValues]   = useState({});
+  const [showCanvas, setShowCanvas]     = useState(false);
   const [activeFieldId, setActiveFieldId] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
   const [agreedToSign, setAgreedToSign] = useState(false);
-  const viewedAtRef      = useRef(new Date().toISOString());
-  const consentShownRef  = useRef(new Date().toISOString());
+  const [consentPulse, setConsentPulse] = useState(false);
+  const viewedAtRef     = useRef(new Date().toISOString());
+  const consentShownRef = useRef(new Date().toISOString());
   const consentTimestamp = useRef(null);
 
   const fields =
@@ -38,7 +40,8 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
     })) ?? []).sort((a, b) =>
       a.page !== b.page ? a.page - b.page : a.y !== b.y ? a.y - b.y : a.x - b.x
     );
-  const today = new Date().toLocaleDateString("en-US");
+
+  const today     = new Date().toLocaleDateString("en-US");
   const allSigned = fields.length > 0 && fields.every(f => fieldValues[f.id]);
 
   const jumpToNext = (currentId) => {
@@ -104,6 +107,13 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
   }, [pages]);
 
   const handleFieldClick = (field) => {
+    if (!agreedToSign) {
+      // Pulse the consent checkbox and scroll to it
+      consentRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setConsentPulse(true);
+      setTimeout(() => setConsentPulse(false), 1200);
+      return;
+    }
     if (field.type === "date") {
       setFieldValues(prev => ({ ...prev, [field.id]: new Date().toISOString() }));
       return;
@@ -132,7 +142,7 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
     });
     const auditTrail = [
       makeEvent("Viewed",        viewedAtRef.current,      "Signer opened document"),
-      makeEvent("ConsentShown",  consentShownRef.current,  "Electronic signature consent dialog displayed"),
+      makeEvent("ConsentShown",  consentShownRef.current,  "Electronic signature consent displayed"),
       makeEvent("ConsentAgreed", consentTimestamp.current, `${signerName} agreed to sign electronically`),
       ...fields.map(f => makeEvent(
         f.type === "signature" ? "FieldSigned" : "FieldDateConfirmed",
@@ -143,11 +153,29 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
     onReady?.({ capturedSignature, signerName, signerEmail, auditTrail });
   }, [allSigned, capturedSignature]);
 
+  // Scroll to and focus the Done button when all fields are signed
+  useEffect(() => {
+    if (!allSigned) return;
+    setTimeout(() => {
+      doneButtonRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      doneButtonRef.current?.focus();
+    }, 150);
+  }, [allSigned]);
+
+  const outerStyle = inline
+    ? {}
+    : { position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", overflowY: "auto", padding: "24px 16px" };
+
+  const innerStyle = inline
+    ? { background: "#fff", width: "100%" }
+    : { background: "#fff", borderRadius: 8, width: "100%", maxWidth: 900, boxShadow: "0 8px 40px rgba(0,0,0,0.3)", marginBottom: 24 };
+
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", overflowY: "auto", padding: "24px 16px" }}>
-    <div style={{ background: "#fff", borderRadius: 8, width: "100%", maxWidth: 900, boxShadow: "0 8px 40px rgba(0,0,0,0.3)", marginBottom: 24 }}>
-      {/* ESIGN consent overlay */}
-      {!agreedToSign && (
+    <div style={outerStyle}>
+    <div style={innerStyle}>
+
+      {/* Non-inline: keep the existing consent overlay */}
+      {!inline && !agreedToSign && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 99998, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ background: "#fff", borderRadius: 10, padding: 32, maxWidth: 480, width: "90%", boxShadow: "0 8px 40px rgba(0,0,0,0.25)" }}>
             <h3 style={{ margin: "0 0 12px", color: "#148dc2", fontSize: 18 }}>Electronic Signature Consent</h3>
@@ -178,6 +206,7 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
         />
       )}
 
+      {/* Header bar — no X button when inline */}
       <div style={headerBar}>
         <span style={{ fontWeight: 600, color: "#fff" }}>Review &amp; Sign Policy</span>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -187,6 +216,12 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
           {!allSigned && (
             <button
               onClick={() => {
+                if (!agreedToSign) {
+                  consentRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  setConsentPulse(true);
+                  setTimeout(() => setConsentPulse(false), 1200);
+                  return;
+                }
                 const first = fields.find(f => !fieldValues[f.id]);
                 if (first) fieldRefs.current[first.id]?.scrollIntoView({ behavior: "smooth", block: "center" });
               }}
@@ -195,7 +230,8 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
               ↓ Jump to Signature
             </button>
           )}
-          {onClose && (
+          {/* X button only for non-inline (modal) mode */}
+          {!inline && onClose && (
             <button
               onClick={onClose}
               style={{ padding: "4px 10px", background: "rgba(255,255,255,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.4)", borderRadius: 4, cursor: "pointer", fontSize: 13, fontWeight: 700, lineHeight: 1 }}
@@ -205,16 +241,52 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
         </div>
       </div>
 
+      {/* Inline consent checkbox — above the PDF */}
+      {inline && (
+        <div
+          ref={consentRef}
+          style={{
+            padding: "14px 20px",
+            borderBottom: "1px solid #e5e7eb",
+            background: consentPulse ? "#fef9c3" : agreedToSign ? "#f0fdf4" : "#fafafa",
+            transition: "background 0.3s",
+          }}
+        >
+          <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", fontSize: 13 }}>
+            <input
+              type="checkbox"
+              checked={agreedToSign}
+              style={{ marginTop: 2, width: 15, height: 15, accentColor: "#148dc2", cursor: "pointer" }}
+              onChange={e => {
+                if (e.target.checked) {
+                  consentTimestamp.current = new Date().toISOString();
+                  setAgreedToSign(true);
+                } else {
+                  setAgreedToSign(false);
+                }
+              }}
+            />
+            <span style={{ color: agreedToSign ? "#16a34a" : "#444", lineHeight: 1.5 }}>
+              I agree to sign this document electronically. My electronic signature is legally binding under the{" "}
+              <strong>ESIGN Act</strong> and carries the same legal weight as a handwritten signature.
+            </span>
+          </label>
+          {consentPulse && !agreedToSign && (
+            <p style={{ margin: "6px 0 0 25px", fontSize: 12, color: "#b45309", fontWeight: 600 }}>
+              Please agree to sign electronically before signing fields.
+            </p>
+          )}
+        </div>
+      )}
+
       {/* PDF + field overlays */}
-      <div style={{ position: "relative", overflowX: "auto", overflowY: "auto", maxHeight: "80vh", background: "#f5f5f5", padding: 16, borderRadius: "0 0 6px 6px" }}>
+      <div style={{ position: "relative", overflowX: "auto", overflowY: "auto", maxHeight: "80vh", background: "#f5f5f5", padding: 16 }}>
         <div ref={containerRef} style={{ display: "inline-block", position: "relative" }} />
 
-        {/* Field overlays */}
         {pageRects.length > 0 && fields.map(f => {
           const pr = pageRects[f.page - 1];
           if (!pr) return null;
           const isFilled = fieldValues[f.id];
-
           return (
             <div
               key={f.id}
@@ -227,7 +299,6 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
                 height: f.height * pr.height,
               }}
             >
-              {/* Field content */}
               <div
                 onClick={() => handleFieldClick(f)}
                 style={{
@@ -253,8 +324,6 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
                   </span>
                 )}
               </div>
-
-              {/* Jump to next field button (hidden when no unfilled fields remain) */}
               {fields.some(other => other.id !== f.id && !fieldValues[other.id]) && (
                 <button
                   onClick={e => { e.stopPropagation(); jumpToNext(f.id); }}
@@ -282,15 +351,18 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
             <p style={{ color: "#16a34a", fontWeight: 600, margin: 0 }}>✓ All fields signed</p>
             {onClose && (
               <button
+                ref={doneButtonRef}
                 onClick={onClose}
                 style={{ padding: "12px 32px", background: "#16a34a", color: "#fff", border: "none", borderRadius: 6, fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 2px 8px rgba(22,163,74,0.3)" }}
               >
-                Done — Close &amp; Pay
+                Done — Continue to Payment
               </button>
             )}
           </div>
         ) : (
-          <p style={{ color: "#888", fontSize: 13, margin: 0 }}>Please sign all fields above to continue</p>
+          <p style={{ color: "#888", fontSize: 13, margin: 0 }}>
+            {agreedToSign ? "Please sign all fields above to continue" : "Agree to sign below, then click each field to sign"}
+          </p>
         )}
       </div>
     </div>
@@ -299,4 +371,3 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
 }
 
 const headerBar = { background: "#148dc2", color: "#fff", padding: "10px 16px", borderRadius: "6px 6px 0 0", display: "flex", justifyContent: "space-between", alignItems: "center" };
-const signBtn   = { padding: "12px 28px", background: "#148dc2", color: "#fff", border: "none", borderRadius: 5, fontSize: 15, fontWeight: 600 };

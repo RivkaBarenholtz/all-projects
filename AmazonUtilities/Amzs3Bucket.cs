@@ -73,6 +73,19 @@ namespace AmazonUtilities
             
         }
 
+        public async Task UploadBytesAsync(byte[] bytes, string contentType)
+        {
+            using var stream = new MemoryStream(bytes);
+            var transferUtility = new TransferUtility(s3Client);
+            await transferUtility.UploadAsync(new TransferUtilityUploadRequest
+            {
+                InputStream = stream,
+                Key = fileName,
+                BucketName = bucketName,
+                ContentType = contentType
+            });
+        }
+
         public async Task<string> GetUploadUrlAsync()
         {
            

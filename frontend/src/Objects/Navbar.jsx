@@ -86,7 +86,7 @@ const Navbar = ({setTitle, open, setOpen, user, setUser}) => {
 
             <NavBarLink path="/customers" label="Customers" />
             <NavBarLink path="/policies" label="Policies" />
-            <NavBarLink path="/invoices" label="Invoices" />
+            {/* <NavBarLink path="/invoices" label="Invoices" /> */}
             <NavBarLink path="/vendors" label="Vendors" />
             <NavBarLink path="/payables" label="Payables" />
             <NavBarLink path="/schedules" label="Schedules" />

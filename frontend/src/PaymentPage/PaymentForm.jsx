@@ -14,7 +14,6 @@ import Loader from './Loader.jsx';
 import { set } from 'date-fns';
 import { ConfirmationModal } from '../Objects/ConfimationModal.jsx';
 import { FinanceTab } from './FinanceTab.jsx';
-import { PolicySigner } from './PolicySigner.jsx';
 
 
 
@@ -35,7 +34,6 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const invoiceAmount = searchParams.get("amount") ?? null;
   const epicClientNumber = searchParams.get("accountid") ?? 0;
   const invoiceIDparam = searchParams.get("invoiceid") ?? "";
-  const policyId = searchParams.get("policyid") ?? "";
   const errorCode = searchParams.get("error") ?? "";
   const csrEmail = searchParams.get("csremail")
   const csrCode = searchParams.get("csrcode")
@@ -62,14 +60,11 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const [email, setEmail] = useState("");
   const [invoiceID, setInvoiceID] = useState(invoiceIDparam ?? "");
   const [amountIsEditable, setAmountIsEditable] = useState(true);
-  const [eSignData, setESignData] = useState(null); // { capturedSignature, signerName, signerEmail, auditTrail }
   const [submitPressed, setSubmitPressed] = useState(false);
-  const [showSigner, setShowSigner] = useState(false);
 
 
   const [focusedField, setFocusedField] = useState('')
   const [accountFocused, setAccountFocused] = useState(false);
-  const [policy, setPolicy] = useState(null);
   const [amountFocused, setAmountFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isInvLoading, setIsInvLoading] = useState(false);
@@ -108,46 +103,6 @@ export default function PaymentForm({ isPortal, onSuccess }) {
     setShowModal(true);
   }
 
-  const hasESign = !!(policy?.SignatureFields?.length > 0 && policy?.PdfUrl);
-
-  const handlePaymentApproved = async (totalAmount) => {
-    if (eSignData) {
-      try {
-        const res = await fetch(`${BaseUrl()}/pay/${vendor?.subdomain}/sign-policy`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            policyId: policy.PolicyId.replace("Policy#", ""),
-            signatureData: eSignData.capturedSignature.data,
-            signatureType: eSignData.capturedSignature.type,
-            signerName: eSignData.signerName,
-            signerEmail: eSignData.signerEmail,
-            auditTrail: eSignData.auditTrail,
-          }),
-        });
-        if (!res.ok) {
-          onError("❌ Payment was approved but signature submission failed. Please contact support.");
-          return;
-        }
-      } catch {
-        onError("❌ Payment was approved but signature submission failed. Please contact support.");
-        return;
-      }
-    }
-    if (!isPortal) {
-      const policyParam = hasESign && policy?.PolicyId ? `&policyid=${policy.PolicyId.replace("Policy#", "")}` : "";
-      window.location.href = `https://${vendor?.subdomain}.instechpay.co/app/thank-you?amount=${totalAmount}&subdomain=${vendor?.subdomain}${policyParam}`;
-    } else {
-      onSuccess();
-    }
-  };
-
-
-  const handleSignAndPay = () => {
-    if (activeTab === "Credit Card") cardtabRef.current?.submitToGateway();
-    else if (activeTab === "eCheck") checktabRef.current?.submitToGateway();
-    else if (activeTab === "Wire Funds") wiretabRef.current?.submitToGateway();
-  };
 
   const [accountValid, setAccountValid] = useState(true);
 
@@ -264,9 +219,6 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         subdomain={vendor.subdomain}
         submitPressed={submitPressed}
         setSubmitPressed={setSubmitPressed}
-        hidePaymentButton={hasESign}
-        onPaymentApproved={hasESign ? handlePaymentApproved : undefined}
-        policyId={policyId}
         ref={cardtabRef}
       />,
     "eCheck":
@@ -292,9 +244,6 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         subdomain={vendor.subdomain}
         submitPressed={submitPressed}
         setSubmitPressed={setSubmitPressed}
-        hidePaymentButton={hasESign}
-        policyId={policyId}
-        onPaymentApproved={hasESign ? handlePaymentApproved : undefined}
         ref={checktabRef}
       />,
     "Finance": <FinanceTab submitPressed={submitPressed} setSubmitPressed={setSubmitPressed} amount={amount} />,
@@ -319,24 +268,10 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           subdomain={vendor.subdomain}
           submitPressed={submitPressed}
           setSubmitPressed={setSubmitPressed}
-          hidePaymentButton={hasESign}
-          onPaymentApproved={hasESign ? handlePaymentApproved : undefined}
           ref={wiretabRef}
           invoiceNumber={invoiceID} />
     })
   } : {};
-
-
-  useEffect(() => {
-    if (policyId && vendor?.subdomain) {
-      const fetchPolicy = async () => {
-        const result = await fetch(`${BaseUrl()}/pay/${vendor?.subdomain}/get-policy-by-id?policyid=${policyId}`);
-        const json = await result.json();
-        setPolicy(json);
-      }
-      fetchPolicy();
-    }
-  }, [policyId, vendor?.subdomain])
 
 
   useEffect(() => {
@@ -609,43 +544,6 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         <div className='main' >
 
 
-          {hasESign && !policy.IsSignedAndPaid && (
-      <>
-        {/* Signature banner */}
-        <div style={{ padding: "16px 24px", background: "#fff", borderTop: "1px solid #e5e7eb" }}>
-          {eSignData ? (
-            <p style={{ color: "#16a34a", fontWeight: 600, margin: 0 }}>✓ Policy signed — ready to submit payment</p>
-          ) : (
-            <div
-              style={{
-                display: "flex",
-                justifyContent:"center", 
-                width:"100%",
-                alignItems: "center",
-                gap: 8,
-                padding: "10px 18px",
-                borderRadius: 6,
-                border: `2px solid ${submitPressed ? "#dc2626" : "#f59e0b"}`,
-                background: submitPressed ? "#fef2f2" : "#fffbeb",
-                transition: "border-color 0.2s, background 0.2s",
-              }}
-            >
-              <span style={{ color: submitPressed ? "#dc2626" : "#b45309", fontSize: 13, fontWeight: 600 }}>
-                Signature is required before paying.
-              </span>
-              <button
-                onClick={() => setShowSigner(true)}
-                style={{ background: "none", border: "none", padding: 0, color: "#148dc2", fontSize: 13, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
-              >
-                Click here to sign
-              </button>
-            </div>
-          )}
-        </div>
-
-       
-      </>
-    )}
 
         {/* {isSigned && <div style={{backgroundColor: "white", padding: "4px"}}> ✅Policy signed successfully. Please proceed to payment.
             <a onClick={() => DownloadPolicyDocument(policy.DocumentId, policy.PolicyId, vendor.subdomain)} style={{paddingLeft:"20px", cursor:"pointer", textDecoration: "underline", color: "#148dc2", fontWeight: "600"}}> Download Signed Policy</a>
@@ -904,53 +802,6 @@ export default function PaymentForm({ isPortal, onSuccess }) {
       {(isLoading || isInvLoading) && <Loader />}
     </div>
 
-    {hasESign && !policy.IsSignedAndPaid && (
-      <>
-        {/* Signature banner */}
-
-
-        {/* Full-width submit button */}
-        <div style={{ padding: "0 24px 24px" }}>
-          <button
-            onClick={() => {
-              if (!eSignData) {
-                setSubmitPressed(true);
-                return;
-              }
-              handleSignAndPay();
-            }}
-            style={{
-              width: "100%",
-              padding: "14px",
-              background: eSignData ? "#148dc2" : "#b0c4d4",
-              color: "#fff",
-              border: "none",
-              borderRadius: 6,
-              fontSize: 15,
-              fontWeight: 700,
-              cursor: "pointer",
-              transition: "background 0.2s",
-              boxShadow: eSignData ? "0 2px 8px rgba(20,141,194,0.3)" : "none",
-            }}
-          >
-            Submit Signature and Pay
-          </button>
-        </div>
-
-        {/* PolicySigner modal */}
-        {showSigner && (
-          <PolicySigner
-            pdfUrl={policy.PdfUrl}
-            policy={policy}
-            signerName={cardholderName}
-            signerEmail={email}
-            onReady={(data) => { setESignData(data); }}
-            onClose={() => setShowSigner(false)}
-            submitPressed={submitPressed}
-          />
-        )}
-      </>
-    )}
   </div >
      </>);
 }

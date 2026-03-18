@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { fetchWithAuth, FormatCurrency, Sort } from "../Utilities";
 import { Grid } from "../Objects/Grid";
 import { NewInvoice } from "../Objects/NewInvoice";
+import { InvoiceDetail } from "../Objects/Details/InvoiceDetail";
 import { useSuccessModal } from "../Objects/SuccessModal";
 
 export default function Invoices() {
@@ -17,7 +18,6 @@ export default function Invoices() {
     { DisplayValue: "Carrier",      Show: true, Value: "CarrierName",        SortString: "CarrierName",     SortAsc: true  },
     { DisplayValue: "Total",        Show: true, Value: "TotalAmountString",  SortString: "TotalAmount",     SortAsc: false },
     { DisplayValue: "Finance Co.",  Show: true, Value: "FinanceCompany",     SortString: "FinanceCompany",  SortAsc: true  },
-    { DisplayValue: "Status",       Show: true, Value: "StatusDisplay",      SortString: "Status",          SortAsc: true  },
     { DisplayValue: "Created",      Show: true, Value: "DateCreatedDisplay", SortString: "DateCreated",     SortAsc: false },
   ]);
 
@@ -28,7 +28,6 @@ export default function Invoices() {
       TotalAmount:        (inv.LineItems ?? []).reduce((s, x) => s + (x.Amount ?? 0), 0),
       TotalAmountString:  FormatCurrency((inv.LineItems ?? []).reduce((s, x) => s + (x.Amount ?? 0), 0)),
       FinanceCompany:     inv.AttachedFinanceQuote?.Company ?? "—",
-      StatusDisplay:      inv.Status ? inv.Status.charAt(0).toUpperCase() + inv.Status.slice(1) : "",
       DateCreatedDisplay: inv.DateCreated ? new Date(inv.DateCreated).toLocaleDateString("en-US") : "",
     }));
     setData(formatted);
@@ -65,10 +64,10 @@ export default function Invoices() {
       )}
 
       {selectedInvoice && (
-        <NewInvoice
+        <InvoiceDetail
           invoice={selectedInvoice}
-          Close={() => setSelectedInvoice(null)}
-          OnSuccess={handleSaved}
+          onClose={() => setSelectedInvoice(null)}
+          onSaved={handleSaved}
         />
       )}
 

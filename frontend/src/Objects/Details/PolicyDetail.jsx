@@ -2,12 +2,14 @@ import Detail from "../Detail"
 import { useEffect, useState, useRef } from "react";
 import { ActionButton } from "../../Components/UI/actionButton";
 import { Link, Check, Download, Mail, Pencil, Send} from "lucide-react";
-import { fetchWithAuth } from "../../Utilities";
+import { fetchWithAuth, FormatCurrency } from "../../Utilities";
 import { useSuccessModal } from "../SuccessModal";
 import { Policy } from "../NewPolicy";
 import { PolicyFieldPlacer } from "../PolicyFieldPlacer";
 import { SignPayEmailModal } from "../SignPayEmailModal";
 import { NewPayable } from "../NewPayable";
+import { PdfViewer } from "../PdfViewer";
+import { ConfirmationModal } from "../ConfimationModal";
 
 export function PolicyDetail({ policy, onClose }) {
 
@@ -19,6 +21,8 @@ export function PolicyDetail({ policy, onClose }) {
     const [pdfUrl, setPdfUrl] = useState(null);
     const [showEmailModal, setShowEmailModal] = useState(false);
     const [showRemitPayable, setShowRemitPayable] = useState(false);
+    const [invoicePdfUrl, setInvoicePdfUrl] = useState(null);
+    const [loadingInvoicePdf, setLoadingInvoicePdf] = useState(false);
 
     useEffect(() => {
         const getVendor = async () => {
@@ -31,7 +35,7 @@ export function PolicyDetail({ policy, onClose }) {
     const { showSuccess, SuccessModal } = useSuccessModal();
 
     const generateSignAndPayLink = () => {
-        return `https://pay.instechpay.co/${vendor?.subdomain}?policyid=${policy.PolicyId.replace("Policy#", "")}&amount=${policy.PolicyAmount}`;
+        return `https://pay.instechpay.co/${vendor?.subdomain}/checkout?policyid=${policy.PolicyId.replace("Policy#", "")}`;
     }
 
     const openFieldPlacer = async () => {
@@ -87,6 +91,18 @@ export function PolicyDetail({ policy, onClose }) {
         URL.revokeObjectURL(a.href);
     }
 
+    const viewInvoicePdf = async () => {
+        setLoadingInvoicePdf(true);
+        try {
+            const result = await fetchWithAuth("generate-policy-pdf", { PolicyId: policy.PolicyId.replace("Policy#", "") });
+            if (result?.Url) {
+                const blob = await fetch(result.Url).then(r => r.blob());
+                setInvoicePdfUrl(URL.createObjectURL(blob));
+            }
+        } catch (e) { console.error(e); }
+        setLoadingInvoicePdf(false);
+    };
+
     const body = () => {
         return <>
             {showRemitPayable && (
@@ -112,17 +128,27 @@ export function PolicyDetail({ policy, onClose }) {
                 />
             )}
 
-            <button
-                title={isEditMode ? "Save changes" : "Edit"}
-                style={{
-                    width: '40px', height: '40px', borderRadius: '50%', marginRight: "10px",
-                    border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', fontSize: '18px', boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
-                }}
-                onClick={() => { setIsEditMode(!isEditMode); SaveChanges() }}
-            >
-                {isEditMode ? "✔" : "✎"}
-            </button>
+            {invoicePdfUrl && (
+                <ConfirmationModal onClose={() => setInvoicePdfUrl(null)} maxWidth="900px" showButton={false}>
+                    <div style={{ marginBottom: 12, fontWeight: 700, fontSize: 15 }}>Invoice Preview</div>
+                    <PdfViewer fileUrl={invoicePdfUrl} />
+                </ConfirmationModal>
+            )}
+
+            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                <button
+                    title={isEditMode ? "Save changes" : "Edit"}
+                    style={{
+                        width: '40px', height: '40px', borderRadius: '50%',
+                        border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center',
+                        justifyContent: 'center', fontSize: '18px', boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                    }}
+                    onClick={() => { setIsEditMode(!isEditMode); SaveChanges() }}
+                >
+                    {isEditMode ? "✔" : "✎"}
+                </button>
+                
+            </div>
 
             {!isEditMode ? <>
                 <div className="trd-section">
@@ -162,7 +188,53 @@ export function PolicyDetail({ policy, onClose }) {
                         <div className="trd-info-row"><span className="trd-label">City, State:</span><span className="trd-value">{policy.BillCity}, {policy.BillState} {policy.Zip}</span></div>
                         <div className="trd-info-row"><span className="trd-label">Phone:</span><span className="trd-value">{policy.BillPhone}</span></div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        
+                    </div>
+                </div>
+
+                {policy.LineItems?.length > 1 && (
+                    <div className="trd-section">
+                        <h3 className="trd-section-title">Line Items</h3>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                            <thead>
+                                <tr style={{ background: "#f5f7fa" }}>
+                                    <th style={{ padding: "6px 10px", textAlign: "left", fontWeight: 600, color: "#555", borderBottom: "1px solid #e5e7eb" }}>Type</th>
+                                    <th style={{ padding: "6px 10px", textAlign: "left", fontWeight: 600, color: "#555", borderBottom: "1px solid #e5e7eb" }}>Description</th>
+                                    <th style={{ padding: "6px 10px", textAlign: "right", fontWeight: 600, color: "#555", borderBottom: "1px solid #e5e7eb" }}>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {policy.LineItems.map((item, i) => (
+                                    <tr key={item.Id ?? item.id ?? i} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                                        <td style={{ padding: "6px 10px" }}><span style={{ padding: "2px 8px", borderRadius: 10, fontSize: 11, fontWeight: 600, background: "#dbeafe", color: "#1d4ed8" }}>{item.Type ?? item.type}</span></td>
+                                        <td style={{ padding: "6px 10px" }}>{item.Description ?? item.description}</td>
+                                        <td style={{ padding: "6px 10px", textAlign: "right" }}>{FormatCurrency(item.Amount ?? item.amount)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                            <tfoot>
+                                <tr style={{ borderTop: "2px solid #e5e7eb" }}>
+                                    <td colSpan={2} style={{ padding: "6px 10px", fontWeight: 700 }}>Total</td>
+                                    <td style={{ padding: "6px 10px", textAlign: "right", fontWeight: 700, color: "#148dc2" }}>{FormatCurrency(policy.LineItems.reduce((s, x) => s + (x.Amount ?? x.amount ?? 0), 0))}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                )}
+
+                {policy.AttachedFinanceQuote && (
+                    <div className="trd-section">
+                        <h3 className="trd-section-title">Financing</h3>
+                        <div className="trd-info-grid">
+                            <div className="trd-info-row"><span className="trd-label">Company:</span><span className="trd-value">{policy.AttachedFinanceQuote.Company ?? policy.AttachedFinanceQuote.company}</span></div>
+                            <div className="trd-info-row"><span className="trd-label">Monthly Payment:</span><span className="trd-value" style={{ fontWeight: 700, color: "#148dc2" }}>{FormatCurrency(policy.AttachedFinanceQuote.MonthlyPayment ?? policy.AttachedFinanceQuote.monthlyPayment)}</span></div>
+                            <div className="trd-info-row"><span className="trd-label">Down Payment:</span><span className="trd-value">{FormatCurrency(policy.AttachedFinanceQuote.DownPaymentAmount ?? policy.AttachedFinanceQuote.downPaymentAmount)}</span></div>
+                            <div className="trd-info-row"><span className="trd-label">Term:</span><span className="trd-value">{policy.AttachedFinanceQuote.Term ?? policy.AttachedFinanceQuote.term} months</span></div>
+                        </div>
+                    </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                             {policy.IsSignedAndPaid ? <>
                                 <span style={{ display: "flex", justifyContent: "center", gap: "5px", backgroundColor: "#185c3f", color: "white", padding: "6px", borderRadius: 4 }}>
                                     <Check /> Policy Signed &amp; Paid
@@ -177,9 +249,9 @@ export function PolicyDetail({ policy, onClose }) {
                                    <Pencil/> Prepare for Signing
                                 </ActionButton>
                             </> : policy.QuoteFileName && policy.SignatureFields?.length > 0 ? <>
-                                <ActionButton onClick={copyLink}>
+                                {/* <ActionButton onClick={copyLink}>
                                     <Link /> Copy Sign &amp; Pay Link
-                                </ActionButton>
+                                </ActionButton> */}
                                 <ActionButton onClick={() => setShowEmailModal(true)}>
                                     <Mail /> Email Sign &amp; Pay Link
                                 </ActionButton>
@@ -188,6 +260,13 @@ export function PolicyDetail({ policy, onClose }) {
                                 </ActionButton>
                             </> : null}
 
+                            <ActionButton
+                                onClick={viewInvoicePdf}
+                                disabled={loadingInvoicePdf}
+                                >
+                                {loadingInvoicePdf ? "Loading…" : "View Invoice"}
+                            </ActionButton>
+           
                             {policy.QuoteFileName &&
                                 <ActionButton onClick={downloadFile}>
                                     <Download /> Download Policy Quote
@@ -200,8 +279,6 @@ export function PolicyDetail({ policy, onClose }) {
                                 </ActionButton>
                             }
                         </div>
-                    </div>
-                </div>
             </> :
                 <Policy
                     ref={policyRef}

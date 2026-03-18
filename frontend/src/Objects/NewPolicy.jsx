@@ -1,7 +1,7 @@
 import { useState, forwardRef, useImperativeHandle, useEffect, useRef } from "react";
 import { ConfirmationModal } from "./ConfimationModal";
 import { CustomerInfo } from "./CustomerInfo";
-import { fetchWithAuth, extractPages, uploadToS3, FormatCurrency } from "../Utilities";
+import { fetchWithAuth, extractPages, uploadToS3, FormatCurrency, FINANCE_COMPANIES, calcQuote } from "../Utilities";
 import { TextractBedrockProcessor } from "./BedrockProcessor";
 import { CustomerSearch } from "../Objects/CustomerSearch";
 import { ActionButton } from "../Components/UI/actionButton";
@@ -11,7 +11,7 @@ import { AiField } from "./AiField";
 import { X } from "lucide-react";
 
 export const Policy = forwardRef(
-  ({ Close, OnSuccess, isEdit, policyId, policy, hideCustomer, embedded }, ref) => {
+  ({ Close, OnSuccess, isEdit, policyId, policy, hideCustomer, embedded, onAmountChange }, ref) => {
 
     const fileInputRef = useRef(null);
 
@@ -34,6 +34,7 @@ export const Policy = forwardRef(
     const [policyCode, setPolicyCode] = useState(policy?.PolicyCode ?? "");
     const [policyDescription, setPolicyDescription] = useState(policy?.PolicyDescription ?? "");
     const [policyAmount, setPolicyAmount] = useState(policy?.PolicyAmount ?? "");
+    useEffect(() => { onAmountChange?.(Number(policyAmount) || 0); }, [policyAmount]);
     const [commissionAmount, setCommissionAmount] = useState(policy?.CommissionAmount ??0);
     const [jobId, setJobId] = useState("");
     const [showCustomerSearch, setShowCustomerSearch] = useState(false);
@@ -48,6 +49,15 @@ export const Policy = forwardRef(
     const [highlightText, setHighlightText] = useState("")
     const [paidToCarrier, setPaidToCarrier] = useState(policy?.PaidToCarrier)
     const [customerPaid, setCustomerPaid] = useState(policy?.PaidByCustomer)
+    const [otherLineItems, setOtherLineItems] = useState(
+      (policy?.LineItems ?? []).filter(x => (x.Type ?? x.type) !== "premium")
+    );
+    const [showLineItems, setShowLineItems] = useState(policy?.ShowLineItems ?? true);
+    const [quotes, setQuotes] = useState([]);
+    const [quotesGenerated, setQuotesGenerated] = useState(false);
+    const [attachedQuote, setAttachedQuote] = useState(policy?.AttachedFinanceQuote ?? null);
+    const [invoicePdfUrl, setInvoicePdfUrl] = useState(null);
+    const [generatingPdf, setGeneratingPdf] = useState(false);
 
 
 
@@ -184,6 +194,12 @@ export const Policy = forwardRef(
         Customer: premadeCustomer ?? NewCustomer,
         PaidToCarrier: paidToCarrier,
         PaidByCustomer: customerPaid,
+        LineItems: [
+          { id: "premium", type: "premium", description: "Policy Premium", amount: Number(policyAmount) || 0 },
+          ...otherLineItems.map(x => ({ ...x, amount: Number(x.amount ?? x.Amount) || 0 })),
+        ],
+        ShowLineItems: showLineItems,
+        AttachedFinanceQuote: attachedQuote,
         ... (isEdit ? { PolicyId: policy.PolicyId } : {})
       };
 
@@ -196,6 +212,20 @@ export const Policy = forwardRef(
         return;
       }
       if (file) await SaveFile(file, resp.UploadUrl);
+      const policyId = resp.PolicyId ?? (isEdit ? policy.PolicyId : null);
+      if (policyId) {
+        setGeneratingPdf(true);
+        try {
+          const pdfResp = await fetchWithAuth("generate-policy-pdf", { PolicyId: policyId.replace("Policy#", "") });
+          if (pdfResp?.Url) {
+            const blob = await fetch(pdfResp.Url).then(r => r.blob());
+            setInvoicePdfUrl(URL.createObjectURL(blob));
+            setGeneratingPdf(false);
+            return;
+          }
+        } catch (e) { console.error(e); }
+        setGeneratingPdf(false);
+      }
       OnSuccess();
     };
 
@@ -228,6 +258,12 @@ export const Policy = forwardRef(
           BillZip: zip,
           BillPhone: phone,
         },
+        LineItems: [
+          { id: "premium", type: "premium", description: "Policy Premium", amount: Number(policyAmount) || 0 },
+          ...otherLineItems.map(x => ({ ...x, amount: Number(x.amount ?? x.Amount) || 0 })),
+        ],
+        ShowLineItems: showLineItems,
+        AttachedFinanceQuote: attachedQuote,
       }),
     }));
 
@@ -351,6 +387,69 @@ export const Policy = forwardRef(
           </div>
         </section>
 
+        {/* ── Line Items ── */}
+        <section className="form-section">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <h3 style={{ margin: 0 }}>Line Items</h3>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button type="button" className="btn btn-secondary" style={{ fontSize: 12 }} onClick={() => setOtherLineItems(prev => [...prev, { id: crypto.randomUUID(), type: "tax", description: "State Tax", amount: 0 }])}>+ Tax</button>
+              <button type="button" className="btn btn-secondary" style={{ fontSize: 12 }} onClick={() => setOtherLineItems(prev => [...prev, { id: crypto.randomUUID(), type: "fee", description: "Agency Fee", amount: 0 }])}>+ Fee</button>
+            </div>
+          </div>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            <thead>
+              <tr style={{ background: "#f5f7fa" }}>
+                {["Type", "Description", "Amount", ""].map(h => (
+                  <th key={h} style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, color: "#555", borderBottom: "1px solid #e5e7eb" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr style={{ borderBottom: "1px solid #f0f0f0" }}>
+                <td style={{ padding: "6px 10px" }}><span style={{ padding: "2px 8px", borderRadius: 10, fontSize: 11, fontWeight: 600, background: "#dbeafe", color: "#1d4ed8" }}>premium</span></td>
+                <td style={{ padding: "6px 10px" }}>Policy Premium</td>
+                <td style={{ padding: "6px 10px", fontWeight: 600 }}>{FormatCurrency(policyAmount)}</td>
+                <td />
+              </tr>
+              {otherLineItems.map(item => (
+                <tr key={item.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                  <td style={{ padding: "6px 10px" }}>
+                    <span style={{ padding: "2px 8px", borderRadius: 10, fontSize: 11, fontWeight: 600, ...(item.type === "tax" ? { background: "#fef3c7", color: "#92400e" } : { background: "#ede9fe", color: "#6d28d9" }) }}>
+                      {item.type}
+                    </span>
+                  </td>
+                  <td style={{ padding: "6px 10px" }}>
+                    <input style={{ border: "1px solid #ddd", borderRadius: 4, padding: "4px 8px", width: "100%", fontSize: 13 }} value={item.description} onChange={e => setOtherLineItems(prev => prev.map(x => x.id === item.id ? { ...x, description: e.target.value } : x))} />
+                  </td>
+                  <td style={{ padding: "6px 10px" }}>
+                    <input style={{ border: "1px solid #ddd", borderRadius: 4, padding: "4px 8px", width: 110, fontSize: 13 }} type="number" step="0.01" value={item.amount} onChange={e => setOtherLineItems(prev => prev.map(x => x.id === item.id ? { ...x, amount: e.target.value } : x))} />
+                  </td>
+                  <td style={{ padding: "6px 10px", textAlign: "center" }}>
+                    <button onClick={() => setOtherLineItems(prev => prev.filter(x => x.id !== item.id))} style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontSize: 16, lineHeight: 1, padding: 0 }}>✕</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr style={{ borderTop: "2px solid #e5e7eb" }}>
+                <td colSpan={2} style={{ padding: "8px 10px", fontWeight: 700, color: "#333" }}>Total</td>
+                <td style={{ padding: "8px 10px", fontWeight: 700, color: "#148dc2", fontSize: 14 }}>
+                  {FormatCurrency((Number(policyAmount) || 0) + otherLineItems.reduce((s, x) => s + (Number(x.amount) || 0), 0))}
+                </td>
+                <td />
+              </tr>
+            </tfoot>
+          </table>
+          <label style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12,marginBottom:15, cursor: "pointer", userSelect: "none" }}>
+            <div onClick={() => setShowLineItems(v => !v)} style={{ width: 40, height: 22, borderRadius: 11, background: showLineItems ? "#148dc2" : "#ccc", position: "relative", transition: "background 0.2s", cursor: "pointer", flexShrink: 0 }}>
+              <div style={{ position: "absolute", top: 2, left: showLineItems ? 20 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }} />
+            </div>
+            <span style={{ fontSize: 13, color: "#333" }}>Show line items on invoice</span>
+          </label>
+        </section>
+
+     
+
         {!hideCustomer && <>
           {premadeCustomer && !isEdit && (
             <div>
@@ -381,16 +480,58 @@ export const Policy = forwardRef(
             />
           </>}
         </>}
+
+           {/* ── Finance Quotes ── */}
+        <section className="form-section">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <h3 style={{ margin: 0 }}>Finance Quotes</h3>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => { setQuotes(FINANCE_COMPANIES.map(c => calcQuote(Number(policyAmount) || 0, c))); setQuotesGenerated(true); }}
+              disabled={!policyAmount || Number(policyAmount) <= 0}
+            >
+              Generate Quotes
+            </button>
+          </div>
+          {!quotesGenerated ? (
+            <p style={{ color: "#999", fontSize: 13, margin: 0 }}>Enter a premium amount above then click Generate Quotes.</p>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+              {quotes.map(q => {
+                const isSel = attachedQuote?.company === q.company;
+                return (
+                  <div key={q.company} style={{ border: `2px solid ${isSel ? "#148dc2" : "#e5e7eb"}`, borderRadius: 8, padding: 12, background: isSel ? "#f0f9ff" : "#fff" }}>
+                    <div style={{ fontWeight: 700, fontSize: 12, color: "#148dc2", marginBottom: 8, minHeight: 36, lineHeight: 1.3 }}>{q.company}</div>
+                    {[["Down", `${FormatCurrency(q.downPaymentAmount)} (${q.downPaymentPercent}%)`], ["Financed", FormatCurrency(q.amountFinanced)], ["Monthly", FormatCurrency(q.monthlyPayment)], ["APR", `${q.apr.toFixed(2)}%`], ["Term", `${q.term} mo`]].map(([l, v]) => (
+                      <div key={l} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#555", marginBottom: 3 }}><span>{l}</span><span>{v}</span></div>
+                    ))}
+                    <button onClick={() => setAttachedQuote(isSel ? null : q)} style={{ marginTop: 8, width: "100%", padding: "5px", background: isSel ? "#148dc2" : "#fff", color: isSel ? "#fff" : "#148dc2", border: "1px solid #148dc2", borderRadius: 4, cursor: "pointer", fontSize: 11, fontWeight: 600 }}>
+                      {isSel ? "✓ Selected" : "Select"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {attachedQuote && <p style={{ marginTop: 8, fontSize: 12, color: "#148dc2", fontWeight: 600 }}>✓ Financing through {attachedQuote.company} attached.</p>}
+        </section>
       </>
     );
 
     if (embedded) {
       return (
         <>
+          {invoicePdfUrl && (
+            <ConfirmationModal onClose={() => { setInvoicePdfUrl(null); OnSuccess(); }} maxWidth="900px" showButton={false}>
+              <div style={{ marginBottom: 12, fontWeight: 700, fontSize: 15 }}>Invoice Preview</div>
+              <PdfViewer fileUrl={invoicePdfUrl} />
+            </ConfirmationModal>
+          )}
           <input type="file" id="file" accept=".pdf" ref={fileInputRef} onChange={handleFileChange} style={{ display: "none" }} />
              <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
            
-            <div style={{ width: "364px", flexShrink: 0 }}>{custInfo}</div>
+            <div style={{ width: pdfUrl? "364px": "100%", flexShrink: 0 }}>{custInfo}</div>
              {pdfUrl && <PdfViewer fileUrl={pdfUrl} searchText={highlightText} />}
           </div>
         </>
@@ -399,6 +540,12 @@ export const Policy = forwardRef(
 
     return isEdit ? (
       <>
+        {invoicePdfUrl && (
+          <ConfirmationModal onClose={() => { setInvoicePdfUrl(null); OnSuccess(); }} maxWidth="900px" showButton={false}>
+            <div style={{ marginBottom: 12, fontWeight: 700, fontSize: 15 }}>Invoice Preview</div>
+            <PdfViewer fileUrl={invoicePdfUrl} />
+          </ConfirmationModal>
+        )}
         <input
           type="file"
           id="file"
@@ -429,12 +576,12 @@ export const Policy = forwardRef(
           confirmButtonText="Save"
           onClose={Close}
           showButton={true}
-          maxWidth={pdfUrl ? "1400px" : (showCustomerSearch ? "800px" : "430px")}
+          maxWidth={pdfUrl ? "1500px" : (showCustomerSearch ? "800px" : "630px")}
           onConfirm={CreateOrUpdatePolicy}
         >
           <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
            
-            <div style={{ width: "364px", flexShrink: 0 }}>{custInfo}</div>
+            <div style={{ width: pdfUrl? "364px":"570px", flexShrink: 0 }}>{custInfo}</div>
              {pdfUrl && <PdfViewer fileUrl={pdfUrl} searchText={highlightText} />}
           </div>
         </ConfirmationModal>

@@ -32,7 +32,6 @@ namespace InsTechClassesV2
     public class Invoice
     {
         public string Id { get; set; }
-        public string Status { get; set; } = "draft";   // draft, sent, paid
         public string DateCreated { get; set; }
         public string DateUpdated { get; set; }
 
@@ -89,7 +88,6 @@ namespace InsTechClassesV2
             void S(string k, string v) { if (!string.IsNullOrWhiteSpace(v)) d[k] = new AttributeValue { S = v }; }
             void B(string k, bool v) => d[k] = new AttributeValue { BOOL = v };
 
-            S("Status", Status);
             S("DateCreated", DateCreated);
             S("DateUpdated", DateUpdated);
             S("PolicyId", PolicyId);
@@ -135,7 +133,6 @@ namespace InsTechClassesV2
             return new Invoice
             {
                 Id = G("SK"),
-                Status = G("Status"),
                 DateCreated = G("DateCreated"),
                 DateUpdated = G("DateUpdated"),
                 PolicyId = G("PolicyId"),
