@@ -46,6 +46,8 @@ namespace InsTechClassesV2
         public string CompanyAddress { get; set; }
         public string CompanyPhone { get; set; }
         public string CompanyEmail { get; set; }
+
+        public Boolean NoSurcharge { get; set; } = false;
         public string SecondaryDomain { get; set; } = "SECONDARYDOMAIN";
         public string CompanyCityStateZip { get; set; }
     }

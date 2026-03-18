@@ -238,6 +238,13 @@ public class Function
             }
             else if (lastSegment == "get-surcharge")
             {
+                if (vendor.NoSurcharge)
+                { 
+                    var rsp = new { surcharge = 0, vendorSurcharge = 0  };
+                    response.Body = JsonConvert.SerializeObject(rsp);
+                    return response;
+                }
+
                 var surcharge = await MakePaymentService.GetClientSurcharge(request.Body, vendor);
                 response.Body = JsonConvert.SerializeObject(new { surcharge, vendorSurcharge = vendor.InsureTechFeePercentage });
                 return response;

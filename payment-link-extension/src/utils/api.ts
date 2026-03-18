@@ -152,6 +152,16 @@ export function getCurrentAccountID(): string | null {
 }
 
 export function getAccountLookupCode(): string {
+
+  try 
+  {
+    const parts = document.title.split(' - ');
+    return parts[0].trim();
+  }
+  catch
+  {
+
+  }
   const container = document.querySelector('[data-automation-id="streLookupCode"]');
 
   if (container) {

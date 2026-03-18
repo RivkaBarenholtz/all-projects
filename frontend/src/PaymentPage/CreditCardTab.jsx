@@ -331,15 +331,18 @@ export const CreditCardTab = forwardRef((
 
             {showProcess && <><section className="payment-total-section">
                 <h3 className="">Total</h3>
-                <div className="payment-total-line" id="sub-total-line">
-                    <span>Subtotal:</span>
-                    <span >{FormatCurrency((amount))}</span>
-                </div>
-
-                <div className="payment-total-line" id="convenience-fee-line">
-                    <span>Electronic Transfer Fee:</span>
-                    <span id="convenience-fee">{FormatCurrency((surchargeAmount)) == "$0.00" ? "" : FormatCurrency((surchargeAmount))}</span>
-                </div>
+                
+                {surchargeAmount > 0 && <>
+                    <div className="payment-total-line" id="sub-total-line">
+                        <span>Subtotal:</span>
+                        <span >{FormatCurrency((amount))}</span>
+                    </div>
+                    <div className="payment-total-line" id="convenience-fee-line">
+                        <span>Electronic Transfer Fee:</span>
+                        <span id="convenience-fee">{FormatCurrency((surchargeAmount)) == "$0.00" ? "" : FormatCurrency((surchargeAmount))}</span>
+                    </div>
+                </>}
+                
                 <div className="payment-total-line grand-total">
                     <span id="grand-total-label">Grand Total:</span>
                     <span id="grand-total">{FormatCurrency(parseFloat(amount) + (surchargeAmount))}</span>

@@ -76,7 +76,7 @@ export const WireTab = forwardRef(({
         });
 
 
-        if(!hidePaymentButton) window.location.href = `https://${subdomain}.instechpay.co/app/thank-you?amount=${submitWireReq.Amount}`;
+        window.location.href = `https://portal.instechpay.co/thank-you?amount=${submitWireReq.Amount}`;
         //call back end which 
         // 1. saves our payment 
 

@@ -73,8 +73,8 @@ export default function ThankYouPage() {
             >
               <h1 className="heading-primary">Payment Successful!</h1>
               <p className="text-body">
-                Your premium payment has been received and your coverage should now be active{ method=="wire"&& " pending payment verification"}.
-                {/* A confirmation has been sent to your email. */}
+                {/* Your premium payment has been received and your coverage should now be active{ method=="wire"&& " pending payment verification"}.
+                A confirmation has been sent to your email. */}
               </p>
             </motion.div>
 

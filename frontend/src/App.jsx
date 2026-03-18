@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation, Routes, Route, useParams } from "react-router-dom";
+import { GlobalLoader } from "./Components/GlobalLoader";
 import PrivateRoute from "./PrivateRoute";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
@@ -98,22 +99,25 @@ function App() {
   }
 
   return (
-    <Routes>
-      {/* requires first path segment */}
-      <Route
-        path="/*"
-        element={
-          <ContextLayout
-            isAuthenticated={isAuthenticated}
-            setIsAuthenticated={setIsAuthenticated}
-          />
-        }
-      />
+    <>
+      <Routes>
+        {/* requires first path segment */}
+        <Route
+          path="/*"
+          element={
+            <ContextLayout
+              isAuthenticated={isAuthenticated}
+              setIsAuthenticated={setIsAuthenticated}
+            />
+          }
+        />
 
-      {/* root with no context → 404
-      <Route path="/" element={<div>404 – Not Found</div>} />
-      <Route path="*" element={<div>404 – Not Found</div>} /> */}
-    </Routes>
+        {/* root with no context → 404
+        <Route path="/" element={<div>404 – Not Found</div>} />
+        <Route path="*" element={<div>404 – Not Found</div>} /> */}
+      </Routes>
+      <GlobalLoader />
+    </>
   );
 }
 
