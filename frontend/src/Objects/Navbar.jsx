@@ -9,10 +9,28 @@ const Navbar = ({setTitle, open, setOpen, user, setUser}) => {
 
   const currentPath = location.pathname.toLowerCase();
 
+  const allLinks = [
+    { path: "/transactions", label: "Transactions", roles: ["admin", "user", "readonly"] },
+    { path: "/customers",    label: "Customers",    roles: ["admin", "user"] },
+    { path: "/policies",     label: "Policies",     roles: ["admin", "user"] },
+    { path: "/vendors",      label: "Vendors",      roles: ["admin", "user"] },
+    { path: "/payables",     label: "Payables",     roles: ["admin", "user"] },
+    { path: "/schedules",    label: "Schedules",    roles: ["admin", "user"] },
+    { path: "/dashboard",    label: "Dashboard",    roles: ["admin", "user", "readonly"] },
+    { path: "/settings",     label: "Users",        roles: ["admin"] },
+  ];
+
   const getActiveClass = (path) => {
     if (currentPath === "/" && path === "/transactions") return "active";
     return currentPath === path.toLowerCase() ? "active" : "";
   };
+
+  useEffect(() => {
+    const active = allLinks.find(l =>
+      currentPath === l.path.toLowerCase() || (currentPath === "/" && l.path === "/transactions")
+    );
+    if (active) setTitle(active.label);
+  }, [currentPath]);
 
   useEffect(() => {
     async function fetchUser() {
@@ -55,7 +73,6 @@ const Navbar = ({setTitle, open, setOpen, user, setUser}) => {
        <Link
               className={`nav-link ${getActiveClass(path)}`}
               to={path}
-              onClick={() => setTitle(label)}
             >
               {label}
       </Link>
@@ -79,26 +96,11 @@ const Navbar = ({setTitle, open, setOpen, user, setUser}) => {
         </div>
 
         <ul className="nav-menu">
-          <NavBarLink path="/transactions" label="Transactions" />
-
-          {(user?.Role?.toLowerCase() === "admin"|| user?.Role?.toLowerCase() === "user" ) && (
-           <>
-
-            <NavBarLink path="/customers" label="Customers" />
-            <NavBarLink path="/policies" label="Policies" />
-            {/* <NavBarLink path="/invoices" label="Invoices" /> */}
-            <NavBarLink path="/vendors" label="Vendors" />
-            <NavBarLink path="/payables" label="Payables" />
-            <NavBarLink path="/schedules" label="Schedules" />
-
-            
-           </>
-          )}
-          <NavBarLink path="/dashboard" label="Dashboard" />
-
-          { (user?.Role?.toLowerCase() === "admin" ) && (
-            <NavBarLink path="/settings" label="Users" />
-          )}
+          {allLinks
+            .filter(({ roles }) => roles.includes(user?.Role?.toLowerCase() ?? ""))
+            .map(({ path, label }) => (
+              <NavBarLink key={path} path={path} label={label} />
+            ))}
         </ul>
       </nav>
     </div>
