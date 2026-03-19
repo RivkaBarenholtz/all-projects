@@ -26,7 +26,7 @@ export function TextractBedrockProcessor({ jobId , bedrockResult, setBedrockResu
         if (jobStatus === "SUCCEEDED") {
           
           // Call backend to analyze with Bedrock
-          const bedrockRes = await fetchWithAuth("get-bedrock-result", { jobId });
+          const bedrockRes = await fetchWithAuth("get-bedrock-result", { jobId }, false , false, true);
           const rawText = bedrockRes.content[0]?.text    ?? "";
           const bedrockResJson = extractJsonArray(rawText);
           const result = Array.isArray(bedrockResJson) ? bedrockResJson[0] : bedrockResJson;

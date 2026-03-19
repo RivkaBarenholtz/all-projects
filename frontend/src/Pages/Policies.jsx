@@ -175,7 +175,7 @@ export default function Policies() {
    async function getData() {
      
 
-      const response = await fetchWithAuth("get-policy-list", {})
+      const response = await fetchWithAuth("get-policy-list", {}, false , false , data.length)
       
       const formattedData = response.map((policy) => {
            return  {

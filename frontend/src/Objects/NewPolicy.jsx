@@ -123,7 +123,7 @@ export const Policy = forwardRef(
       {
       if (!file) return;
       setJobId("xxxxxxx")
-      const presignedRsp = await fetchWithAuth("get-presigned-url", {});
+      const presignedRsp = await fetchWithAuth("get-presigned-url", {}, false, false, true);
       const { uploadUrl, fileName } = presignedRsp;
 
       //const blob = await  extractPages(file,0, 5);

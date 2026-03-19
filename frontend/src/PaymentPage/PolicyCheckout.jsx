@@ -256,7 +256,7 @@ export default function PolicyCheckout() {
                 {/* ── Step 3: Billing & Payment ────────────────────── */}
                 {step === 3 && (
                     <div style={{ padding: 28 }}>
-                       
+
                         {/* Payment method toggle */}
                         <SectionLabel>Payment Method</SectionLabel>
                         <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>

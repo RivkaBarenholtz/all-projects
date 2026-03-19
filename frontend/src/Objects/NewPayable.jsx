@@ -41,17 +41,17 @@ export function NewPayable({ Close, OnSuccess, initialCarrierName, initialAmount
 
     const remitPayment = async () => {
         setSubmitPressed(true);
-        if (!vendorName || !amount) return;
+        if ( !amount) return;
 
         const payable = {
             Amount: parseFloat(amount) || 0,
-            InvoiceId: invoiceId,
+           // InvoiceId: invoiceId,
             PolicyId: policyId,
-            CustomerVendorId: vendorId,
-            VendorName: vendorName,
-            PaymentAccountNumber: paymentAccountNumber,
-            PaymentRoutingNumber: paymentRoutingNumber,
-            VendorAddress: vendorAddress,
+            //CustomerVendorId: vendorId,
+            VendorName: initialCarrierName,
+            // PaymentAccountNumber: paymentAccountNumber,
+            // PaymentRoutingNumber: paymentRoutingNumber,
+            //VendorAddress: vendorAddress,
             VendorNotes: notes,
             // PaymentRefNum will be set by backend once gateway call is implemented
         };
@@ -109,6 +109,12 @@ export function NewPayable({ Close, OnSuccess, initialCarrierName, initialAmount
 
                 <section className="form-section">
                     <h3>Payment Details</h3>
+                    {initialCarrierName && (
+                        <div className="form-group">
+                            <label>Carrier</label>
+                            <input type="text" value={initialCarrierName} readOnly style={{ background: "#f5f7fa", color: "#555" }} />
+                        </div>
+                    )}
                     <div className="form-group">
                         <label>Amount *</label>
                         <input type="number" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" />

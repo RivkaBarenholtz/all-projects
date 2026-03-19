@@ -1,7 +1,7 @@
 import Detail from "../Detail"
 import { useEffect, useState, useRef } from "react";
 import { ActionButton } from "../../Components/UI/actionButton";
-import { Link, Check, Download, Mail, Pencil, Send} from "lucide-react";
+import { Link, Check, Download, Mail, Pencil, Send, ReceiptText} from "lucide-react";
 import { fetchWithAuth, FormatCurrency } from "../../Utilities";
 import { useSuccessModal } from "../SuccessModal";
 import { Policy } from "../NewPolicy";
@@ -36,7 +36,7 @@ export function PolicyDetail({ policy, onClose }) {
 
     const generateSignAndPayLink = () => {
         const base = window.location.origin === "https://test.instechpay.co"
-            ? `https://test.instechpay.co/`
+            ? `https://test.instechpay.co`
             : `https://pay.instechpay.co/${vendor?.subdomain}`;
         return `${base}/checkout?policyid=${policy.PolicyId.replace("Policy#", "")}`;
     }
@@ -264,7 +264,7 @@ export function PolicyDetail({ policy, onClose }) {
                                 onClick={viewInvoicePdf}
                                 disabled={loadingInvoicePdf}
                                 >
-                                {loadingInvoicePdf ? "Loading…" : "View Invoice"}
+                                <ReceiptText /> {loadingInvoicePdf ? "Loading…" : "View Invoice"}
                             </ActionButton>
            
                             {policy.QuoteFileName &&
