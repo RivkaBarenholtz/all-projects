@@ -6,7 +6,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).href;
 
-export function PdfViewer({ fileUrl, searchText }) {
+export function PdfViewer({ fileUrl, searchText, minHeight }) {
   const containerRef = useRef(null);
   const textLayersRef = useRef([]); // store references to text layers for highlighting
 
@@ -113,7 +113,7 @@ export function PdfViewer({ fileUrl, searchText }) {
       ref={containerRef}
       style={{
         width: "920px",
-        maxHeight: "85vh",
+        maxHeight: minHeight ? `max(${minHeight}px, 85vh)` : "85vh",
         overflowY: "auto",
         flexShrink: 0,
         background: "#f5f5f5",

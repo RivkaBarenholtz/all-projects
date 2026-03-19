@@ -14,8 +14,9 @@ export const Policy = forwardRef(
   ({ Close, OnSuccess, isEdit, policyId, policy, hideCustomer, embedded, onAmountChange }, ref) => {
 
     const fileInputRef = useRef(null);
-
-    // ------------------------
+    const formDivRef   = useRef(null);
+    const [formHeight, setFormHeight] = useState(0);
+   // ------------------------
     // State
     // ------------------------
     const [firstName, setFirstName] = useState(policy?.Customer?.BillFirstName ?? "");
@@ -116,6 +117,14 @@ export const Policy = forwardRef(
 
 
 
+    useEffect(() => {
+      if (!formDivRef.current) return;
+      const ro = new ResizeObserver(([entry]) => setFormHeight(entry.contentRect.height));
+      ro.observe(formDivRef.current);
+      return () => ro.disconnect();
+    }, [pdfUrl]); // re-attach when pdf appears/disappears
+
+ 
 
 
     const analyzePDF = async (file) => {
@@ -530,9 +539,9 @@ export const Policy = forwardRef(
           )}
           <input type="file" id="file" accept=".pdf" ref={fileInputRef} onChange={handleFileChange} style={{ display: "none" }} />
              <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-           
-            <div style={{ width: pdfUrl? "364px": "100%", flexShrink: 0 }}>{custInfo}</div>
-             {pdfUrl && <PdfViewer fileUrl={pdfUrl} searchText={highlightText} />}
+
+            <div ref={formDivRef} style={{ width: pdfUrl? "364px": "100%", flexShrink: 0 }}>{custInfo}</div>
+             {pdfUrl && <PdfViewer fileUrl={pdfUrl} searchText={highlightText} minHeight={formHeight} />}
           </div>
         </>
       );
@@ -580,9 +589,9 @@ export const Policy = forwardRef(
           onConfirm={CreateOrUpdatePolicy}
         >
           <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-           
-            <div style={{ width: pdfUrl? "364px":"570px", flexShrink: 0 }}>{custInfo}</div>
-             {pdfUrl && <PdfViewer fileUrl={pdfUrl} searchText={highlightText} />}
+
+            <div ref={formDivRef} style={{ width: pdfUrl? "364px":"570px", flexShrink: 0 }}>{custInfo}</div>
+             {pdfUrl && <PdfViewer fileUrl={pdfUrl} searchText={highlightText} minHeight={formHeight} />}
           </div>
         </ConfirmationModal>
       </>
