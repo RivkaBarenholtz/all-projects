@@ -8,7 +8,7 @@ interface SettingsPanelProps {
   vendorSurcharge: number;
   invoices: Invoice[];
   onClose: () => void;
-  onShowUpdateModal: (title: string, isReverting: boolean) => void;
+  onShowUpdateModal: (title: string, isReverting: boolean, pendingSurcharge?: number) => void;
   onSaveSurcharge: (items: any[]) => Promise<void>;
 }
 
@@ -34,7 +34,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     }
 
     if (invoices.length > 0) {
-      onShowUpdateModal('Apply Custom Account Surcharge To:', false);
+      onShowUpdateModal('Apply Custom Account Surcharge To:', false, surchargeValue);
     } else {
       await onSaveSurcharge([{
         ClientLookupCode: client?.LookupCode || '',
@@ -108,7 +108,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 )}
               </label>
               <div className="surcharge-value">
-                <span>{surcharge * 100}%</span>
+                <span>{(surcharge * 100).toFixed(3)}%</span>
                 <div>
                   <span style={{ padding: '2px' }}>
                     <button
@@ -141,7 +141,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   <input
                     type="number"
                     step="0.01"
-                    value={editedSurcharge}
+                    value={editedSurcharge.toFixed(3)}
                     onChange={(e) => setEditedSurcharge(parseFloat(e.target.value))}
                     min="0"
                     max="3.5"
