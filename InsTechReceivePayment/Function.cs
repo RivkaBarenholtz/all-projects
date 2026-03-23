@@ -59,7 +59,7 @@ public class Function
                 Headers = new Dictionary<string, string>
                     {
                         { "Access-Control-Allow-Origin", "*" },
-                        { "Access-Control-Allow-Headers", "Content-Type" },
+                        { "Access-Control-Allow-Headers", "Content-Type, x-app-version" },
                         { "Access-Control-Allow-Methods", "POST, OPTIONS, GET" }
                     }
             };
@@ -136,7 +136,7 @@ public class Function
                         Headers = new Dictionary<string, string>
                         {
                             { "Access-Control-Allow-Origin", "*" },
-                            { "Access-Control-Allow-Headers", "Content-Type" },
+                            { "Access-Control-Allow-Headers", "Content-Type, x-app-version" },
                             { "Access-Control-Allow-Methods", "POST, OPTIONS" }
                         }
                     };
@@ -236,7 +236,7 @@ public class Function
                 Headers = new Dictionary<string, string>
                     {
                         { "Access-Control-Allow-Origin", "*" },
-                        { "Access-Control-Allow-Headers", "Content-Type" },
+                        { "Access-Control-Allow-Headers", "Content-Type, x-app-version" },
                         { "Access-Control-Allow-Methods", "POST, OPTIONS, GET" }
                     }
             };

@@ -2,6 +2,7 @@
 
 import { STORAGE_KEYS } from '../config/cognito';
 import { cognitoService } from './cognitoService';
+import { version } from '../../package.json';
 
 // Proxy function for dev mode
 function fetchProxy(input: RequestInfo | URL, options: RequestInit = {}): Promise<Response> {
@@ -76,6 +77,7 @@ export class ApiService {
 
         const headers: HeadersInit = {
           "Content-Type": "application/json",
+          "x-app-version": version,
         };
 
         if (token) {
