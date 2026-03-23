@@ -360,9 +360,9 @@ function Transactions({ user }) {
         EnteredDateFormatted: localDateString,
         xMaskedAccountNumberHtml: CardHtml(trans.xMaskedAccountNumber, trans.xCardType, trans.xCommand),
         CreditCardFormatted: <span className={`'amount ' ${trans.xVoid == 1 ? "void" : ""}`}> {FormatCurrency(trans.xCustom09 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1)) ?? '$0.00'}</span>,
-        AmountFundedFormatted: trans.xCustom10 == 0 || trans.xCustom10 == null ? AmountHtml(trans.xAmount, trans.xVoid == 1) : AmountHtml(trans.xCustom10 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1), trans.xVoid == 1),
+        AmountFundedFormatted: trans.xCustom10 == 0 || trans.xCustom10 == null ? AmountHtml(trans.xAmount,trans.xRequestAmount, trans.xVoid == 1, trans.xCommand) : AmountHtml(trans.xCustom10 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1),trans.xCustom10 * (trans.xRequestAmount != 0 ? trans.xRequestAmount / Math.abs(trans.xRequestAmount) : 1) , trans.xVoid == 1, trans.xCommand),
         StatusHtml: StatusHtml(trans.xResponseResult, trans.xStatus, trans.xCommand),
-        AmountFormatted: AmountHtml(trans.xAmount, trans.xRequestAmount, trans.xVoid == 1),
+        AmountFormatted: AmountHtml(trans.xAmount, trans.xRequestAmount, trans.xVoid == 1, trans.xCommand),
         AmountFunded: trans.xCustom10 && trans.xCustom10 > 0 ? trans.xCustom10 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1) : trans.xAmount,
         StatusString: GetStatusString(trans.xResponseResult, trans.xStatus, trans.xCommand),
         CreditCardFee: trans.xCustom09 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1),
@@ -381,8 +381,8 @@ function Transactions({ user }) {
     setTotalResults(response.xRecordsReturned);
     setTotal(response.xResult);
   }
-  const AmountHtml = (amt, origAmt, isVoided) => {
-    if (isVoided) return <span className='amount void'>{FormatCurrency(origAmt)}</span>
+  const AmountHtml = (amt, origAmt, isVoided, command) => {
+    if (isVoided) return <span className={`amount void ${(command?.toLowerCase()?.includes("credit")?'negative':'')} `}>{FormatCurrency(origAmt)}</span>
     return amt >= 0 ? <span className='amount positive'>{FormatCurrency(amt)}</span> :
       <span className='amount negative'>{FormatCurrency(amt)}</span>
   }

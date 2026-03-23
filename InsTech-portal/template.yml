@@ -14,6 +14,7 @@ Resources:
           - content-type
           - user
           - vendor
+          - x-app-version
           - Access-Control-Allow-Private-Network  # Add this
         AllowMethods:
           - GET
