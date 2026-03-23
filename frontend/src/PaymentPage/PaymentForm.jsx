@@ -667,6 +667,19 @@ export default function PaymentForm({ isPortal, onSuccess }) {
                       : ''
                   }
                 </div>
+                {isPortal && (
+                  <div className="form-group">
+                    <label htmlFor="surcharge-rate" className="form-label">Surcharge Rate:</label>
+                    <input
+                      className="form-input"
+                      type="number"
+                      id="surcharge-rate"
+                      step={.01}
+                      value={surcharge.surcharge? surcharge.surcharge * 100 : ""}
+                      onChange={(e) => setSurcharge({ ...surcharge, surcharge: Number(e.target.value)/100 })}
+                    /> 
+                  </div>
+                )}
                 <div className="form-group">
                   <label htmlFor="notes">Notes (Optional)</label>
                   <textarea className='form-input' id="notes" name="notes" rows="3"></textarea>
