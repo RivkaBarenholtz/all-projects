@@ -48,7 +48,7 @@ public class Function
                 Headers = new Dictionary<string, string>
                 {
                     { "Access-Control-Allow-Origin", "*" },
-                    {"Access-Control-Allow-Headers", "Authorization, Content-Type, User, Vendor"},
+                    {"Access-Control-Allow-Headers", "Authorization, Content-Type, User, Vendor, x-app-version"},
                     {"Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"},
                     { "Content-Type", "application/json" }
 
