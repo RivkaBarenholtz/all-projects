@@ -86,6 +86,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const [amntDisplayValue, setAmntDisplayValue] = useState(FormatCurrency(amount));
   const [state, setState] = useState('');
   const [activeTab, setActiveTab] = useState("Credit Card");
+  const [visibleSurcharge , setVisibleSurcharge] = useState(0);
 
   const [refNum, setRefNum] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -292,7 +293,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
       try {
 
         if (isPortal) {
-          const result = await fetchWithAuth("get-vendor", {})
+          const result = await fetchWithAuth("get-vendor", {}, false, false , true)
           setVendor(result);
           setIsLoading(false)
           return
@@ -331,10 +332,14 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
         if (!hasNaN) {
           try {
-            setIsInvLoading(true);
+           // setIsInvLoading(true);
             let result = null;
             if (isPortal) {
-              result = await fetchWithAuth("get-invoice", { LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(Number(epicClientNumber)) ? null : epicClientNumber });
+              result = await fetchWithAuth("get-invoice", 
+                { LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(Number(epicClientNumber)) ? null : epicClientNumber },
+                false, false , true
+              
+              );
             }
             else {
               const clientid =
@@ -362,9 +367,13 @@ export default function PaymentForm({ isPortal, onSuccess }) {
               setAmntDisplayValue(FormatCurrency(totalBalance));
             }
 
-            setIsInvLoading(false);
+         
           } catch (err) {
-            setError(err.message); // Set error if something goes wrong
+            //setError(err.message); // Set error if something goes wrong
+          }
+          finally
+          {
+               setIsInvLoading(false);
           }
         }
       }
@@ -382,7 +391,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
       try {
         let result = null;
         if (isPortal) {
-          result = await fetchWithAuth("get-surcharge", { ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID) || invoiceID == "" ? -1 : invoiceID });
+          result = await fetchWithAuth("get-surcharge", { ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID) || invoiceID == "" ? -1 : invoiceID }, false , false , true);
         }
         else {
           const clientid =
@@ -402,6 +411,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           result = await response.json();
         }
         setSurcharge(result);
+        setVisibleSurcharge(result.surcharge * 100 )
       } catch (err) {
         setError(err.message); // Set error if something goes wrong
       }
@@ -436,6 +446,16 @@ export default function PaymentForm({ isPortal, onSuccess }) {
     GetRefNum();
   }
     , []
+  )
+
+  useEffect (
+    ()=> 
+    {
+      setSurcharge(
+        {...surcharge, surcharge: visibleSurcharge/100}
+      )
+    },
+    [visibleSurcharge]
   )
 
   useEffect(
@@ -674,9 +694,8 @@ export default function PaymentForm({ isPortal, onSuccess }) {
                       className="form-input"
                       type="number"
                       id="surcharge-rate"
-                      step={.01}
-                      value={surcharge.surcharge? surcharge.surcharge * 100 : ""}
-                      onChange={(e) => setSurcharge({ ...surcharge, surcharge: Number(e.target.value)/100 })}
+                      value={visibleSurcharge}
+                      onChange={(e) => setVisibleSurcharge( Number(e.target.value) )}
                     /> 
                   </div>
                 )}

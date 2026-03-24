@@ -11,8 +11,8 @@ const _notifyLoading = () =>
 const _loadStart = () => { _loadingCount++;                               _notifyLoading(); };
 const _loadEnd   = () => { _loadingCount = Math.max(0, _loadingCount - 1); _notifyLoading(); };
 
-export const fetchWithAuth = async (url, options = {}, isText = false, isBlob = false) => {
-  _loadStart();
+export const fetchWithAuth = async (url, options = {}, isText = false, isBlob = false, silent = false) => {
+  if (!silent) _loadStart();
   const token = localStorage.getItem('idToken');
   const userEmail = SafeParseJson(localStorage.getItem('User')).email;
   const vendor = new URLSearchParams(window.location.search).get("vendor") || localStorage.getItem("currentVendor");
@@ -61,9 +61,10 @@ export const fetchWithAuth = async (url, options = {}, isText = false, isBlob = 
     if (isBlob) return await response.blob();
     return await response.json();
   } finally {
-    _loadEnd();
+    if (!silent) _loadEnd();
   }
 };
+
 
   export const  SafeParseJson= (jsonString)=> {
   try {
