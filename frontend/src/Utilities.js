@@ -1,4 +1,4 @@
-import { refreshSession } from "./AuthContext";
+import { refreshSession, redirectToLogin } from "./AuthContext";
 
 /* ── Global loading counter ─────────────────────────────────────
    Emits a custom DOM event so any component can listen without
@@ -6,8 +6,16 @@ import { refreshSession } from "./AuthContext";
    Uses a counter so concurrent requests don't cancel each other.
 ────────────────────────────────────────────────────────────────── */
 let _loadingCount = 0;
-const _notifyLoading = () =>
-  window.dispatchEvent(new CustomEvent("instech:loading", { detail: { active: _loadingCount > 0 } }));
+const _notifyLoading = () => {
+  const active = _loadingCount > 0;
+
+  // 👇 store current state globally
+  window.__instechLoadingActive = active;
+
+  window.dispatchEvent(
+    new CustomEvent("instech:loading", { detail: { active } })
+  );
+};
 const _loadStart = () => { _loadingCount++;                               _notifyLoading(); };
 const _loadEnd   = () => { _loadingCount = Math.max(0, _loadingCount - 1); _notifyLoading(); };
 
@@ -118,13 +126,6 @@ export const Sort = ( data,  field, ascending = true) =>{
 
 
   export const handleUnauthorized = () => {
-     
-    localStorage.removeItem("idToken");
-    import.meta.env.MODE === 'development' 
-    || window.location.hostname === 'portal.instechpay.co' 
-    || window.location.hostname === 'pay.instechpay.co' 
-    || window.location.hostname === 'test.instechpay.co' ?
-    window.location.href = "/login":
-    window.location.href = "/app/login"
+     redirectToLogin(); 
     ;
   };

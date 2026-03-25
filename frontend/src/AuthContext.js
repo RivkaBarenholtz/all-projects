@@ -18,6 +18,7 @@ export const refreshSession = () => {
     }
 
     cognitoUser.getSession((err, session) => {
+      
       if (err) {
         reject("Session fetch error: " + err);
         return;
@@ -86,8 +87,18 @@ export  const refreshAccessToken = async () => {
     console.error("Error refreshing access token:", error);
   }
 };
-const redirectToLogin = () => {
-  localStorage.removeItem("idToken");
+export const redirectToLogin = () => {
+  const user = userPool.getCurrentUser();
+
+  if (user) {
+    user.signOut();
+  }
+
+  // optional: clear your own app storage
+  localStorage.clear();
+
+  // redirect to login page
+  
   window.location.href =process.env.NODE_ENV === 'development' 
   || window.location.hostname === 'pay.instechpay.co' 
   || window.location.hostname === 'portal.instechpay.co'

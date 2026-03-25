@@ -1,9 +1,12 @@
 import React, {useEffect} from "react";
 import { useNavigate } from "react-router-dom";
-import { refreshAccessToken,  isTokenExpired , checkTokens} from "./AuthContext";
+import { checkTokens} from "./AuthContext";
 
 function PrivateRoute({children }) {
-     checkTokens()
+
+
+    const a =   checkTokens()
+    if (!a )  return null; 
   
     
   
