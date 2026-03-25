@@ -47,7 +47,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
   const [searchParams] = useSearchParams();
   const accountID = searchParams.get("account") ?? "";
-  const invoiceAmount = searchParams.get("amount") ?? null;
+  const invoiceAmount = searchParams.get("amount")?.replace(",","")?.replace("$", "") ?? null;
   const epicClientNumber = searchParams.get("accountid") ?? 0;
   const invoiceIDparam = searchParams.get("invoiceid") ?? "";
   const errorCode = searchParams.get("error") ?? "";

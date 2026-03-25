@@ -316,7 +316,7 @@ namespace InsTechClassesV2.Services
                     new SplitInstructions()
                         {
                             xAmount = insureTechAmt,
-                            xMid = "70486"
+                            xMid = "73244"
                         },
                     new SplitInstructions() {
                         xAmount=vendorAmt,
