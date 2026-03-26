@@ -210,16 +210,17 @@ public class Function
             }
             else if (lastSegment == "make-check-payment-to-cardknox")
             {
-                var cardknoxResponse = await MakePaymentService.MakeCheckPaymentToCardknox(request.Body, vendor, true);
+                var subAccountId = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
+                var cardknoxResponse = await MakePaymentService.MakeCheckPaymentToCardknox(request.Body, vendor, true, subAccountId);
                 response.Body = JsonConvert.SerializeObject(cardknoxResponse);
                 return response;
             }
 
             else if (lastSegment == "make-payment-cardknox")
             {
-                var pamntResponse = await MakePaymentService.MakePaymentToCardknox(request.Body, vendor);
+                var subAccountId = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
+                var pamntResponse = await MakePaymentService.MakePaymentToCardknox(request.Body, vendor, subAccountId);
                 response.Body = JsonConvert.SerializeObject(pamntResponse);
-
                 return response;
             }
             else if (lastSegment== "send-invoice-email")
@@ -279,14 +280,16 @@ public class Function
             }
             else if (lastSegment == "void-transaction")
             {
-                var voidResponse = await MakePaymentService.VoidTransaction(request.Body, vendor);
+                var subAccountId = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
+                var voidResponse = await MakePaymentService.VoidTransaction(request.Body, vendor, subAccountId);
                 response.Body = await voidResponse.Content.ReadAsStringAsync();
                 return response;
             }
 
             else if (lastSegment == "issue-refund-cardknox")
             {
-                var refundResponse = await MakePaymentService.IssueRefund(request.Body, vendor);
+                var subAccountId = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
+                var refundResponse = await MakePaymentService.IssueRefund(request.Body, vendor, subAccountId);
                 response.Body = await refundResponse.Content.ReadAsStringAsync();
                 return response;
             }

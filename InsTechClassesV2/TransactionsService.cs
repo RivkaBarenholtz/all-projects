@@ -54,6 +54,7 @@ namespace InsTechClassesV2
                 reportItem.Status = item.ContainsKey("Status") ? item["Status"].S : string.Empty;
                 reportItem.Void  = item.ContainsKey("Void") ? item["Void"].S : string.Empty;
                 reportItem.Custom10 = item.ContainsKey("FundedAmount") ? item["FundedAmount"].S : string.Empty;
+                reportItem.SubAccountId = item.ContainsKey("SubAccountId") ? item["SubAccountId"].S : string.Empty;
                 reportItems.Add(reportItem);
             }
             response.ReportData = reportItems;
@@ -166,7 +167,7 @@ namespace InsTechClassesV2
            
             return NewOrUpdatedTransaction;
         }
-        public static Dictionary<string, AttributeValue>GenerateItemFromCardknoxTransaction(CardknoxReportItem transaction)
+        public static Dictionary<string, AttributeValue> GenerateItemFromCardknoxTransaction(CardknoxReportItem transaction, string subAccountId = null)
         {
             var formats = new[] {
                  "M/d/yyyy h:mm:ss tt",
@@ -345,6 +346,13 @@ namespace InsTechClassesV2
             {
                 NewOrUpdatedTransaction.Add("AchReturnFee", new AttributeValue { S = transaction.AchReturnFee });
             }
+
+            var resolvedSubAccountId = subAccountId ?? transaction.SubAccountId;
+            if (!string.IsNullOrEmpty(resolvedSubAccountId))
+            {
+                NewOrUpdatedTransaction.Add("SubAccountId", new AttributeValue { S = resolvedSubAccountId });
+            }
+
             return NewOrUpdatedTransaction;
 
         }
@@ -354,17 +362,16 @@ namespace InsTechClassesV2
             await AmazonUtilities.DynamoDatabaseTransactions.InsertItemAsync(vendor.Id.ToString(), NewOrUpdatedTransaction, transaction.RefNumber, EntityName);
             
         }
-        public static async Task SaveTransaction(string refNumber , Vendor vendor)
+        public static async Task SaveTransaction(string refNumber, Vendor vendor, string subAccountId = null)
         {
-            string key = await SecretManager.GetSecret(vendor.CardknoxApiKeySecretName);
+            string key = await SecretManager.GetSecret(vendor.GetCardknoxSecretName(subAccountId));
 
-            var cardknox = await new CardknoxTransactionReportApiRequest(refNumber, key).GetCardknoxTransactionReportResponse(vendor);
+            var cardknox = await new CardknoxTransactionReportApiRequest(refNumber, key).GetCardknoxTransactionReportResponse(vendor, subAccountId);
             var transaction = cardknox.ReportData[0];
 
-            
             var dynamoDBObject = await AmazonUtilities.DynamoDatabaseTransactions.GetItemByIdAsync(vendor.Id.ToString(), refNumber, EntityName);
-            
-            var NewOrUpdatedTransaction = GenerateItemFromCardknoxTransaction(transaction);
+
+            var NewOrUpdatedTransaction = GenerateItemFromCardknoxTransaction(transaction, subAccountId);
 
             if (dynamoDBObject == null)
             {

@@ -31,20 +31,25 @@ public class Function
         //vendors.Reverse();
         foreach (Vendor vendor in vendors)
         {
+            var subAccountIds = vendor.SubAccounts?.Count > 0
+                ? vendor.SubAccounts.Select(s => s.Id).ToList()
+                : new List<string> { null };
+
+            foreach (var subAccountId in subAccountIds)
+            {
 
             var recordsReturned = 1000;
             var startDate = DateTime.UtcNow.AddDays(-60);
             var endDate = DateTime.UtcNow;
 
             CardknoxReportApiRequest cardknoxReportApiRequest = new();
-            cardknoxReportApiRequest.xKey = await SecretManager.GetSecret(vendor.CardknoxApiKeySecretName);
             cardknoxReportApiRequest.xBeginDate = startDate.ToString("yyyy-MM-dd HH:mm:ss");
             cardknoxReportApiRequest.xEndDate = endDate.ToString("yyyy-MM-dd HH:mm:ss");
 
             while (recordsReturned == 1000)
             {
                 
-                var cardknoxResponse = await cardknoxReportApiRequest.PostToCardknox(vendor);
+                var cardknoxResponse = await cardknoxReportApiRequest.PostToCardknox(vendor, subAccountId);
                 string json = await cardknoxResponse.Content.ReadAsStringAsync();
                 CardknoxTransactionReportResponse responseObject = JsonConvert.DeserializeObject<CardknoxTransactionReportResponse>(json) ?? new CardknoxTransactionReportResponse();
                 recordsReturned = responseObject.ReportData.Count;
@@ -58,7 +63,7 @@ public class Function
                 var newDynamoList = new List<Dictionary<string, Amazon.DynamoDBv2.Model.AttributeValue>>();
                 foreach (var record in newRecords)
                 {
-                    var newTransaction = TransactionsService.GenerateItemFromCardknoxTransaction(record);
+                    var newTransaction = TransactionsService.GenerateItemFromCardknoxTransaction(record, subAccountId);
                     string pk = $"Vendor#{vendor.Id}";
                     string sk = $"Transaction#{record.RefNum}";
 
@@ -77,7 +82,7 @@ public class Function
                     var cardknoxObj = responseObject.ReportData.FirstOrDefault(r => r.RefNum == dynamoObj["RefNumber"].S);
                     if (cardknoxObj != null)
                     { 
-                        var updateObject = TransactionsService.GenerateItemFromCardknoxTransaction(cardknoxObj);
+                        var updateObject = TransactionsService.GenerateItemFromCardknoxTransaction(cardknoxObj, subAccountId);
                         string pk = $"Vendor#{vendor.Id}";
                         string sk = $"Transaction#{cardknoxObj.RefNum}";
 
@@ -91,8 +96,7 @@ public class Function
                 endDate = earliestDate;
             }
 
-
-
+            } // end foreach subAccountId
         }
         //get data from cardknox 1000 records 
         

@@ -167,23 +167,31 @@ public class Function
             
             else if (lastSegment == "make-check-payment-to-cardknox")
             {
-                var cardknoxResponse = await MakePaymentService.MakeCheckPaymentToCardknox(request.Body, vendor);
+                var baseReq = JsonConvert.DeserializeObject<dynamic>(request.Body);
+                string accountId = (string)baseReq?.AccountID ?? "";
+                var subAccountId = await SubAccountResolver.ResolveFromAccountId(accountId, vendor);
+                var cardknoxResponse = await MakePaymentService.MakeCheckPaymentToCardknox(request.Body, vendor, subAccountId: subAccountId);
                 response.Body = JsonConvert.SerializeObject(cardknoxResponse);
                 return response;
             }
 
             else if (lastSegment == "make-payment-cardknox")
             {
-                var pamntResponse = await MakePaymentService.MakePaymentToCardknox(request.Body, vendor);
+                var baseReq = JsonConvert.DeserializeObject<dynamic>(request.Body);
+                string accountId = (string)baseReq?.AccountID ?? "";
+                var subAccountId = await SubAccountResolver.ResolveFromAccountId(accountId, vendor);
+                var pamntResponse = await MakePaymentService.MakePaymentToCardknox(request.Body, vendor, subAccountId);
                 response.Body = JsonConvert.SerializeObject(pamntResponse);
-
                 return response;
             }
             else if (lastSegment == "make-digital-payment")
             {
-                var digitalPaymentResponse = await MakePaymentService.MakeDigitalWalletPaymentToCardknox(request.Body, vendor);
+                var baseReq = JsonConvert.DeserializeObject<dynamic>(request.Body);
+                string accountId = (string)baseReq?.AccountID ?? "";
+                var subAccountId = await SubAccountResolver.ResolveFromAccountId(accountId, vendor);
+                var digitalPaymentResponse = await MakePaymentService.MakeDigitalWalletPaymentToCardknox(request.Body, vendor, subAccountId);
                 var body = await digitalPaymentResponse.Content.ReadAsStringAsync();
-                response.Body = body;   
+                response.Body = body;
                 return response;
             }
             

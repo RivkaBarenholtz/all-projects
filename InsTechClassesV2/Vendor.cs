@@ -49,5 +49,19 @@ namespace InsTechClassesV2
         public Boolean NoSurcharge { get; set; } = false;
         public string SecondaryDomain { get; set; } = "SECONDARYDOMAIN";
         public string CompanyCityStateZip { get; set; }
+
+        public List<CardknoxSubAccount> SubAccounts { get; set; }
+        public string DefaultSubAccountId { get; set; }
+
+        public string GetCardknoxSecretName(string subAccountId = null)
+        {
+            var id = subAccountId ?? DefaultSubAccountId;
+            if (!string.IsNullOrEmpty(id) && SubAccounts?.Count > 0)
+            {
+                var sub = SubAccounts.FirstOrDefault(s => s.Id == id);
+                if (sub != null) return sub.CardknoxApiKeySecretName;
+            }
+            return CardknoxApiKeySecretName;
+        }
     }
 }

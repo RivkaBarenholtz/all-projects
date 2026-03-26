@@ -298,7 +298,9 @@ namespace InsTechClassesV2.Cardknox
         public string Phone { get; set; }
         [JsonProperty("xEmail")]
         public string Email { get; set; }
-       
+
+        // Internal field — not from Cardknox API, populated from DynamoDB or set when saving
+        public string SubAccountId { get; set; }
 
     }
 }

@@ -40,9 +40,10 @@ namespace WebhookHandler
                 string fullPath = input.RawPath ?? "";
                 string[] segments = fullPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
                 string? lastSegment = segments.LastOrDefault();
+                string? subAccountId = segments.Length >= 2 ? segments[^1] : null;
+                string vendorSegment = segments.Length >= 2 ? segments[^2] : (lastSegment ?? "");
 
-
-                vendor = await Utilities.GetVendor(lastSegment ?? "");
+                vendor = await Utilities.GetVendor(vendorSegment);
 
                 if (vendor == null)
                 {

@@ -10,12 +10,11 @@ namespace InsTechClassesV2.Cardknox
     public class CardknoxTransactionReportApiRequest:CardknoxApiRequest
     {
         
-        public async Task<CardknoxTransactionReportResponse> GetCardknoxTransactionReportResponse(Vendor vendor)
+        public async Task<CardknoxTransactionReportResponse> GetCardknoxTransactionReportResponse(Vendor vendor, string subAccountId = null)
         {
-            var response = await base.PostToCardknox(vendor) ;
+            var response = await base.PostToCardknox(vendor, subAccountId);
             string json = await response.Content.ReadAsStringAsync();
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<CardknoxTransactionReportResponse>(json)??new CardknoxTransactionReportResponse();
-
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<CardknoxTransactionReportResponse>(json) ?? new CardknoxTransactionReportResponse();
         }
         public CardknoxTransactionReportApiRequest( string refnum, string key)
         {

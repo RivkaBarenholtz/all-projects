@@ -21,7 +21,8 @@ namespace AmazonUtilities
         public string AccountName { get; set; }
         public int VendorId { get; set; }   
 
-        public string Role { get; set; } = "user"; 
+        public string Role { get; set; } = "user";
+        public string SubAccountId { get; set; }
 
         public string GenerateNewPassword()
         {
