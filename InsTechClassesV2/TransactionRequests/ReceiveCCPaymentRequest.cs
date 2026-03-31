@@ -14,9 +14,10 @@ namespace InsTechClassesV2.TransactionRequests
 
         public string CardNumber { get; set; }
         public string ExpDate { get; set; }
-        public string CVV { get; set; } 
-        
-        
+        public string CVV { get; set; }
+        public string OriginalTransaction { get; set; } = "";
+
+
     }
     public class ReceiveRefundRequest : ReceivePaymentRequest
     {

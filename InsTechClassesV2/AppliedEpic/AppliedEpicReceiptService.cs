@@ -174,7 +174,15 @@ namespace InsTechClassesV2.AppliedEpic
                 {
                     negativeDeposit = "-Debits";
                 }
-                batch = $"{dateTime.AddHours(3).Date.ToString("yyyyMMdd")}-{vendor.CardknoxAccountCode}{negativeDeposit}";
+                string subAccountId = await TransactionsService.GetSubAccountIdAsync(vendor.Id, refNumber);
+                string subAccountSuffix = "";
+                if (!string.IsNullOrEmpty(subAccountId))
+                {
+                    var subAccounts = await CardknoxSubAccount.GetListAsync(vendor.Id);
+                    var subAccount = subAccounts.FirstOrDefault(s => s.Id == subAccountId);
+                    if (subAccount != null) subAccountSuffix = $"-{subAccount.Name}";
+                }
+                batch = $"{dateTime.AddHours(3).Date.ToString("yyyyMMdd")}-{vendor.CardknoxAccountCode}{subAccountSuffix}{negativeDeposit}";
             }
             return batch;
         }

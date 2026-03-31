@@ -14,6 +14,7 @@ namespace InsTechClassesV2
         public string AppliedApiKeySecretName { get; set; }
         public string AppliedApiSecretSecretName { get; set; }
         public string s3BucketName { get; set; }
+        public int CardknoxVendorId { get; set; }
         public string subdomain { get; set; }
         public List<string> defaultEmail { get; set; }
         public string accessTokenSecretName { get; set; }
@@ -53,11 +54,13 @@ namespace InsTechClassesV2
         public List<CardknoxSubAccount> SubAccounts { get; set; }
         public string DefaultSubAccountId { get; set; }
 
-        public string GetCardknoxSecretName(string subAccountId = null)
+        public async Task<string> GetCardknoxSecretName(string subAccountId = null)
         {
             var id = subAccountId ?? DefaultSubAccountId;
-            if (!string.IsNullOrEmpty(id) && SubAccounts?.Count > 0)
+            if (!string.IsNullOrEmpty(id))
             {
+                if (SubAccounts == null || SubAccounts.Count == 0)
+                    SubAccounts = await CardknoxSubAccount.GetListAsync(Id);
                 var sub = SubAccounts.FirstOrDefault(s => s.Id == id);
                 if (sub != null) return sub.CardknoxApiKeySecretName;
             }

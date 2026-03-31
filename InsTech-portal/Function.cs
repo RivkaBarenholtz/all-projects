@@ -1,4 +1,5 @@
 using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.Runtime.Internal;
@@ -218,8 +219,12 @@ public class Function
 
             else if (lastSegment == "make-payment-cardknox")
             {
-                var subAccountId = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
-                var pamntResponse = await MakePaymentService.MakePaymentToCardknox(request.Body, vendor, subAccountId);
+                dynamic payBody = JsonConvert.DeserializeObject<dynamic>(request.Body);
+                string payOriginalRef = (string)payBody?.OriginalTransaction ?? "";
+                string paySubAccountId = !string.IsNullOrEmpty(payOriginalRef)
+                    ? await TransactionsService.GetSubAccountIdAsync(vendor.Id, payOriginalRef)
+                    : user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
+                var pamntResponse = await MakePaymentService.MakePaymentToCardknox(request.Body, vendor, paySubAccountId);
                 response.Body = JsonConvert.SerializeObject(pamntResponse);
                 return response;
             }
@@ -280,30 +285,40 @@ public class Function
             }
             else if (lastSegment == "void-transaction")
             {
-                var subAccountId = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
-                var voidResponse = await MakePaymentService.VoidTransaction(request.Body, vendor, subAccountId);
+                dynamic voidBody = JsonConvert.DeserializeObject<dynamic>(request.Body);
+                string voidRefNum = (string)voidBody?.OriginalTransaction ?? "";
+                string voidSubAccountId = !string.IsNullOrEmpty(voidRefNum)
+                    ? await TransactionsService.GetSubAccountIdAsync(vendor.Id, voidRefNum)
+                    : null;
+                var voidResponse = await MakePaymentService.VoidTransaction(request.Body, vendor, voidSubAccountId);
                 response.Body = await voidResponse.Content.ReadAsStringAsync();
                 return response;
             }
 
             else if (lastSegment == "issue-refund-cardknox")
             {
-                var subAccountId = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
-                var refundResponse = await MakePaymentService.IssueRefund(request.Body, vendor, subAccountId);
+                dynamic refundBody = JsonConvert.DeserializeObject<dynamic>(request.Body);
+                string refundRefNum = (string)refundBody?.OriginalTransaction ?? "";
+                string refundSubAccountId = !string.IsNullOrEmpty(refundRefNum)
+                    ? await TransactionsService.GetSubAccountIdAsync(vendor.Id, refundRefNum)
+                    : null;
+                var refundResponse = await MakePaymentService.IssueRefund(request.Body, vendor, refundSubAccountId);
                 response.Body = await refundResponse.Content.ReadAsStringAsync();
                 return response;
             }
             else if (lastSegment == "list-payment-methods")
             {
                 var paymentMethodListRequest = JsonConvert.DeserializeObject<CardknoxListPaymentMethodApiRequest>(request.Body);
-                var paymentMethodsResponse = await paymentMethodListRequest.PostToCardknox(vendor);
+                string listPmSubAccountId = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
+                var paymentMethodsResponse = await paymentMethodListRequest.PostToCardknox(vendor, listPmSubAccountId);
                 response.Body = await paymentMethodsResponse.Content.ReadAsStringAsync();
                 return response;
             }
             else if (lastSegment == "list-customers")
             {
                 var customerListApiRequest = JsonConvert.DeserializeObject<CardknoxListCustomerApiRequest>(request.Body);
-                var customerResponse = await customerListApiRequest.PostToCardknox(vendor);
+                string listCustomerSubAccountId = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
+                var customerResponse = await customerListApiRequest.PostToCardknox(vendor, listCustomerSubAccountId);
                 response.Body = await customerResponse.Content.ReadAsStringAsync();
                 return response;
             }
@@ -328,14 +343,17 @@ public class Function
             else if (lastSegment == "list-schedules")
             {
                 var scheduleListRequest = JsonConvert.DeserializeObject<ListScheduleApiRequest>(request.Body);
-                var schedulesResponse = await scheduleListRequest.PostToCardknox(vendor);
+                string listScheduleSubAccountId = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
+                var schedulesResponse = await scheduleListRequest.PostToCardknox(vendor, listScheduleSubAccountId);
                 response.Body = await schedulesResponse.Content.ReadAsStringAsync();
                 return response;
             }
             else if (lastSegment == "get-schedule")
             {
                 var scheduleRequest = JsonConvert.DeserializeObject<GetScheduleApiRequest>(request.Body);
-                var schedulesResponse = await scheduleRequest.PostToCardknox(vendor);
+                var getScheduleItem = await AmazonUtilities.DynamoDatabaseTransactions.GetItemByIdAsync(vendor.Id.ToString(), scheduleRequest.ScheduleId, "ScheduleSubAccount");
+                string getScheduleSubAccountId = getScheduleItem?.ContainsKey("SubAccountId") == true ? getScheduleItem["SubAccountId"].S : null;
+                var schedulesResponse = await scheduleRequest.PostToCardknox(vendor, getScheduleSubAccountId);
                 string scheduleResponseStr = await schedulesResponse.Content.ReadAsStringAsync();
                 var scheduleResponseObj = JsonConvert.DeserializeObject<GetScheduleApiResponse>(scheduleResponseStr);
                 if (scheduleResponseObj != null && string.IsNullOrEmpty(scheduleResponseObj.PaymentMethodId))
@@ -359,7 +377,7 @@ public class Function
                         {
                             PaymentMethodId = scheduleResponseObj.PaymentMethodId
                         };
-                        var pymntResponse = await getPaymentMethodRequest.PostToCardknox(vendor);
+                        var pymntResponse = await getPaymentMethodRequest.PostToCardknox(vendor, getScheduleSubAccountId);
                         var pymntResponseStr = await pymntResponse.Content.ReadAsStringAsync();
                         var pymntResponseObj = JsonConvert.DeserializeObject<PaymentMethodApiResponse>(pymntResponseStr);
                         scheduleResponseObj.PaymentMethod = pymntResponseObj;
@@ -373,8 +391,21 @@ public class Function
             else if (lastSegment == "create-customer")
             {
                 var createCustomerRequest = JsonConvert.DeserializeObject<CardknoxNewCustomerApiRequest>(request.Body);
-                var createCustomerResponse = await createCustomerRequest.PostToCardknox(vendor);
-                response.Body = await createCustomerResponse.Content.ReadAsStringAsync();
+                string createCustomerSubAccountId = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
+                var createCustomerResponse = await createCustomerRequest.PostToCardknox(vendor, createCustomerSubAccountId);
+                string createCustomerBody = await createCustomerResponse.Content.ReadAsStringAsync();
+                response.Body = createCustomerBody;
+                var createCustomerJson = JsonConvert.DeserializeObject<JObject>(createCustomerBody);
+                string newCustomerId = createCustomerJson?["CustomerId"]?.ToString();
+                if (!string.IsNullOrEmpty(newCustomerId) && !string.IsNullOrEmpty(createCustomerSubAccountId))
+                {
+                    var mapping = new Dictionary<string, AttributeValue>
+                    {
+                        { "EntityType", new AttributeValue { S = "CustomerSubAccount" } },
+                        { "SubAccountId", new AttributeValue { S = createCustomerSubAccountId } }
+                    };
+                    await AmazonUtilities.DynamoDatabaseTransactions.InsertItemAsync(vendor.Id.ToString(), mapping, newCustomerId, "CustomerSubAccount");
+                }
                 return response;
             }
             else if (lastSegment == "create-new-schedule-cc" || lastSegment == "create-new-schedule-check")
@@ -430,7 +461,8 @@ public class Function
                     };
                 }
                 createScheduleRequest.Subtotal = null;
-                var cardknoxScheduleResponse = await createScheduleRequest.PostToCardknox(vendor);
+                string createScheduleSubAccountId = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
+                var cardknoxScheduleResponse = await createScheduleRequest.PostToCardknox(vendor, createScheduleSubAccountId);
                 // save response to s3 if payment method id is present
                 response.Body = await cardknoxScheduleResponse.Content.ReadAsStringAsync();
                 var respJson = JsonConvert.DeserializeObject<JObject>(response.Body);
@@ -444,6 +476,16 @@ public class Function
                         schedulePayments.Add(new SchedulePaymentMethod(respJson["ScheduleId"].ToString(), respJson["PaymentMethodId"].ToString()));
                         await s3.UpdateFileContentAsync(JsonConvert.SerializeObject(schedulePayments));
                     }
+                }
+                string newScheduleId = respJson?["ScheduleId"]?.ToString();
+                if (!string.IsNullOrEmpty(newScheduleId) && !string.IsNullOrEmpty(createScheduleSubAccountId))
+                {
+                    var scheduleMapping = new Dictionary<string, AttributeValue>
+                    {
+                        { "EntityType", new AttributeValue { S = "ScheduleSubAccount" } },
+                        { "SubAccountId", new AttributeValue { S = createScheduleSubAccountId } }
+                    };
+                    await AmazonUtilities.DynamoDatabaseTransactions.InsertItemAsync(vendor.Id.ToString(), scheduleMapping, newScheduleId, "ScheduleSubAccount");
                 }
                 return response;
             }
@@ -465,8 +507,9 @@ public class Function
                 var req = JsonConvert.DeserializeObject<NewPaymentMethodApiRequest>(request.Body) ?? new NewPaymentMethodApiRequest();
                 req.Token = token;
                 req.TokenType = tokenType;
-
-                var rsp = await req.PostToCardknox(vendor);
+                var pmCustomerItem = await AmazonUtilities.DynamoDatabaseTransactions.GetItemByIdAsync(vendor.Id.ToString(), req.CustomerId, "CustomerSubAccount");
+                string pmSubAccountId = pmCustomerItem?.ContainsKey("SubAccountId") == true ? pmCustomerItem["SubAccountId"].S : null;
+                var rsp = await req.PostToCardknox(vendor, pmSubAccountId);
                 response.Body = await rsp.Content.ReadAsStringAsync();
                 return response;
 
@@ -474,7 +517,10 @@ public class Function
             else if (lastSegment == "delete-payment-method")
             {
                 var req = JsonConvert.DeserializeObject<CardknoxDeletePaymentMethodApiRequest>(request.Body);
-                var rsp = await req.PostToCardknox(vendor);
+                var deletePmCustomerItem = await AmazonUtilities.DynamoDatabaseTransactions.GetItemByIdAsync(vendor.Id.ToString(), req.CustomerId, "CustomerSubAccount");
+                string deletePmSubAccountId = deletePmCustomerItem?.ContainsKey("SubAccountId") == true ? deletePmCustomerItem["SubAccountId"].S : null;
+                req.CustomerId = null; // Cardknox delete payment method endpoint does not accept customer id, so we remove it from the request body and rely on sub account id to identify the customer in Cardknox
+                var rsp = await req.PostToCardknox(vendor, deletePmSubAccountId);
                 response.Body = await rsp.Content.ReadAsStringAsync();
                 return response;
 
@@ -482,7 +528,9 @@ public class Function
             else if (lastSegment == "update-payment-method")
             {
                 var req = JsonConvert.DeserializeObject<UpdatePaymentMethodApiRequest>(request.Body);
-                var rsp = await req.PostToCardknox(vendor);
+                var updatePmCustomerItem = await AmazonUtilities.DynamoDatabaseTransactions.GetItemByIdAsync(vendor.Id.ToString(), req.CustomerId, "CustomerSubAccount");
+                string updatePmSubAccountId = updatePmCustomerItem?.ContainsKey("SubAccountId") == true ? updatePmCustomerItem["SubAccountId"].S : null;
+                var rsp = await req.PostToCardknox(vendor, updatePmSubAccountId);
                 response.Body = await rsp.Content.ReadAsStringAsync();
                 return response;
             }
@@ -490,7 +538,9 @@ public class Function
             {
                 CardknoxListCustomerApiRequest apiRequest = new CardknoxListCustomerApiRequest();
                 apiRequest.Filters = JsonConvert.DeserializeObject<CustomerFilters>(request.Body) ?? new();
-                var cardknoxResponse = await apiRequest.PostToCardknox(vendor);
+                var getCardknoxCustomerItem = await AmazonUtilities.DynamoDatabaseTransactions.GetItemByIdAsync(vendor.Id.ToString(), apiRequest.Filters.CustomerId, "CustomerSubAccount");
+                string getCardknoxCustomersSubAccountId = getCardknoxCustomerItem?.ContainsKey("SubAccountId") == true ? getCardknoxCustomerItem["SubAccountId"].S : null;
+                var cardknoxResponse = await apiRequest.PostToCardknox(vendor, getCardknoxCustomersSubAccountId);
                 response.Body = await cardknoxResponse.Content.ReadAsStringAsync();
                 return response;
 
@@ -510,21 +560,27 @@ public class Function
             else if (lastSegment == "delete-schedule")
             {
                 var req = JsonConvert.DeserializeObject<DeleteScheduleApiRequest>(request.Body);
-                var rsp = await req.PostToCardknox(vendor);
+                var deleteScheduleItem = await AmazonUtilities.DynamoDatabaseTransactions.GetItemByIdAsync(vendor.Id.ToString(), req.ScheduleId, "ScheduleSubAccount");
+                string deleteScheduleSubAccountId = deleteScheduleItem?.ContainsKey("SubAccountId") == true ? deleteScheduleItem["SubAccountId"].S : null;
+                var rsp = await req.PostToCardknox(vendor, deleteScheduleSubAccountId);
                 response.Body = await rsp.Content.ReadAsStringAsync();
                 return response;
             }
             else if (lastSegment == "enable-schedule")
             {
                 var req = JsonConvert.DeserializeObject<EnableScheduleApiRequest>(request.Body);
-                var rsp = await req.PostToCardknox(vendor);
+                var enableScheduleItem = await AmazonUtilities.DynamoDatabaseTransactions.GetItemByIdAsync(vendor.Id.ToString(), req.ScheduleId, "ScheduleSubAccount");
+                string enableScheduleSubAccountId = enableScheduleItem?.ContainsKey("SubAccountId") == true ? enableScheduleItem["SubAccountId"].S : null;
+                var rsp = await req.PostToCardknox(vendor, enableScheduleSubAccountId);
                 response.Body = await rsp.Content.ReadAsStringAsync();
                 return response;
             }
             else if (lastSegment == "disable-schedule")
             {
                 var req = JsonConvert.DeserializeObject<StopScheduleApiRequest>(request.Body);
-                var rsp = await req.PostToCardknox(vendor);
+                var disableScheduleItem = await AmazonUtilities.DynamoDatabaseTransactions.GetItemByIdAsync(vendor.Id.ToString(), req.ScheduleId, "ScheduleSubAccount");
+                string disableScheduleSubAccountId = disableScheduleItem?.ContainsKey("SubAccountId") == true ? disableScheduleItem["SubAccountId"].S : null;
+                var rsp = await req.PostToCardknox(vendor, disableScheduleSubAccountId);
                 response.Body = await rsp.Content.ReadAsStringAsync();
                 return response;
             }
@@ -537,13 +593,17 @@ public class Function
             else if (lastSegment == "update-customer")
             {
                 var createCustomerRequest = JsonConvert.DeserializeObject<CardknoxUpdateCustomerApiRequest>(request.Body);
-                var createCustomerResponse = await createCustomerRequest.PostToCardknox(vendor);
+                var updateCustomerItem = await AmazonUtilities.DynamoDatabaseTransactions.GetItemByIdAsync(vendor.Id.ToString(), createCustomerRequest.CustomerId, "CustomerSubAccount");
+                string updateCustomerSubAccountId = updateCustomerItem?.ContainsKey("SubAccountId") == true ? updateCustomerItem["SubAccountId"].S : null;
+                var createCustomerResponse = await createCustomerRequest.PostToCardknox(vendor, updateCustomerSubAccountId);
                 response.Body = await createCustomerResponse.Content.ReadAsStringAsync();
                 return response;
             }
             else if (lastSegment == "update-schedule")
             {
                 var createCustomerRequest = JsonConvert.DeserializeObject<CardknoxUpdateScheduleRequest>(request.Body);
+                var updateScheduleItem = await AmazonUtilities.DynamoDatabaseTransactions.GetItemByIdAsync(vendor.Id.ToString(), createCustomerRequest.ScheduleId, "ScheduleSubAccount");
+                string updateScheduleSubAccountId = updateScheduleItem?.ContainsKey("SubAccountId") == true ? updateScheduleItem["SubAccountId"].S : null;
                 createCustomerRequest.CustomerId = null;
                 createCustomerRequest.IntervalType = null;
                 createCustomerRequest.PaymentsProcessed = null;
@@ -551,7 +611,7 @@ public class Function
                 createCustomerRequest.AllowInitialTransactionToDecline = null;
                 createCustomerRequest.CreatedDate = null;
                 createCustomerRequest.CustomerNumber = null;
-                var createCustomerResponse = await createCustomerRequest.PostToCardknox(vendor);
+                var createCustomerResponse = await createCustomerRequest.PostToCardknox(vendor, updateScheduleSubAccountId);
                 response.Body = await createCustomerResponse.Content.ReadAsStringAsync();
                 return response;
             }
@@ -744,6 +804,114 @@ public class Function
                 var req = JsonConvert.DeserializeObject<MakePaymentMethodDefaultRequest>(request.Body);
                 var rsp = await MakePaymentService.SaveDefaultPaymentMethod(req.Token, req.AccountId, vendor);
                 response.Body = JsonConvert.SerializeObject(rsp);
+                return response;
+            }
+            else if (lastSegment == "get-subaccounts")
+            {
+                var subAccounts = await CardknoxSubAccount.GetListAsync(vendor.Id);
+                response.Body = JsonConvert.SerializeObject(subAccounts);
+                return response;
+            }
+            else if (lastSegment == "create-subaccount")
+            {
+                if (user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Role == "admin")
+                {
+                    var subAccount = JsonConvert.DeserializeObject<CardknoxSubAccount>(request.Body);
+                    dynamic body = JsonConvert.DeserializeObject<dynamic>(request.Body);
+                    string apiKey = (string)body?.CardknoxApiKey ?? "";
+                    subAccount.Id = Guid.NewGuid().ToString("N");
+                    if (!string.IsNullOrEmpty(apiKey))
+                    {
+                        string secretName = $"instech/{vendor.Id}/subaccount/{subAccount.Id}";
+                        await AmazonUtilities.SecretManager.CreateSecret(secretName, apiKey);
+                        subAccount.CardknoxApiKeySecretName = secretName;
+                    }
+                    await subAccount.SaveAsync(vendor.Id);
+                    response.Body = JsonConvert.SerializeObject(new { message = "Success", id = subAccount.Id });
+                }
+                else
+                {
+                    response.StatusCode = 403;
+                    response.Body = JsonConvert.SerializeObject(new { message = "Forbidden: admin only" });
+                }
+                return response;
+            }
+            else if (lastSegment == "update-subaccount")
+            {
+                if (user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Role == "admin")
+                {
+                    var subAccount = JsonConvert.DeserializeObject<CardknoxSubAccount>(request.Body);
+                    dynamic body = JsonConvert.DeserializeObject<dynamic>(request.Body);
+                    string apiKey = (string)body?.CardknoxApiKey ?? "";
+                    if (string.IsNullOrEmpty(subAccount.Id))
+                    {
+                        if (!string.IsNullOrEmpty(apiKey))
+                        {
+                            var existing = await AmazonUtilities.SecretManager.GetSecret(vendor.CardknoxApiKeySecretName);
+                            if (string.IsNullOrEmpty(existing))
+                                await AmazonUtilities.SecretManager.CreateSecret(vendor.CardknoxApiKeySecretName, apiKey);
+                            else
+                                await AmazonUtilities.SecretManager.UpdateSecret(vendor.CardknoxApiKeySecretName, apiKey);
+                        }
+                        response.Body = JsonConvert.SerializeObject(new { message = "Success", id = "" });
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(apiKey))
+                        {
+                            string secretName = $"instech/{vendor.Id}/subaccount/{subAccount.Id}";
+                            var existing = await AmazonUtilities.SecretManager.GetSecret(secretName);
+                            if (string.IsNullOrEmpty(existing))
+                                await AmazonUtilities.SecretManager.CreateSecret(secretName, apiKey);
+                            else
+                                await AmazonUtilities.SecretManager.UpdateSecret(secretName, apiKey);
+                            subAccount.CardknoxApiKeySecretName = secretName;
+                        }
+                        await subAccount.SaveAsync(vendor.Id);
+                        response.Body = JsonConvert.SerializeObject(new { message = "Success", id = subAccount.Id });
+                    }
+                }
+                else
+                {
+                    response.StatusCode = 403;
+                    response.Body = JsonConvert.SerializeObject(new { message = "Forbidden: admin only" });
+                }
+                return response;
+            }
+            else if (lastSegment == "get-email-assignments")
+            {
+                var assignments = await CsrSubAccountMapping.GetListAsync(vendor.Id);
+                response.Body = JsonConvert.SerializeObject(assignments);
+                return response;
+            }
+            else if (lastSegment == "save-email-assignment")
+            {
+                if (user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Role == "admin")
+                {
+                    var assignment = JsonConvert.DeserializeObject<CsrSubAccountMapping>(request.Body);
+                    await assignment.Save(vendor.Id);
+                    response.Body = JsonConvert.SerializeObject(new { message = "Success", id = assignment.Id });
+                }
+                else
+                {
+                    response.StatusCode = 403;
+                    response.Body = JsonConvert.SerializeObject(new { message = "Forbidden: admin only" });
+                }
+                return response;
+            }
+            else if (lastSegment == "delete-email-assignment")
+            {
+                if (user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Role == "admin")
+                {
+                    var assignment = JsonConvert.DeserializeObject<CsrSubAccountMapping>(request.Body);
+                    await assignment.Delete(vendor.Id);
+                    response.Body = JsonConvert.SerializeObject(new { message = "Success" });
+                }
+                else
+                {
+                    response.StatusCode = 403;
+                    response.Body = JsonConvert.SerializeObject(new { message = "Forbidden: admin only" });
+                }
                 return response;
             }
             return response;

@@ -13,6 +13,7 @@ import Customers from "./Customers";
 import PaymentForm from "./PaymentPage/PaymentForm";
 import ThankYouPage from "./PaymentPage/ThankYouPage";
 import { Settings } from "./Settings";
+import { Users } from "./Users";
 import SSO from "./SSO";
 
 /* ---------- Context-based layout ---------- */
@@ -50,6 +51,7 @@ function ContextLayout({ isAuthenticated, setIsAuthenticated }) {
           </>
 }
           <Route path="settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+          <Route path="users" element={<PrivateRoute><Users /></PrivateRoute>} />
 
           <Route path="*" element={<PrivateRoute><Transactions user={user} /></PrivateRoute>} />
         </Routes>

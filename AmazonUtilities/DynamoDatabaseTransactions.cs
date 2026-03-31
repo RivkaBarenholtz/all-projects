@@ -71,7 +71,7 @@ namespace AmazonUtilities
 
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
-                    [":pk"] = new AttributeValue { S = GetPK(pk) },
+                    [":pk"] = new AttributeValue { S = pk },
                     [":sk"] = new AttributeValue { S = sk }
                 }
             };
@@ -405,6 +405,24 @@ namespace AmazonUtilities
                             }
             return filteredList;
         }
+        public static async Task DeleteItemAsync(string vendorId, string id, string objectType)
+        {
+            string pk = GetPK(vendorId);
+            string sk = $"{objectType}#{id}";
+
+            var request = new DeleteItemRequest
+            {
+                TableName = tableName,
+                Key = new Dictionary<string, AttributeValue>
+                {
+                    { "PK", new AttributeValue { S = pk } },
+                    { "SK", new AttributeValue { S = sk } }
+                }
+            };
+
+            await client.DeleteItemAsync(request);
+        }
+
         public static async Task BulkInsertAsync( List<Dictionary<string, AttributeValue>> items)
         {
             const int batchSize = 25;

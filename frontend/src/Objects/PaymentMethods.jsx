@@ -137,7 +137,8 @@ export const PaymentMethods =({CustomerId, defaultMethodId})=> {
 
     const DeletePaymentMehtod = async()=>{
         const req = {
-            PaymentMethodId: selectedMethod.PaymentMethodId
+            PaymentMethodId: selectedMethod.PaymentMethodId,
+            CustomerId: CustomerId
         }
         var rsp = await fetchWithAuth ("delete-payment-method", req);
         if (rsp.Error == "")

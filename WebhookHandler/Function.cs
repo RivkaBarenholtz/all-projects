@@ -39,9 +39,10 @@ namespace WebhookHandler
 
                 string fullPath = input.RawPath ?? "";
                 string[] segments = fullPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-                string? lastSegment = segments.LastOrDefault();
-                string? subAccountId = segments.Length >= 2 ? segments[^1] : null;
-                string vendorSegment = segments.Length >= 2 ? segments[^2] : (lastSegment ?? "");
+                int postSqsIndex = Array.IndexOf(segments, "post-sqs-event");
+                string[] afterBase = postSqsIndex >= 0 ? segments.Skip(postSqsIndex + 1).ToArray() : segments;
+                string vendorSegment = afterBase.Length >= 1 ? afterBase[0] : "";
+                string? subAccountId = afterBase.Length >= 2 ? afterBase[1] : null;
 
                 vendor = await Utilities.GetVendor(vendorSegment);
 

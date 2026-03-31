@@ -14,7 +14,8 @@ namespace InsTechClassesV2.Cardknox
     {
         public async Task<HttpResponseMessage> PostToCardknox(Vendor vendor, string subAccountId = null)
         {
-            this.xKey = await SecretManager.GetSecret(vendor.GetCardknoxSecretName(subAccountId));
+            this.xKey = await SecretManager.GetSecret(await vendor.GetCardknoxSecretName(subAccountId));
+            this.xVendorId = vendor.CardknoxVendorId; 
             //if (vendor.IsInstructional) this.xKey = "ifmerchatest3f02d6c3925944798466adca90a4c77d";
             var response = await ApiClient.CallApiAsync($"https://x1.cardknox.com/{path}", HttpMethod.Post, new Dictionary<string, string>(), this, null, new Dictionary<string, string>());
             return response;
@@ -23,6 +24,8 @@ namespace InsTechClassesV2.Cardknox
         public string xSoftwareName { get; set; } = "Insure-Tech";
         public string xSoftwareVersion { get; set; } = "1.0.0.0";
         public string xVersion { get; set; } = "5.0.0";
+
+        public int xVendorId { get; set; }
 
         protected abstract string path { get; set; }
 

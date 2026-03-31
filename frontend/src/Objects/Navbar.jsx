@@ -93,8 +93,11 @@ const Navbar = ({setTitle, open, setOpen, user, setUser}) => {
           )}
           <NavBarLink path="/dashboard" label="Dashboard" />
 
-          { (user?.Role?.toLowerCase() === "admin" ) && (
-            <NavBarLink path="/settings" label="Users" />
+          {user?.Role?.toLowerCase() === "admin" && (
+            <>
+              <NavBarLink path="/users" label="Users" />
+              <NavBarLink path="/settings" label="Settings" />
+            </>
           )}
         </ul>
       </nav>

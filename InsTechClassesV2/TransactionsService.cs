@@ -362,9 +362,15 @@ namespace InsTechClassesV2
             await AmazonUtilities.DynamoDatabaseTransactions.InsertItemAsync(vendor.Id.ToString(), NewOrUpdatedTransaction, transaction.RefNumber, EntityName);
             
         }
+        public static async Task<string> GetSubAccountIdAsync(int vendorId, string refNumber)
+        {
+            var item = await AmazonUtilities.DynamoDatabaseTransactions.GetItemByIdAsync(vendorId.ToString(), refNumber, EntityName);
+            return item?.ContainsKey("SubAccountId") == true ? item["SubAccountId"].S : null;
+        }
+
         public static async Task SaveTransaction(string refNumber, Vendor vendor, string subAccountId = null)
         {
-            string key = await SecretManager.GetSecret(vendor.GetCardknoxSecretName(subAccountId));
+            string key = await SecretManager.GetSecret(await vendor.GetCardknoxSecretName(subAccountId));
 
             var cardknox = await new CardknoxTransactionReportApiRequest(refNumber, key).GetCardknoxTransactionReportResponse(vendor, subAccountId);
             var transaction = cardknox.ReportData[0];

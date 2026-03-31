@@ -61,7 +61,7 @@ namespace InsTechClassesV2
         public async static Task<List<Vendor>?> GetVendorListAsync()
         {
       
-            List<Vendor>? vendors =await DynamoDatabaseTransactions.GetItemsInJsonAsync<Vendor>("VENDOR#INS", "VENODR#");
+            List<Vendor>? vendors =await DynamoDatabaseTransactions.GetEntityItemsFromDynamoAsync<Vendor>("VENDOR#INS", "VENDOR#");
             return vendors;
 
         }

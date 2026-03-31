@@ -12,9 +12,9 @@ namespace InsTechClassesV2.Cardknox
 {
     public abstract class CardknoxSchedule
     {
-        public async Task<HttpResponseMessage> PostToCardknox(Vendor vendor)
+        public async Task<HttpResponseMessage> PostToCardknox(Vendor vendor, string subaccountId )
         {
-            var Key = await SecretManager.GetSecret(vendor.CardknoxApiKeySecretName);
+            var Key = await SecretManager.GetSecret(await vendor.GetCardknoxSecretName(subaccountId));
             //if (vendor.IsInstructional) Key = "ifmerchatest3f02d6c3925944798466adca90a4c77d";
 
             var response = await ApiClient.CallApiAsync($"https://api.cardknox.com/v2/{path}", HttpMethod.Post, new Dictionary<string, string>(), this, null, new Dictionary<string, string>() { { "Authorization", Key }, { "X-Recurring-Api-Version", "2.1" } });
@@ -163,6 +163,8 @@ namespace InsTechClassesV2.Cardknox
     public class CardknoxDeletePaymentMethodApiRequest : CardknoxSchedule
     {
         protected override string path { get; set; } = "DeletePaymentMethod";
+
+        public string CustomerId { get; set; }  
         public string PaymentMethodId { get; set; }
     }
     public class CardknoxListPaymentMethodApiRequest : CardknoxSchedule

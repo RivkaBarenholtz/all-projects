@@ -8,7 +8,6 @@ namespace InsTechClassesV2
         public string Id { get; set; }
         public string Name { get; set; }
         public string CardknoxApiKeySecretName { get; set; }
-
         public static async Task<List<CardknoxSubAccount>> GetListAsync(int vendorId)
         {
             var items = await DynamoDatabaseTransactions.GetAllItemsByEntity(vendorId.ToString(), "SubAccount");
@@ -16,7 +15,7 @@ namespace InsTechClassesV2
             {
                 Id = item.ContainsKey("SubAccountId") ? item["SubAccountId"].S : "",
                 Name = item.ContainsKey("Name") ? item["Name"].S : "",
-                CardknoxApiKeySecretName = item.ContainsKey("CardknoxApiKeySecretName") ? item["CardknoxApiKeySecretName"].S : ""
+                CardknoxApiKeySecretName = item.ContainsKey("CardknoxApiKeySecretName") ? item["CardknoxApiKeySecretName"].S : "",
             }).ToList();
         }
 
