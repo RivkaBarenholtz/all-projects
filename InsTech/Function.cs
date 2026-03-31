@@ -157,7 +157,7 @@ public class Function
             { 
                 debitCredit = DebitCredit.Credit;
             }
-            else if ((xCommand.ToLower() == "check:adjust" && xStatus == "14")|| xCommand.ToLower() == "cc:void" || xCommand.ToLower() ==  "cc:voidrelease")
+            else if ((xCommand.ToLower() == "check:adjust" && xStatus == "14")|| xCommand.ToLower() == "cc:void" || xCommand.ToLower() ==  "cc:voidrelease" || xCommand.ToLower()== "cc:voidrefund")
             {
                 string key = await SecretManager.GetSecret(vendor.CardknoxApiKeySecretName);
                 var cardknox = await new CardknoxTransactionReportApiRequest(xRefNum, key).GetCardknoxTransactionReportResponse(vendor);
