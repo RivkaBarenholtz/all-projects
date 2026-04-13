@@ -6,6 +6,7 @@ import PaymentTabs from "./PaymentPage/PaymentTabs";
 import { CustomerInfo } from "./Objects/CustomerInfo";
 import { SchedulingInfo } from "./Objects/SchedulingInfo";
 import { fetchWithAuth } from "./Utilities";
+import { getUserInfo, getSubAccounts } from "./Services/api";
 
 
 export default function NewSchedule ({CloseNewSchedule, OnSuccess})
@@ -79,8 +80,26 @@ export default function NewSchedule ({CloseNewSchedule, OnSuccess})
     const [expYear, setExpYear] = useState('');
     
 
-    //General 
+    //General
     const [submitPressed , setSubmitPressed ] = useState(false);
+    const [subAccounts, setSubAccounts] = useState([]);
+    const [selectedSubAccountId, setSelectedSubAccountId] = useState("");
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+      async function fetchData() {
+        const [userInfo, accounts] = await Promise.all([getUserInfo(), getSubAccounts()]);
+        const vendor = localStorage.getItem("currentVendor");
+        const currentUser = userInfo?.find(u => u.VendorId == vendor);
+        if (currentUser?.Role?.toLowerCase() === "admin" && accounts.length > 1) {
+          setIsAdmin(true);
+          setSubAccounts(accounts);
+          const globalAccount = accounts.find(a => a._isGlobalAccount);
+          setSelectedSubAccountId(globalAccount?.Id ?? "");
+        }
+      }
+      fetchData();
+    }, []);
 
     
     
@@ -106,20 +125,20 @@ export default function NewSchedule ({CloseNewSchedule, OnSuccess})
             TokenType : formData.isCheck? "Check": "CC"
         }
         let  NewSchedule = {
-            NewCustomer: NewCustomer, 
-            NewPaymentMethod: NewPaymentMethod, 
-            IntervalType: formData.frequency, 
-            Amount : formData.includeFee && !formData.isCheck ? Number(formData.amount) + (formData.amount * formData.transferFee/100).toFixed(2) : formData.amount, 
-            Description:formData.description, 
-            Invoice:formData.invoice , 
-            ScheduleName: formData.scheduleName, 
-            IntervalCount:formData.frequencyNum, 
-            FailedTransactionRetryTimes: formData.retryAttempts, 
+            NewCustomer: NewCustomer,
+            NewPaymentMethod: NewPaymentMethod,
+            IntervalType: formData.frequency,
+            Amount : formData.includeFee && !formData.isCheck ? Number(formData.amount) + (formData.amount * formData.transferFee/100).toFixed(2) : formData.amount,
+            Description:formData.description,
+            Invoice:formData.invoice ,
+            ScheduleName: formData.scheduleName,
+            IntervalCount:formData.frequencyNum,
+            FailedTransactionRetryTimes: formData.retryAttempts,
             DaysBetweenRetries: formData.retryDays,
             SkipSaturdayAndHolidays:formData.skipDays,
-            StartDate: formData.startDate, 
-           
-            AfterMaxRetriesAction: formData.afterFail
+            StartDate: formData.startDate,
+            AfterMaxRetriesAction: formData.afterFail,
+            ...(isAdmin && selectedSubAccountId !== undefined ? { SubAccountId: selectedSubAccountId } : {})
         }
         if (formData.endOption == "NumberOfPayments")
         {
@@ -232,7 +251,20 @@ export default function NewSchedule ({CloseNewSchedule, OnSuccess})
     //     }
     // }
     return <ConfirmationModal confirmButtonText={"Save"} onConfirm={CreateSchedule}  onClose={CloseNewSchedule}>
-        
+        {isAdmin && subAccounts.length > 1 && (
+          <div className="form-group">
+            <label>Sub-Account</label>
+            <select
+              className="form-input"
+              value={selectedSubAccountId}
+              onChange={e => setSelectedSubAccountId(e.target.value)}
+            >
+              {subAccounts.map(sa => (
+                <option key={sa.Id || "default"} value={sa.Id}>{sa.Name}</option>
+              ))}
+            </select>
+          </div>
+        )}
         <CustomerInfo
             firstName={firstName} setFirstName={setFirstName}
             lastName={lastName} setLastName={setLastName}

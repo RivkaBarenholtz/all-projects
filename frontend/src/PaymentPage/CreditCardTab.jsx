@@ -39,7 +39,8 @@ export const CreditCardTab = (
         isPortal,
         onFinish,
         onError,
-        showProcess = true
+        showProcess = true,
+        subAccountId
     }) => {
 
 
@@ -160,7 +161,8 @@ export const CreditCardTab = (
             CSREmail: csrEmail,
             CaptchaToken: captchaToken,
             Software: isPortal ? "Instech-Pay-Portal" : "Instech-Payment-Site",
-            isDevelopment: import.meta.env.VITE_ENV === 'development'
+            isDevelopment: import.meta.env.VITE_ENV === 'development',
+            ...(subAccountId !== undefined ? { SubAccountId: subAccountId } : {})
         };
        
         const clientid =

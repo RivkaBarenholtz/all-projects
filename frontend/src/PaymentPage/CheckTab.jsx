@@ -27,11 +27,12 @@ export const CheckTab = (
         phone, 
         email, 
         zip, 
-        isPortal, 
+        isPortal,
         onFinish,
-        onError, 
+        onError,
         ifieldsKey,
-        showProcess = true  
+        showProcess = true,
+        subAccountId
     }) => {
     const [accountName, setAccountName] = useState('');
     const [checkToken, setCheckToken] = useState('');
@@ -99,7 +100,8 @@ export const CheckTab = (
             CSREmail: csrEmail,
             CaptchaToken: captchaToken,
             Software: isPortal ? "Instech-Pay-Portal" : "Instech-Payment-Site",
-            isDevelopment: import.meta.env.VITE_ENV === 'development'
+            isDevelopment: import.meta.env.VITE_ENV === 'development',
+            ...(subAccountId !== undefined ? { SubAccountId: subAccountId } : {})
         };
          const clientid =
             (context ?? "app") === "app"

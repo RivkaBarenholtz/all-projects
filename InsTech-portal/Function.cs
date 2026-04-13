@@ -211,7 +211,12 @@ public class Function
             }
             else if (lastSegment == "make-check-payment-to-cardknox")
             {
-                var subAccountId = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
+                dynamic checkPayDynamic = JsonConvert.DeserializeObject<dynamic>(request.Body);
+                string checkPayBodySubAccountId = (string)checkPayDynamic?.SubAccountId;
+                bool checkPayIsAdmin = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Role == "admin";
+                var subAccountId = checkPayIsAdmin && !string.IsNullOrEmpty(checkPayBodySubAccountId)
+                    ? checkPayBodySubAccountId
+                    : user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
                 var cardknoxResponse = await MakePaymentService.MakeCheckPaymentToCardknox(request.Body, vendor, true, subAccountId);
                 response.Body = JsonConvert.SerializeObject(cardknoxResponse);
                 return response;
@@ -221,9 +226,13 @@ public class Function
             {
                 dynamic payBody = JsonConvert.DeserializeObject<dynamic>(request.Body);
                 string payOriginalRef = (string)payBody?.OriginalTransaction ?? "";
+                string payBodySubAccountId = (string)payBody?.SubAccountId;
+                bool payIsAdmin = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Role == "admin";
                 string paySubAccountId = !string.IsNullOrEmpty(payOriginalRef)
                     ? await TransactionsService.GetSubAccountIdAsync(vendor.Id, payOriginalRef)
-                    : user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
+                    : payIsAdmin && !string.IsNullOrEmpty(payBodySubAccountId)
+                        ? payBodySubAccountId
+                        : user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
                 var pamntResponse = await MakePaymentService.MakePaymentToCardknox(request.Body, vendor, paySubAccountId);
                 response.Body = JsonConvert.SerializeObject(pamntResponse);
                 return response;
@@ -391,7 +400,12 @@ public class Function
             else if (lastSegment == "create-customer")
             {
                 var createCustomerRequest = JsonConvert.DeserializeObject<CardknoxNewCustomerApiRequest>(request.Body);
-                string createCustomerSubAccountId = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
+                dynamic createCustDynamic = JsonConvert.DeserializeObject<dynamic>(request.Body);
+                string createCustBodySubAccountId = (string)createCustDynamic?.SubAccountId;
+                bool createCustIsAdmin = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Role == "admin";
+                string createCustomerSubAccountId = createCustIsAdmin && !string.IsNullOrEmpty(createCustBodySubAccountId)
+                    ? createCustBodySubAccountId
+                    : user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
                 var createCustomerResponse = await createCustomerRequest.PostToCardknox(vendor, createCustomerSubAccountId);
                 string createCustomerBody = await createCustomerResponse.Content.ReadAsStringAsync();
                 response.Body = createCustomerBody;
@@ -461,7 +475,12 @@ public class Function
                     };
                 }
                 createScheduleRequest.Subtotal = null;
-                string createScheduleSubAccountId = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
+                dynamic schedDynamic = JsonConvert.DeserializeObject<dynamic>(request.Body);
+                string schedBodySubAccountId = (string)schedDynamic?.SubAccountId;
+                bool schedIsAdmin = user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.Role == "admin";
+                string createScheduleSubAccountId = schedIsAdmin && !string.IsNullOrEmpty(schedBodySubAccountId)
+                    ? schedBodySubAccountId
+                    : user?.FirstOrDefault(u => u.VendorId == vendor.Id)?.SubAccountId;
                 var cardknoxScheduleResponse = await createScheduleRequest.PostToCardknox(vendor, createScheduleSubAccountId);
                 // save response to s3 if payment method id is present
                 response.Body = await cardknoxScheduleResponse.Content.ReadAsStringAsync();

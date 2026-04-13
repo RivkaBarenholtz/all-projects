@@ -2,6 +2,7 @@ import React, { use, useRef, useState, useEffect } from 'react';
 import { useMediaQuery } from 'react-responsive';
 import { FormatCurrency, BaseUrl, fetchWithAuth } from '../Utilities';
 import { useSearchParams, useParams } from 'react-router-dom';
+import { getUserInfo, getSubAccounts } from '../Services/api';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
@@ -91,6 +92,9 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const [refNum, setRefNum] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [message , setMessage] = useState("");
+  const [subAccounts, setSubAccounts] = useState([]);
+  const [selectedSubAccountId, setSelectedSubAccountId] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
 
   const setEverythingFocused = () => {
@@ -225,7 +229,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         isPortal={isPortal}
         onFinish={onSuccess}
         onError={onError}
-
+        subAccountId={isAdmin ? selectedSubAccountId : undefined}
       />,
     "eCheck":
       <CheckTab
@@ -247,6 +251,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         onFinish={onSuccess}
         onError={onError}
         ifieldsKey={vendor.CardknoxIFeildsKey}
+        subAccountId={isAdmin ? selectedSubAccountId : undefined}
       />,
     ...(vendor.BankInfo && !isPortal &&  {
       "Wire Funds":
@@ -320,6 +325,22 @@ export default function PaymentForm({ isPortal, onSuccess }) {
     fetchData();
 
   }, [])
+
+  useEffect(() => {
+    if (!isPortal) return;
+    async function fetchAdminData() {
+      const [userInfo, accounts] = await Promise.all([getUserInfo(), getSubAccounts()]);
+      const vendor = localStorage.getItem("currentVendor");
+      const currentUser = userInfo?.find(u => u.VendorId == vendor);
+      if (currentUser?.Role?.toLowerCase() === "admin" && accounts.length > 1) {
+        setIsAdmin(true);
+        setSubAccounts(accounts);
+        const globalAccount = accounts.find(a => a._isGlobalAccount);
+        setSelectedSubAccountId(globalAccount?.Id ?? "");
+      }
+    }
+    fetchAdminData();
+  }, [isPortal]);
 
   useEffect(() => {
 
@@ -578,6 +599,21 @@ export default function PaymentForm({ isPortal, onSuccess }) {
                 </h3>
               </div>
               <div >
+
+                {isAdmin && subAccounts.length > 1 && (
+                  <div className="form-group">
+                    <label className="form-label">Sub-Account</label>
+                    <select
+                      className="form-input"
+                      value={selectedSubAccountId}
+                      onChange={e => setSelectedSubAccountId(e.target.value)}
+                    >
+                      {subAccounts.map(sa => (
+                        <option key={sa.Id || "default"} value={sa.Id}>{sa.Name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div className="form-group">
                   <label htmlFor="cardholder-name" className="form-label">Account ID:</label>

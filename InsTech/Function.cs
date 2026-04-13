@@ -53,9 +53,11 @@ public class Function
 
             string fullPath = input.RawPath ?? "";
             string[] segments = fullPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            string? lastSegment = segments.LastOrDefault();
-            string? subAccountId = segments.Length >= 2 ? segments[^1] : null;
-            string vendorSegment = segments.Length >= 2 ? segments[^2] : (lastSegment ?? "");
+            int postSqsIndex = Array.IndexOf(segments, "post-sqs-event");
+            string[] afterBase = postSqsIndex >= 0 ? segments.Skip(postSqsIndex + 1).ToArray() : segments;
+            string vendorSegment = afterBase.Length >= 1 ? afterBase[0] : "";
+            string? subAccountId = afterBase.Length >= 2 ? afterBase[1] : null;
+
 
             vendor = await Utilities.GetVendor(vendorSegment);
            
@@ -96,6 +98,9 @@ public class Function
                 fundedAmount = Math.Round(xAmount - (xAmount * vendor.CardknoxFeePercentage), 2);
             }
            
+            string? xSurchargeStr = queryParams["xCustom09"];
+            decimal xSurcharge = decimal.TryParse(xSurchargeStr, out decimal parsedSurcharge) ? parsedSurcharge : 0m;
+
             string? xSubtotalStr = queryParams["xCustom10"];
             decimal xSubtotal = decimal.TryParse(xSubtotalStr, out decimal parsedSubtotal) ? parsedSubtotal : 0m;
 
@@ -145,6 +150,23 @@ public class Function
 
             Console.Write($"CSR Lookup Code: {xCSRLookupCode}");
             Console.Write($"CSR Email Address: {xEmail}");
+
+            string[] ccSaleCommands = ["cc:sale", "cc:capture", "cc:splitcapture"];
+            if (ccSaleCommands.Contains(xCommand.ToLower()) && xResponseResult.ToUpper() == "APPROVED" && xSurcharge == 0)
+            {
+                var noSurchargeEmail = new SimpleEmail(
+                    new List<string>() { "support@instech360.com" },
+                    $"Warning: CC transaction without surcharge — {vendor.Name}",
+                    $"A credit card transaction was approved without a surcharge.{Environment.NewLine}" +
+                    $"Vendor: {vendor.Name}{Environment.NewLine}" +
+                    $"Ref #: {xRefNum}{Environment.NewLine}" +
+                    $"Amount: {xAmount}{Environment.NewLine}" +
+                    $"Account: {xBillLastName}{Environment.NewLine}" +
+                    $"Command: {xCommand}",
+                    new List<string>() { "support@instech360.com" }
+                );
+                await noSurchargeEmail.Send();
+            }
 
             string[] creditCommandArray = ["cc:sale", "cc:capture", "cc:splitcapture", "check:sale"];
             string[] debitCommandArray  = ["cc:credit", "cc:refund", "cc:voidrefund", "check:void", "check:refund", "check:voidrefund"];

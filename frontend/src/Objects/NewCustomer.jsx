@@ -1,7 +1,8 @@
-import { useState, forwardRef, useImperativeHandle } from "react";
+import { useState, forwardRef, useImperativeHandle, useEffect } from "react";
 import { ConfirmationModal } from "./ConfimationModal";
 import { CustomerInfo } from "./CustomerInfo";
 import { fetchWithAuth } from "../Utilities";
+import { getUserInfo, getSubAccounts } from "../Services/api";
 
 export const NewCustomer = forwardRef(
   ({ Close, OnSuccess, isEdit, customerID , customer }, ref) => {
@@ -22,6 +23,25 @@ export const NewCustomer = forwardRef(
     const [email, setEmail] = useState(customer?.Email??"");
 
     const [submitPressed, setSubmitPressed] = useState(false);
+    const [subAccounts, setSubAccounts] = useState([]);
+    const [selectedSubAccountId, setSelectedSubAccountId] = useState("");
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+      if (isEdit) return;
+      async function fetchData() {
+        const [userInfo, accounts] = await Promise.all([getUserInfo(), getSubAccounts()]);
+        const vendor = localStorage.getItem("currentVendor");
+        const currentUser = userInfo?.find(u => u.VendorId == vendor);
+        if (currentUser?.Role?.toLowerCase() === "admin" && accounts.length > 1) {
+          setIsAdmin(true);
+          setSubAccounts(accounts);
+          const globalAccount = accounts.find(a => a._isGlobalAccount);
+          setSelectedSubAccountId(globalAccount?.Id ?? "");
+        }
+      }
+      fetchData();
+    }, [isEdit]);
 
     // ------------------------
     // AJAX logic (single source of truth)
@@ -43,14 +63,15 @@ export const NewCustomer = forwardRef(
         CustomerNotes: note,
         Email: email,
         BillFirstName: firstName,
-        BillPhone: phone, 
+        BillPhone: phone,
         BillLastName: lastName,
         BillCompany: company,
         BillStreet: street,
         BillCity: city,
         BillState: state,
         BillZip: zip,
-        ...CustomerId
+        ...CustomerId,
+        ...(isAdmin && selectedSubAccountId !== undefined ? { SubAccountId: selectedSubAccountId } : {})
       };
 
       const urlEndpoint = isEdit ? "update-customer" : "create-customer";
@@ -96,6 +117,20 @@ export const NewCustomer = forwardRef(
         onClose={Close}
         onConfirm={CreateOrUpdateCustomer}
       >
+        {isAdmin && subAccounts.length > 1 && (
+          <div className="form-group">
+            <label>Sub-Account</label>
+            <select
+              className="form-input"
+              value={selectedSubAccountId}
+              onChange={e => setSelectedSubAccountId(e.target.value)}
+            >
+              {subAccounts.map(sa => (
+                <option key={sa.Id || "default"} value={sa.Id}>{sa.Name}</option>
+              ))}
+            </select>
+          </div>
+        )}
         {custInfo}
       </ConfirmationModal>
     );

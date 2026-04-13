@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 
 import { fetchWithAuth, FormatCurrency } from './Utilities';
+import { getSubAccounts } from './Services/api';
 import { Grid } from './Objects/Grid';
 
 import PaymentForm from './PaymentPage/PaymentForm'
@@ -51,6 +52,14 @@ function Transactions({ user }) {
       FilterValue: "xRefNum",
       SortString: "RefNumber",
       FilterType: "text",
+      SortAsc: true
+    },
+    {
+      DisplayValue: "Sub-Account",
+      Show: true,
+      Value: "SubAccountName",
+      FilterValue: "SubAccountName",
+      FilterType: "checkbox",
       SortAsc: true
     },
     {
@@ -203,6 +212,7 @@ function Transactions({ user }) {
 
   ])
   const [transactions, setTransactions] = useState([])
+  const subAccountsRef = useRef([])
   const [previousOption, setPreviousOption] = useState({})
   const [selectedOption, setSelectedOption] = useState({
     label: "Last 7 Days",
@@ -369,6 +379,7 @@ function Transactions({ user }) {
         ErrorDescription: paymentErrorMap[Number(trans.xErrorCode)] || "",
         xPaymentMethodHtml: <>{CardImage(trans.xCardType, trans.xCommand)} <span className="card-last4"> {PaymentMethod(trans.xCardType, trans.xCommand)}</span></>,
         PaymentMethod: PaymentMethod(trans.xCardType, trans.xCommand),
+        SubAccountName: subAccountsRef.current.find(sa => sa.Id === (trans.SubAccountId ?? ""))?.Name ?? "",
         className: trans.xResponseResult.toLowerCase() == "approved" ? "" : "not-counted"
       }
     })
@@ -514,14 +525,13 @@ function Transactions({ user }) {
   }
 
   useEffect(() => {
-
-    async function getData() {
-      await defaultSearch()
+    async function init() {
+      const accounts = await getSubAccounts();
+      subAccountsRef.current = accounts;
+      await defaultSearch();
     }
-    getData()
-  }
-
-    , [activePage])
+    init();
+  }, []);
 
   const ChangeOption = (option) => {
 
