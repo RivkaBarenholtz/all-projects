@@ -15,13 +15,13 @@
     "function-timeout"      : 30,
     "function-handler"      : "WebhookHandler::WebhookHandler.Function::FunctionHandler",
     "framework"             : "net8.0",
-    "function-name"         : "WebhookHandler",
+    "function-name"         : "WebhookHandler_test",
     "package-type"          : "Zip",
     "function-role"         : "arn:aws:iam::664418966079:role/lambda_exec_PostTransactions",
     "function-subnets"      : "",
     "function-security-groups" : "",
     "tracing-mode"             : "PassThrough",
-    "environment-variables"    : "\"QUEUE_URL\"=\"https://sqs.us-east-1.amazonaws.com/664418966079/PostReceiptsToApplied.fifo\"",
+    "environment-variables"    : "\"QUEUE_URL\"=\"https://sqs.us-east-1.amazonaws.com/664418966079/PostReceiptToApplied_test.fifo\"",
     "image-tag"                : "",
     "function-description"     : ""
 }
