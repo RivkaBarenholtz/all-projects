@@ -578,6 +578,189 @@ const handleSuccess = () => {
     );
   }
 
+  // ── Portal: restore original two-panel layout ──────────────────────────
+  if (isPortal) {
+    return (
+      <>
+        {showModal && (
+          <ConfirmationModal onClose={() => setShowModal(false)} showButton={false}>
+            <div style={{ margin: '5px' }}>{message}</div>
+          </ConfirmationModal>
+        )}
+        <div>
+          <div className='main'>
+            <div><p className="error-field">{error}</p></div>
+            <div className='payment-container'>
+
+              <div className='payment-left-panel'>
+                <div className='payment-card'>
+                  <div><h3>Invoice Details</h3></div>
+                  <div>
+                    <div className="form-group">
+                      <label htmlFor="cardholder-name" className="form-label">Account ID:</label>
+                      <input
+                        className={`form-input ${accountFocused && accountCode === '' ? 'invalid' : ''}`}
+                        ref={accountRef}
+                        type="text"
+                        value={accountCode}
+                        disabled={!accountIDIsEditable}
+                        placeholder="Account ID"
+                        onFocus={() => setAccountFocused(true)}
+                        onBlur={() => setAccountFocused(false)}
+                        onChange={(e) => setAccountCode(e.target.value)}
+                      />
+                      {accountFocused && accountCode === '' && (
+                        <div className="toast show">Account ID required.</div>
+                      )}
+                    </div>
+
+                    {(!invoice || invoice.length <= 1) ? (
+                      <div className="form-group">
+                        <label htmlFor="invoice-id" className="form-label">Invoice Number:</label>
+                        <input
+                          className="form-input"
+                          type="text"
+                          placeholder="Invoice ID"
+                          value={invoiceID}
+                          disabled={!invoiceIdIsEditable}
+                          onChange={(e) => setInvoiceID(e.target.value)}
+                        />
+                      </div>
+                    ) : (
+                      <table className="invoice-table">
+                        <thead><tr><th></th><th>Invoice Number</th><th>Balance</th></tr></thead>
+                        <tbody>
+                          {invoice.map((inv, index) => {
+                            if (inv.Selected === undefined) inv.Selected = true;
+                            return (
+                              <tr key={inv.AppliedEpicInvoiceNumber || index}>
+                                <td><input type="checkbox" checked={inv.Selected} onChange={() => handleSelectChange(index)} /></td>
+                                <td>{inv.AppliedEpicInvoiceNumber}</td>
+                                <td>
+                                  {inv.IsEditable ? (
+                                    <input
+                                      onChange={(e) => handleInvoiceAmountChange(index, e.target.value)}
+                                      value={inv.AmountDisplay}
+                                      onFocus={() => handleInvoiceFocus(index)}
+                                      onBlur={() => handlInvoiceAmountBlur(index)}
+                                    />
+                                  ) : FormatCurrency(inv.Balance)}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+
+                    <div className="form-group">
+                      <label htmlFor="invoice-id" className="form-label">Amount:</label>
+                      <input
+                        ref={amountRef}
+                        className="form-input"
+                        type="text"
+                        placeholder="$0.00"
+                        value={invoice && invoice.length > 1
+                          ? FormatCurrency(invoice.reduce((sum, item) => sum + (item.Selected ? item.Balance : 0), 0))
+                          : amntDisplayValue}
+                        onChange={handleAmountChange}
+                        onBlur={handleAmountBlur}
+                        onFocus={handleFocus}
+                        disabled={!amountIsEditable}
+                      />
+                      {amountFocused && amount <= 0 && (
+                        <div className="toast show">Amount required.</div>
+                      )}
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="surcharge-rate" className="form-label">Surcharge Rate:</label>
+                      <input
+                        className="form-input"
+                        type="number"
+                        id="surcharge-rate"
+                        value={visibleSurcharge}
+                        onChange={(e) => setVisibleSurcharge(Number(e.target.value))}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="notes">Notes (Optional)</label>
+                      <textarea className='form-input' id="notes" name="notes" rows="3" onChange={(e) => setNotes(e.target.value)}></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <div className='card'>
+                  <div className="card-header"><h3>Billing Information</h3></div>
+                  <div className='card-body'>
+                    <div className="form-group">
+                      <label htmlFor="cardholder-name" className="form-label">Cardholder Name</label>
+                      <input type="text" id="cardholder-name" placeholder='Cardholder' className="form-input" onChange={(e) => setCardHolderName(e.target.value)} />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="address" className="form-label">Billing Address</label>
+                      <input type="text" id="address" placeholder='Address' className="form-input" onChange={(e) => setBillingAddress(e.target.value)} />
+                    </div>
+                    <div className="form-row">
+                      <div className="form-group form-col">
+                        <label htmlFor="city" className="form-label">City</label>
+                        <input type="text" id="city" className="form-input city-select" onChange={(e) => setCity(e.target.value)} />
+                      </div>
+                      <div className="form-group form-col">
+                        <label htmlFor="state" className="form-label">State</label>
+                        <Select
+                          inputId="state"
+                          options={states}
+                          value={state}
+                          onChange={(selectedOption) => setState(selectedOption?.value)}
+                          isClearable={false}
+                          placeholder=""
+                          styles={customStyles}
+                          components={{ IndicatorSeparator: () => null }}
+                          classNamePrefix="Select"
+                        />
+                      </div>
+                      <div className="form-group form-col">
+                        <label htmlFor="zip" className="form-label">ZIP Code</label>
+                        <input type="text" id="zip" onChange={(e) => setZip(e.target.value)} className="form-input zip-input" />
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="phone">Phone</label>
+                      <input className='form-input' type="tel" id="phone" placeholder="(XXX) XXX-XXXX" onChange={(e) => setPhone(e.target.value)} />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="email">Email</label>
+                      <input className='form-input' type="email" id="email" placeholder="user@email.com" onChange={(e) => setEmail(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className='payment-right-panel'>
+                <div className='card'>
+                  <div>
+                    <h3>
+                      Payment Info
+                      <FontAwesomeIcon icon={faLock} style={{ color: '#444', fontSize: '1rem', padding: '4px', verticalAlign: 'middle' }} />
+                    </h3>
+                  </div>
+                  <div>
+                    <PaymentTabs setActiveTab={setActiveTab} tabs={paymentTabData} activeTab={activeTab} />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          {(isLoading || isInvLoading) && <Loader />}
+        </div>
+      </>
+    );
+  }
+
+  // ── Public: wizard layout ───────────────────────────────────────────────
   const STEPS = invoiceIDparam ? ['Summary', 'Payment', 'Complete'] : ['Payment', 'Complete'];
   const ACTIVE_STEP = invoiceIDparam ? 1 : 0;
 
