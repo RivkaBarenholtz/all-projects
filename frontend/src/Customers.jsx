@@ -10,6 +10,7 @@ export default function Customers() {
    const [customer , setCustomer] = useState(null);
    const [nextToken, setNextToken] = useState("");
    const [data, setData] = useState([]);
+   const [loading, setLoading] = useState(false);
 
 
 
@@ -100,20 +101,18 @@ export default function Customers() {
          PageSize: 100
       }
 
-      const response = await fetchWithAuth("list-customers", req)
-      
-    //   const formattedData = response.Customers.map((customer) => {
-    //         ...
-
-    //   })
-
-      const allData =[
-         ...nextToken == '' || nextToken == undefined ? [] : data,
-         ...response.Customers
-      ]
-      setNextToken(response.NextToken)
+      setLoading(true);
+      try {
+         const response = await fetchWithAuth("list-customers", req)
+         const allData =[
+            ...nextToken == '' || nextToken == undefined ? [] : data,
+            ...response.Customers
+         ]
+         setNextToken(response.NextToken)
          setData(allData)
-      
+      } finally {
+         setLoading(false);
+      }
    }
 
    useEffect(() => {
@@ -168,14 +167,21 @@ export default function Customers() {
 
 
       }
-      <Grid 
-         enableFilters={false} 
-         rowClick={setCustomer} 
-         JsonObjectList={data} 
-         headerList={headers} 
-         SetHeaderList={setHeaders} 
-         Sort={sortData} 
-         />
+      <div style={{ position: "relative" }}>
+         {loading && (
+            <div className="loader-overlay" style={{ position: "absolute" }}>
+               <div className="spinner" />
+            </div>
+         )}
+         <Grid
+            enableFilters={false}
+            rowClick={setCustomer}
+            JsonObjectList={data}
+            headerList={headers}
+            SetHeaderList={setHeaders}
+            Sort={sortData}
+            />
+      </div>
       
       <SuccessModal/>
    </>

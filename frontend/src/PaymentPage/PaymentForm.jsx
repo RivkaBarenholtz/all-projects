@@ -301,7 +301,7 @@ const handleSuccess = () => {
       try {
 
         if (isPortal) {
-          const result = await fetchWithAuth("get-vendor", {}, false, false , true)
+          const result = await fetchWithAuth("get-vendor", {})
           setVendor(result);
           setIsLoading(false)
           return
@@ -344,10 +344,8 @@ const handleSuccess = () => {
            // setIsInvLoading(true);
             let result = null;
             if (isPortal) {
-              result = await fetchWithAuth("get-invoice", 
-                { LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(Number(epicClientNumber)) ? null : epicClientNumber },
-                false, false , true
-              
+              result = await fetchWithAuth("get-invoice",
+                { LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(Number(epicClientNumber)) ? null : epicClientNumber }
               );
             }
             else {
@@ -398,7 +396,7 @@ const handleSuccess = () => {
       try {
         let result = null;
         if (isPortal) {
-          result = await fetchWithAuth("get-surcharge", { ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID) || invoiceID == "" ? -1 : invoiceID }, false , false , true);
+          result = await fetchWithAuth("get-surcharge", { ClientLookupCode: accountCode, InvoiceNumber: isNaN(invoiceID) || invoiceID == "" ? -1 : invoiceID });
         }
         else {
           

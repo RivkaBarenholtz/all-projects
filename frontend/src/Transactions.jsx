@@ -210,6 +210,7 @@ function Transactions({ user }) {
   });
   const [showNewTransScreen, setShowNewTransScreen] = useState(false);
   const [refNum, setRefNum] = useState("")
+  const [loading, setLoading] = useState(false);
 
   const customDateRef = useRef()
 
@@ -347,39 +348,44 @@ function Transactions({ user }) {
   );
 
   const search = async (filters) => {
-    const response = await fetchWithAuth("transaction-report", filters);
-    var responseFormatted = response.xReportData.map((trans) => {
+    setLoading(true);
+    try {
+      const response = await fetchWithAuth("transaction-report", filters);
+      var responseFormatted = response.xReportData.map((trans) => {
 
-      const date = new Date(trans.xEnteredDate);
-      const localDateString = date.toLocaleDateString('en-US');
+        const date = new Date(trans.xEnteredDate);
+        const localDateString = date.toLocaleDateString('en-US');
 
 
-      return {
-        ...trans,
-        xRefNumHtml: <div style={{ display: "flex" }}><span className='transaction-id'> {trans.xRefNum}</span> {trans.xVoid == 1 && <span className='void-span'>Void</span>} </div>,
-        EnteredDateFormatted: localDateString,
-        xMaskedAccountNumberHtml: CardHtml(trans.xMaskedAccountNumber, trans.xCardType, trans.xCommand),
-        CreditCardFormatted: <span className={`'amount ' ${trans.xVoid == 1 ? "void" : ""}`}> {FormatCurrency(trans.xCustom09 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1)) ?? '$0.00'}</span>,
-        AmountFundedFormatted: trans.xCustom10 == 0 || trans.xCustom10 == null ? AmountHtml(trans.xAmount,trans.xRequestAmount, trans.xVoid == 1, trans.xCommand) : AmountHtml(trans.xCustom10 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1),trans.xCustom10 * (trans.xRequestAmount != 0 ? trans.xRequestAmount / Math.abs(trans.xRequestAmount) : 1) , trans.xVoid == 1, trans.xCommand),
-        StatusHtml: StatusHtml(trans.xResponseResult, trans.xStatus, trans.xCommand),
-        AmountFormatted: AmountHtml(trans.xAmount, trans.xRequestAmount, trans.xVoid == 1, trans.xCommand),
-        AmountFunded: trans.xCustom10 && trans.xCustom10 > 0 ? trans.xCustom10 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1) : trans.xAmount,
-        StatusString: GetStatusString(trans.xResponseResult, trans.xStatus, trans.xCommand),
-        CreditCardFee: trans.xCustom09 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1),
-        ErrorDescription: paymentErrorMap[Number(trans.xErrorCode)] || "",
-        xPaymentMethodHtml: <>{CardImage(trans.xCardType, trans.xCommand)} <span className="card-last4"> {PaymentMethod(trans.xCardType, trans.xCommand)}</span></>,
-        PaymentMethod: PaymentMethod(trans.xCardType, trans.xCommand),
-        className: trans.xResponseResult.toLowerCase() == "approved" ? "" : "not-counted"
+        return {
+          ...trans,
+          xRefNumHtml: <div style={{ display: "flex" }}><span className='transaction-id'> {trans.xRefNum}</span> {trans.xVoid == 1 && <span className='void-span'>Void</span>} </div>,
+          EnteredDateFormatted: localDateString,
+          xMaskedAccountNumberHtml: CardHtml(trans.xMaskedAccountNumber, trans.xCardType, trans.xCommand),
+          CreditCardFormatted: <span className={`'amount ' ${trans.xVoid == 1 ? "void" : ""}`}> {FormatCurrency(trans.xCustom09 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1)) ?? '$0.00'}</span>,
+          AmountFundedFormatted: trans.xCustom10 == 0 || trans.xCustom10 == null ? AmountHtml(trans.xAmount,trans.xRequestAmount, trans.xVoid == 1, trans.xCommand) : AmountHtml(trans.xCustom10 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1),trans.xCustom10 * (trans.xRequestAmount != 0 ? trans.xRequestAmount / Math.abs(trans.xRequestAmount) : 1) , trans.xVoid == 1, trans.xCommand),
+          StatusHtml: StatusHtml(trans.xResponseResult, trans.xStatus, trans.xCommand),
+          AmountFormatted: AmountHtml(trans.xAmount, trans.xRequestAmount, trans.xVoid == 1, trans.xCommand),
+          AmountFunded: trans.xCustom10 && trans.xCustom10 > 0 ? trans.xCustom10 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1) : trans.xAmount,
+          StatusString: GetStatusString(trans.xResponseResult, trans.xStatus, trans.xCommand),
+          CreditCardFee: trans.xCustom09 * (trans.xAmount != 0 ? trans.xAmount / Math.abs(trans.xAmount) : 1),
+          ErrorDescription: paymentErrorMap[Number(trans.xErrorCode)] || "",
+          xPaymentMethodHtml: <>{CardImage(trans.xCardType, trans.xCommand)} <span className="card-last4"> {PaymentMethod(trans.xCardType, trans.xCommand)}</span></>,
+          PaymentMethod: PaymentMethod(trans.xCardType, trans.xCommand),
+          className: trans.xResponseResult.toLowerCase() == "approved" ? "" : "not-counted"
+        }
+      })
+      if(selectedRefNum && selectedRefNum != ""){
+        const selectedTrans = responseFormatted.find(t => t.xRefNum == selectedRefNum);
+        setSelectedTransaction(selectedTrans);
+        setSelectedRefNum("") // Clear the selected ref num after opening the transaction detail
       }
-    })
-    if(selectedRefNum && selectedRefNum != ""){
-      const selectedTrans = responseFormatted.find(t => t.xRefNum == selectedRefNum);
-      setSelectedTransaction(selectedTrans);
-      setSelectedRefNum("") // Clear the selected ref num after opening the transaction detail
+      setTransactions(responseFormatted);
+      setTotalResults(response.xRecordsReturned);
+      setTotal(response.xResult);
+    } finally {
+      setLoading(false);
     }
-    setTransactions(responseFormatted);
-    setTotalResults(response.xRecordsReturned);
-    setTotal(response.xResult);
   }
   const AmountHtml = (amt, origAmt, isVoided, command) => {
     if (isVoided) return <span className={`amount void ${(command?.toLowerCase()?.includes("credit")?'negative':'')} `}>{FormatCurrency(origAmt)}</span>
@@ -795,7 +801,12 @@ function Transactions({ user }) {
 
 
         {/* Grid */}
-        <div className="table-wrapper-main">
+        <div className="table-wrapper-main" style={{ position: "relative" }}>
+          {loading && (
+            <div className="loader-overlay" style={{ position: "absolute" }}>
+              <div className="spinner" />
+            </div>
+          )}
           <Grid
             headerList={headers}
             SetHeaderList={setHeaders}
