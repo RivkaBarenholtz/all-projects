@@ -37,7 +37,7 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
     const [paymentMethod, setPaymentMethod] = useState<any>(null);
     const [selectedMethod, setSelectedMethod] = useState<any>({});
 
-    const [paymentAmount, setPaymentAmount] = useState<number>(amount);
+    const [paymentAmount, setPaymentAmount] = useState<string>(amount.toFixed(2));
     const [transferFee, setTransferFee] = useState<number>(surchargePercent? surchargePercent * 100 : 3.5);
 
 
@@ -123,8 +123,8 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
                     Cvv: cvvToken,
                     ExpDate: expMonth && expYear ? `${expMonth.value}${expYear.value}` : undefined,
                     AccountId: lookupCode,
-                    Subtotal: paymentAmount,
-                    Surcharge: paymentAmount * transferFee / 100,
+                    Subtotal: Number(paymentAmount),
+                    Surcharge: Number(paymentAmount) * transferFee / 100,
                     SavePaymentMethod: saveMethod
                 }
             }
@@ -135,7 +135,7 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
                     AccountNumber: accountNumber,
                     RoutingNumber: routingNumber,
                     AccountId: lookupCode,
-                    Amount: paymentAmount,
+                    Amount: Number(paymentAmount),
                     AccountType: accountType,
                     SavePaymentMethod: saveMethod,
                     IsDevelopment : true
@@ -147,7 +147,7 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
                 Amount: paymentAmount,
                 AccountId: lookupCode,
                 Subtotal: paymentAmount,
-                Surcharge: paymentAmount * transferFee / 100,
+                Surcharge: Number( paymentAmount) * transferFee / 100,
             }
         }
     }
@@ -250,7 +250,7 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
     );
 
     return <>
-        {paymentSuccess && <PaymentSuccess amount={paymentAmount + (paymentAmount * (transferFee / 100))} />}
+        {paymentSuccess && <PaymentSuccess amount={Number(paymentAmount) + (Number(paymentAmount) * (transferFee / 100))} />}
         {showConfirmDelete && <ConfirmationModal onClose={() => { setShowConfirmDelete(false); setDeleteMethod(null) }} onConfirm={confirmDelete} confirmButtonText="Delete">
             <h3> Are you sure you want to delete {selectedMethod.MaskedAccountNumber}?</h3>
         </ConfirmationModal>}
@@ -278,7 +278,7 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
             <div style={{ display: "flex", gap: "25px" }}>
                 <div className="form-group">
                     <label> Amount </label>
-                    <input type="number" value={Number(paymentAmount).toFixed(2)} onChange={(e) => setPaymentAmount(Number(e.target.value))} />
+                    <input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} />
                 </div>
 
                 {!((activeTab == "eCheck" && selectedMethod.value == "new") || selectedMethod?.CardType == "ACH") && <>
@@ -392,15 +392,15 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
             <>
                 <div style={{ display: "flex", fontSize: "13px", fontWeight: 400,  padding: "0 10px" }}>
                     <label> Subtotal : </label>
-                    <div> ${(paymentAmount ).toFixed(2)} </div>
+                    <div> ${paymentAmount} </div>
                 </div>
                 <div style={{ display: "flex", fontSize: "13px", fontWeight: 400, padding: "0 10px" }}>
                     <label> Transfer Fee : </label>
-                    <div> ${ (paymentAmount * (transferFee / 100)).toFixed(2)} </div>
+                    <div> ${ (Number(paymentAmount) * (transferFee / 100)).toFixed(2)} </div>
                 </div>
                 <div style={{ display: "flex", color: "#148dc2", fontSize: "15px", fontWeight: 600, marginBottom: "15px", padding: "0 10px" }}>
                     <label> Grand Total : </label>
-                    <div> ${(paymentAmount + (paymentAmount * (transferFee / 100))).toFixed(2)} </div>
+                    <div> ${(Number(paymentAmount) + (Number(paymentAmount) * (transferFee / 100))).toFixed(2)} </div>
                 </div>
             </>
         }

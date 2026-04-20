@@ -701,7 +701,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
                 )}
                 <div className="form-group">
                   <label htmlFor="notes">Notes (Optional)</label>
-                  <textarea className='form-input' id="notes" name="notes" rows="3"></textarea>
+                  <textarea className='form-input' id="notes" name="notes" rows="3" value={notes} onChange={(e) => setNotes(e.target.value)}></textarea>
                 </div>
 
               </div>

@@ -24,7 +24,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
   const [showSettings, setShowSettings] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [paylinkSubdomain , setPaylinkSubdomain] = useState<string>(subdomain);
+  const [paylinkSubdomain , setPaylinkSubdomain] = useState<string>('');
   
   const [pendingSurcharge, setPendingSurcharge] = useState<number>(0);
   const [updateModalConfig, setUpdateModalConfig] = useState<{
