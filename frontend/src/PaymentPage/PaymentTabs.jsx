@@ -4,13 +4,14 @@ const PaymentTabs = ({ tabs, setActiveTab, activeTab }) => {
   const tabKeys = Object.keys(tabs);
 
   return (
-    <div>
+    <div style={{marginTop:"20px"}}>
       <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
         {tabKeys.map((key) => {
           const isActive = activeTab === key;
           return (
             <button
               key={key}
+              type="button"
               onClick={() => setActiveTab(key)}
               style={{
                 cursor: 'pointer',
