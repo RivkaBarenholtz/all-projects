@@ -69,15 +69,12 @@ export const CreditCardTab = (
         onFinish,
         onError,
         vendor, 
-        showProcess = true
-    }) => {
-        showProcess = true, 
+        showProcess = true,
         subdomain,
         submitPressed, setSubmitPressed, 
         hidePaymentButton = false,
         policyId,
         onPaymentApproved,
-
     }, ref) => {
 
 
@@ -374,10 +371,10 @@ export const CreditCardTab = (
                     100% Secure <br /> SSL encryption &amp; PCI compliant
                 </p>
                 </>}
-            </>}
+            
         </div>
 
 
     )
-});
+};
 

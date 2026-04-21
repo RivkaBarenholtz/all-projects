@@ -550,18 +550,6 @@ const handleSuccess = () => {
     }
   }, []);
 
-  return (<>
-    {showModal && <ConfirmationModal onClose={() => setShowModal(false)} showButton={false} >
-      <div style={{ margin: '5px' }}>{message}</div>
-    </ConfirmationModal>} <div style={{
-      margin: "auto",
-      maxWidth : "1000px"
-    }}>   <div>
-
-        {
-          !isPortal &&
-          <div className='logo-header'>
-            <div className='logo-container'>
   const selectedTotal = invoice
     ? invoice.reduce((sum, item) => sum + (item.Selected !== false ? item.Balance : 0), 0)
     : (amount ?? 0);

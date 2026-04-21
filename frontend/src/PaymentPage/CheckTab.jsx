@@ -260,7 +260,7 @@ export const CheckTab = (
             )}
 
                             <br />
-                        </div>
+                        
                         {!hidePaymentButton && <div style={{ padding: "25px" }} >
                             <ReCAPTCHA
                                 sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
@@ -269,12 +269,12 @@ export const CheckTab = (
                             {(captchaToken == '' || captchaToken == null) && submitPressed ? <div className="toast show" id="toast-for-recap">Recaptcha check required.</div> : ''}
 
                         </div>}
-                    </>
-                }
+                   
+            
                 {showProcess &&<> <div id="total">
                     Your Total: <span id="total-amount">{FormatCurrency(parseFloat(amount))}</span>
-                </div>
-
+                </div></>
+                }
 
                { !hidePaymentButton &&
               <div className="button-spaced mt-3">
@@ -283,11 +283,16 @@ export const CheckTab = (
                         Process Payment
                     </button>
                 </div>
-            )}
+            }
 
             {/* Submit */}
             {showProcess && <ProcessButton onClick={submitToGateway} />}
         </div>
+        
     )
-});
+    
+}
+
+
+
 
