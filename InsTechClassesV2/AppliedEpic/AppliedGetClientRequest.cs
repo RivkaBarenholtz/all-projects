@@ -100,15 +100,16 @@ namespace InsTechClassesV2.AppliedEpic
             {
                 foreach (var item in agencyStructure)
                 {
-                    AgencyCode.Add(item["AgencyCode"].ToString() ?? "");
-                    BranchCode = item["BranchCode"];
-
+                    var agency = item["AgencyCode"]?.ToString() ?? "";
+                    AgencyCode.Add(agency);
+                    BranchCode[agency] = item["BranchCode"]?.ToString() ?? "";
                 }
             }
             if (agencyStructure is JObject)
             {
-                AgencyCode.Add(agencyStructure["AgencyCode"]?.ToString()??"");
-                BranchCode = agencyStructure["BranchCode"];
+                var agency = agencyStructure["AgencyCode"]?.ToString() ?? "";
+                AgencyCode.Add(agency);
+                BranchCode[agency] = agencyStructure["BranchCode"]?.ToString() ?? "";
             }
             ClientName = EpicClient["AccountName"];
             LookupCode = EpicClient["ClientLookupCode"];
@@ -152,8 +153,8 @@ namespace InsTechClassesV2.AppliedEpic
 
         }
         public string LookupCode { get; set;  }
-        public string BranchCode { get; set; }
-        public List<string> AgencyCode { get; set; } = new List<string>(); 
+        public Dictionary<string, string> BranchCode { get; set; } = new Dictionary<string, string>();
+        public List<string> AgencyCode { get; set; } = new List<string>();
         public string ClientName { get; set; }
         public int ClientID { get; set; }
         public string EmailAddress { get; set; }
