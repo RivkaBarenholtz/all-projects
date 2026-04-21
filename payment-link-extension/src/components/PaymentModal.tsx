@@ -26,6 +26,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [paylinkSubdomain , setPaylinkSubdomain] = useState<string>(subdomain);
   
+  const [pendingSurcharge, setPendingSurcharge] = useState<number>(0);
   const [updateModalConfig, setUpdateModalConfig] = useState<{
     title: string;
     isReverting: boolean;
@@ -138,8 +139,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
     }
   };
 
-  const handleShowUpdateModal = (title: string, isReverting: boolean) => {
+  const handleShowUpdateModal = (title: string, isReverting: boolean, pendingSurcharge?: number) => {
     setUpdateModalConfig({ title, isReverting });
+    if (pendingSurcharge !== undefined) setPendingSurcharge(pendingSurcharge);
     setShowUpdateModal(true);
   };
 
@@ -240,7 +242,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ subdomain, setIsAuth
           isReverting={updateModalConfig.isReverting}
           invoices={invoices}
           client={client}
-          surcharge={surcharge}
+          surcharge={pendingSurcharge}
           vendorSurcharge={vendorSurcharge}
           onClose={() => setShowUpdateModal(false)}
           onSave={async (items) => {

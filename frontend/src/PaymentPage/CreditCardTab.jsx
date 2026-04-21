@@ -1,7 +1,6 @@
 import React, { useState, useRef, forwardRef, useImperativeHandle } from "react";
 import { FormatCurrency, BaseUrl } from '../Utilities';
 import CardnoxField from './CardnoxField';
-import GooglePay from './GooglePay';
 import ExpirationDateField from './ExpirationDateField';
 import Select from "react-select";
 import { CARD_TYPE, CVV_TYPE } from '@cardknox/react-ifields';
@@ -15,7 +14,37 @@ import { fetchWithAuth } from "../Utilities";
 
 
 
-export const CreditCardTab = forwardRef((
+const ProcessButton = ({ onClick }) => {
+  const [hovered, setHovered] = React.useState(false);
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: '100%',
+        backgroundColor: hovered ? '#005ea6' : '#0070ba',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '10px',
+        padding: '18px 24px',
+        fontSize: '16px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        letterSpacing: '0.3px',
+        marginTop: '16px',
+        transition: 'background-color 0.18s ease, box-shadow 0.18s ease',
+        boxShadow: hovered ? '0 6px 20px rgba(0,112,186,0.35)' : '0 2px 8px rgba(0,112,186,0.18)',
+      }}
+    >
+      <FontAwesomeIcon icon={faCreditCard} style={{ paddingRight: '8px' }} />
+      Process Payment
+    </button>
+  );
+};
+
+export const CreditCardTab = (
     {
         amount,
         surcharge,
@@ -39,6 +68,9 @@ export const CreditCardTab = forwardRef((
         isPortal,
         onFinish,
         onError,
+        vendor, 
+        showProcess = true
+    }) => {
         showProcess = true, 
         subdomain,
         submitPressed, setSubmitPressed, 
@@ -184,7 +216,7 @@ export const CreditCardTab = forwardRef((
             }
             else {
                 
-                const response = await fetch(`${BaseUrl()}/pay/${subdomain}/make-payment-cardknox`, {
+                const response = await fetch(`${BaseUrl()}/pay/${vendor.subdomain}/make-payment-cardknox`, {
                     method: 'POST',
                     body: JSON.stringify(request),
                     headers: { 'Content-Type': 'application/json' }
@@ -329,34 +361,7 @@ export const CreditCardTab = forwardRef((
                 </div>
             }
 
-            {showProcess && <><section className="payment-total-section">
-                <h3 className="">Total</h3>
-                
-                {surchargeAmount > 0 && <>
-                    <div className="payment-total-line" id="sub-total-line">
-                        <span>Subtotal:</span>
-                        <span >{FormatCurrency((amount))}</span>
-                    </div>
-                    <div className="payment-total-line" id="convenience-fee-line">
-                        <span>Electronic Transfer Fee:</span>
-                        <span id="convenience-fee">{FormatCurrency((surchargeAmount)) == "$0.00" ? "" : FormatCurrency((surchargeAmount))}</span>
-                    </div>
-                </>}
-                
-                <div className="payment-total-line grand-total">
-                    <span id="grand-total-label">Grand Total:</span>
-                    <span id="grand-total">{FormatCurrency(parseFloat(amount) + (surchargeAmount))}</span>
-                </div>
-            </section>
-
-                {amount > 0 && !isNaN(surcharge) && accountValid && !isPortal ? <GooglePay amount={amount} surcharge={surcharge} AccountID={accountCode} captchaToken={captchaToken} cardHolderName={cardHolderName} csrCode={csrCode} csrEmail={csrEmail} invoiceID={invoiceID} zip={zip} /> : <></>}
-
-               { !hidePaymentButton && <><div className="button-spaced mt-3">
-                    <button className="btn btn-primary" type="button" onClick={submitToGateway}>
-                        <FontAwesomeIcon icon={faCreditCard} style={{ paddingRight: '5px' }} />
-                        Process Payment
-                    </button>
-                </div>
+            {showProcess && <><ProcessButton onClick={submitToGateway} />
                 <p className="secure-info">
                     <FontAwesomeIcon icon={faShieldAlt}
                         style={

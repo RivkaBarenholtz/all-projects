@@ -1,4 +1,4 @@
-import { refreshSession } from "./AuthContext";
+import { refreshSession, redirectToLogin } from "./AuthContext";
 import { PDFDocument } from 'pdf-lib';
 
 /* ── Global loading counter ─────────────────────────────────────
@@ -61,10 +61,13 @@ export const fetchWithAuth = async (url, options = {}, isText = false, isBlob = 
     if (isText) return await response.text();
     if (isBlob) return await response.blob();
     return await response.json();
-  } finally {
-    if (!silent) _loadEnd();
+  }
+    catch (error) {
+    console.error("Fetch error:", error);
+    throw error;
   }
 };
+
 
   export const  SafeParseJson= (jsonString)=> {
   try {
@@ -176,14 +179,7 @@ export const Sort = ( data,  field, ascending = true) =>{
   };
 
   export const handleUnauthorized = () => {
-
-    localStorage.removeItem("idToken");
-    import.meta.env.MODE === 'development'
-    || window.location.hostname === 'portal.instechpay.co'
-    || window.location.hostname === 'pay.instechpay.co'
-    || window.location.hostname === 'test.instechpay.co' ?
-    window.location.href = "/login":
-    window.location.href = "/app/login"
+     redirectToLogin(); 
     ;
   };
 

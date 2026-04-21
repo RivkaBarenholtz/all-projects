@@ -22,6 +22,7 @@ export const NewCustomer = forwardRef(
     const [email, setEmail] = useState(customer?.Email??"");
 
     const [submitPressed, setSubmitPressed] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     // ------------------------
     // AJAX logic (single source of truth)
@@ -54,7 +55,13 @@ export const NewCustomer = forwardRef(
       };
 
       const urlEndpoint = isEdit ? "update-customer" : "create-customer";
-      const resp = await fetchWithAuth(urlEndpoint, NewCustomer);
+      setLoading(true);
+      let resp;
+      try {
+        resp = await fetchWithAuth(urlEndpoint, NewCustomer);
+      } finally {
+        setLoading(false);
+      }
 
       if (resp.Error) {
         console.error("Error:", resp.Error);
@@ -95,6 +102,7 @@ export const NewCustomer = forwardRef(
         confirmButtonText="Save"
         onClose={Close}
         onConfirm={CreateOrUpdateCustomer}
+        loading={loading}
       >
         {custInfo}
       </ConfirmationModal>

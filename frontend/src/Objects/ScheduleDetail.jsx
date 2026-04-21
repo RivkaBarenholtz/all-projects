@@ -14,14 +14,20 @@ export function ScheduleDetail({ scheduleId, scheduleParam, onClose }) {
   const [activeTab, setActiveTab] = useState("Customer")
   const [schedule, setSchedule] = useState({})
   const [isEditMode, setIsEditMode] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const [customer, setCustomer] = useState({});
 
   const customerRef = useRef();
 
   const getSchedule = async () => {
-    const s = await fetchWithAuth("get-schedule", { ScheduleId: scheduleId })
-    setSchedule({ ...scheduleParam, ...s });
+    setLoading(true);
+    try {
+      const s = await fetchWithAuth("get-schedule", { ScheduleId: scheduleId })
+      setSchedule({ ...scheduleParam, ...s });
+    } finally {
+      setLoading(false);
+    }
   }
   useEffect(() => {
 
@@ -63,27 +69,23 @@ export function ScheduleDetail({ scheduleId, scheduleParam, onClose }) {
   setFormData(data);
   }, [schedule] )
 
-  const SaveChanges = () => {
+  const SaveChanges = async () => {
     if (!isEditMode) return;
-    if (activeTab == "Customer")
+    if (activeTab == "Customer") {
       customerRef.current.submit();
-    else
-
-      // save schedule
-      fetchWithAuth("update-schedule", { ...GetNewSchedule() })
-        .then((result) => {
-          // optional: inspect result for success/failure depending on API shape
-          setIsEditMode(false);
-          getSchedule();
-        })
-        .catch((err) => {
-          console.error("Failed to save schedule", err);
-          alert("Failed to save schedule. See console for details.");
-        });
-
-
-
-
+      return;
+    }
+    setLoading(true);
+    try {
+      await fetchWithAuth("update-schedule", { ...GetNewSchedule() });
+      setIsEditMode(false);
+      getSchedule();
+    } catch (err) {
+      console.error("Failed to save schedule", err);
+      alert("Failed to save schedule. See console for details.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const [formData, setFormData] = useState({});
@@ -225,7 +227,12 @@ export function ScheduleDetail({ scheduleId, scheduleParam, onClose }) {
               </div>
             </div>
             {/* Body */}
-            <div className="trd-body">
+            <div className="trd-body" style={{ position: "relative" }}>
+              {loading && (
+                <div className="loader-overlay" style={{ position: "absolute" }}>
+                  <div className="spinner" />
+                </div>
+              )}
               {/* Reference Info */}
               {activeTab == "Schedule" &&
                 <> {

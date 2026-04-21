@@ -61,11 +61,11 @@ public class Function
             {
                 StatusCode = 200,
                 Headers = new Dictionary<string, string>
-                {
-                    { "Access-Control-Allow-Origin", "*" },
-                    { "Access-Control-Allow-Headers", "Content-Type" },
-                    { "Access-Control-Allow-Methods", "POST, OPTIONS, GET" }
-                }
+                    {
+                        { "Access-Control-Allow-Origin", "*" },
+                        { "Access-Control-Allow-Headers", "Content-Type, x-app-version" },
+                        { "Access-Control-Allow-Methods", "POST, OPTIONS, GET" }
+                    }
             };
 
             if (lastSegment == "get-subdomain")
@@ -272,7 +272,7 @@ public class Function
                         Headers = new Dictionary<string, string>
                         {
                             { "Access-Control-Allow-Origin", "*" },
-                            { "Access-Control-Allow-Headers", "Content-Type" },
+                            { "Access-Control-Allow-Headers", "Content-Type, x-app-version" },
                             { "Access-Control-Allow-Methods", "POST, OPTIONS" }
                         }
                     };
@@ -340,11 +340,11 @@ public class Function
                 StatusCode = 500,
                 Body = $"Error: {ex.Message}",
                 Headers = new Dictionary<string, string>
-                {
-                    { "Access-Control-Allow-Origin", "*" },
-                    { "Access-Control-Allow-Headers", "Content-Type" },
-                    { "Access-Control-Allow-Methods", "POST, OPTIONS, GET" }
-                }
+                    {
+                        { "Access-Control-Allow-Origin", "*" },
+                        { "Access-Control-Allow-Headers", "Content-Type, x-app-version" },
+                        { "Access-Control-Allow-Methods", "POST, OPTIONS, GET" }
+                    }
             };
         }
     }

@@ -20,6 +20,7 @@ export const   CreditCardInfo =(
     })=>{
     const [vendor, setVendor] = useState({});
     const [issuer, setIssuer] = useState('');
+    const [loading, setLoading] = useState(false);
         
     const cardRef = useRef(); 
     const cvvRef = useRef(); 
@@ -28,15 +29,15 @@ export const   CreditCardInfo =(
     useEffect(() => {
     // Function to fetch data from your API
     const fetchData = async () => {
-      
+      setLoading(true);
       try {
-        const response = await fetchWithAuth("get-vendor",{})
-
+        const response = await fetchWithAuth("get-vendor", {})
         setVendor(response);
       } catch (err) {
-        // setError(err.message); // Set error if something goes wrong
+        // setError(err.message);
+      } finally {
+        setLoading(false);
       }
-     
     };
     
      fetchData();
@@ -114,8 +115,8 @@ export const   CreditCardInfo =(
         return { value: twoDigitYear, label: fullYear.toString() };
     });
     return <>
-    
-    {vendor.CardknoxIFeildsKey && 
+    {loading && <div className="spinner" style={{ margin: "1rem auto" }} />}
+    {!loading && vendor.CardknoxIFeildsKey &&
     <>
       <div className="form-group">
                 <label className="form-label">Card Number:</label>

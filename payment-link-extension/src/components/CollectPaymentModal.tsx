@@ -47,6 +47,8 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
     const [routingNumber, setRoutingNumber] = useState("")
 
     const [submitPressed, setSubmitPressed] = useState(false)
+    const [loadingMethods, setLoadingMethods] = useState(true)
+    const [submitting, setSubmitting] = useState(false)
 
     const [saveMethod, setSaveMethod] = useState(false);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -56,12 +58,18 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
     const service = new ApiService(isDev,subdomain);
 
     async function getPaymentMethods(accountCode: string) {
-        const methods = await service.listPaymentMethods(accountCode, subdomain);
-        setPaymentMethod(methods);
-        if (methods.length > 0) {
-            setSelectedMethod(methods[0])
+        setLoadingMethods(true);
+        try {
+            const methods = await service.listPaymentMethods(accountCode, subdomain);
+            setPaymentMethod(methods);
+            if (methods.length > 0) {
+                setSelectedMethod(methods[0]);
+            } else {
+                setSelectedMethod({ value: "new", MaskedAccountNumber: " + New" });
+            }
+        } finally {
+            setLoadingMethods(false);
         }
-        else setSelectedMethod({ value: "new", MaskedAccountNumber: " + New" })
     }
 
 
@@ -85,20 +93,22 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
 
     const SubmitPayment = async () => {
         setSubmitPressed(true);
-        const paymentInfo = getPaymentInfo();
-        console.log("Payment Info: ", paymentInfo);
-        const response = await createTransaction({...paymentInfo, ...{Software: "Instech360-extension"}} , subdomain, (activeTab == "eCheck" && selectedMethod.value == "new") || selectedMethod.CardType == "ACH");
+        setSubmitting(true);
+        try {
+            const paymentInfo = getPaymentInfo();
+            const response = await createTransaction({...paymentInfo, ...{Software: "Instech360-extension"}}, subdomain, (activeTab == "eCheck" && selectedMethod.value == "new") || selectedMethod.CardType == "ACH");
 
-        if (response) {
-            if (response.xStatus == "Approved")
-                setPaymentSuccess(true);
-            else {
-                alert("Payment Failed " + response.xError)
+            if (response) {
+                if (response.xStatus == "Approved")
+                    setPaymentSuccess(true);
+                else
+                    alert("Payment Failed " + response.xError);
+            } else {
+                alert("Payment Failed");
             }
+        } finally {
+            setSubmitting(false);
         }
-        else 
-            alert("Payment Failed")
-        
     }
 
     const isCheck: () => boolean = () => {
@@ -232,6 +242,13 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
         setShowConfirmDelete(false);
         getPaymentMethods(lookupCode);
     }
+    if (loadingMethods) return (
+        <div className="loading-div">
+            <div className="spinner"></div>
+            <p>Loading...</p>
+        </div>
+    );
+
     return <>
         {paymentSuccess && <PaymentSuccess amount={paymentAmount + (paymentAmount * (transferFee / 100))} />}
         {showConfirmDelete && <ConfirmationModal onClose={() => { setShowConfirmDelete(false); setDeleteMethod(null) }} onConfirm={confirmDelete} confirmButtonText="Delete">
@@ -401,8 +418,8 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({ isDev,
 
 
         <div className="form-group">
-            <button onClick={SubmitPayment} style={{ width: "100%" }} type="button" className="btn-2 btn-primary" >
-                Submit Payment
+            <button onClick={SubmitPayment} style={{ width: "100%" }} type="button" className="btn-2 btn-primary" disabled={submitting}>
+                {submitting ? <><div className="spinner" style={{ width: 16, height: 16, borderWidth: 2, display: "inline-block", marginRight: 8, verticalAlign: "middle" }} />Processing...</> : "Submit Payment"}
             </button>
         </div>
     </>

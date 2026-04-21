@@ -9,6 +9,7 @@ export const Settings = () => {
     const [users, setUsers] = useState([]);
     const [user, setUser] = useState({});
     const [showAddNewUserModal, setShowAddNewUserModal] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const { showSuccess, SuccessModal } = useSuccessModal();
 
@@ -31,6 +32,7 @@ export const Settings = () => {
 
     useEffect(() => {
         async function fetchUsers() {
+            setLoading(true);
             try {
                 const usersList = await listUsers();
                 const newUserList = usersList.map(u => {
@@ -60,6 +62,8 @@ export const Settings = () => {
             }
             catch (err) {
                 console.error("Error fetching users:", err);
+            } finally {
+                setLoading(false);
             }
         }
         if (user) fetchUsers();
@@ -87,6 +91,12 @@ export const Settings = () => {
                     
                     <button className="btn-new-tx" onClick={() => setShowAddNewUserModal(true)}>Add New User</button>
                 </div>
+                <div style={{ position: "relative" }}>
+                {loading && (
+                    <div className="loader-overlay" style={{ position: "absolute" }}>
+                        <div className="spinner" />
+                    </div>
+                )}
                 <Grid enableFilters={false}  hideColumnDropdown={true} headerList={[
                     { DisplayValue: "Email", Show: true, Value: "Email" },
                     { DisplayValue: "Full Name", Show: true, Value: "FullName" },
@@ -94,6 +104,7 @@ export const Settings = () => {
                     { DisplayValue: "", Show: true, Value: "Action" },
                 ]} JsonObjectList={users}
                 />
+                </div>
             </div>
         </div>}
         <SuccessModal />

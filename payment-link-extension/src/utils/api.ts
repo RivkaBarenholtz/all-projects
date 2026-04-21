@@ -1,6 +1,7 @@
 import { Client, Invoice, SurchargeItem } from '../types';
 import { ApiService as Service } from '../services/apiService';
 import { Form } from 'lucide-react';
+import { version } from '../../package.json';
 
 export class ApiService {
   private subdomain: string;
@@ -192,6 +193,7 @@ export async function createTransaction(transaction: any, subdomain: string, isC
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "x-app-version": version,
     },
     body: JSON.stringify(transaction),
   });

@@ -14,7 +14,8 @@ import Loader from './Loader.jsx';
 import { set } from 'date-fns';
 import { ConfirmationModal } from '../Objects/ConfimationModal.jsx';
 import { FinanceTab } from './FinanceTab.jsx';
-
+import InvoiceSummary from './InvoiceSummary.jsx';
+import ThankYouPage from './ThankYouPage.jsx';
 
 
 export default function PaymentForm({ isPortal, onSuccess }) {
@@ -31,7 +32,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
   const [searchParams] = useSearchParams();
   const accountID = searchParams.get("account") ?? "";
-  const invoiceAmount = searchParams.get("amount") ?? null;
+  const invoiceAmount = searchParams.get("amount")?.replace(",","")?.replace("$", "") ?? null;
   const epicClientNumber = searchParams.get("accountid") ?? 0;
   const invoiceIDparam = searchParams.get("invoiceid") ?? "";
   const errorCode = searchParams.get("error") ?? "";
@@ -71,10 +72,12 @@ export default function PaymentForm({ isPortal, onSuccess }) {
   const [amntDisplayValue, setAmntDisplayValue] = useState(FormatCurrency(amount));
   const [state, setState] = useState('');
   const [activeTab, setActiveTab] = useState("Credit Card");
+  const [visibleSurcharge , setVisibleSurcharge] = useState(0);
 
   const [refNum, setRefNum] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message , setMessage] = useState("");
+  const [step, setStep] = useState(invoiceIDparam ? "invoices" : "payment");
 
 
   const setEverythingFocused = () => {
@@ -103,6 +106,10 @@ export default function PaymentForm({ isPortal, onSuccess }) {
     setShowModal(true);
   }
 
+const handleSuccess = () => {
+    setStep("complete");
+    if (onSuccess) onSuccess();
+  };
 
   const [accountValid, setAccountValid] = useState(true);
 
@@ -214,12 +221,14 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         setEverythingFocused={setEverythingFocused}
         selectCustomStyles={customStyles}
         isPortal={isPortal}
-        onFinish={onSuccess}
+        onFinish={handleSuccess}
         onError={onError}
         subdomain={vendor.subdomain}
         submitPressed={submitPressed}
         setSubmitPressed={setSubmitPressed}
         ref={cardtabRef}
+        vendor={vendor}
+
       />,
     "eCheck":
       <CheckTab
@@ -238,13 +247,14 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         invoiceID={invoiceID}
         setEverythingFocused={setEverythingFocused}
         isPortal={isPortal}
-        onFinish={onSuccess}
+        onFinish={handleSuccess}
         onError={onError}
         ifieldsKey={vendor.CardknoxIFeildsKey}
         subdomain={vendor.subdomain}
         submitPressed={submitPressed}
         setSubmitPressed={setSubmitPressed}
         ref={checktabRef}
+        vendor={vendor}
       />,
     "Finance": <FinanceTab submitPressed={submitPressed} setSubmitPressed={setSubmitPressed} amount={amount} />,
     ...(vendor.BankInfo && !isPortal && {
@@ -301,7 +311,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
         }
         let clientid =
           (context ?? "app") === "app"
-            ? BaseUrl().split('.')[0].split('//')[1]
+            ? BaseUrl().split('.')[0].split('//')[1].replace("127", "ins-dev")
             : (context ?? "ins-dev");
 
         if (clientid == "127") clientid = "ins-dev"
@@ -335,10 +345,12 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
         if (!hasNaN) {
           try {
-            setIsInvLoading(true);
+           // setIsInvLoading(true);
             let result = null;
             if (isPortal) {
-              result = await fetchWithAuth("get-invoice", { LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(Number(epicClientNumber)) ? null : epicClientNumber });
+              result = await fetchWithAuth("get-invoice",
+                { LookupCode: accountCode, InvoiceNumber: invoiceIdList, AccountId: isNaN(Number(epicClientNumber)) ? null : epicClientNumber }
+              );
             }
             else {
 
@@ -363,9 +375,13 @@ export default function PaymentForm({ isPortal, onSuccess }) {
               setAmntDisplayValue(FormatCurrency(totalBalance));
             }
 
-            setIsInvLoading(false);
+         
           } catch (err) {
-            setError(err.message); // Set error if something goes wrong
+            //setError(err.message); // Set error if something goes wrong
+          }
+          finally
+          {
+               setIsInvLoading(false);
           }
         }
       }
@@ -378,6 +394,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
   useEffect(() => {
     // Function to fetch data from your API
+     if (!vendor.subdomain) return;
     const fetchData = async () => {
 
       try {
@@ -400,6 +417,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           result = await response.json();
         }
         setSurcharge(result);
+        setVisibleSurcharge(result.surcharge * 100 )
       } catch (err) {
         setError(err.message); // Set error if something goes wrong
       }
@@ -430,6 +448,16 @@ export default function PaymentForm({ isPortal, onSuccess }) {
     if (vendor?.subdomain) GetRefNum();
   }
     , [vendor?.subdomain]
+  )
+
+  useEffect (
+    ()=> 
+    {
+      setSurcharge(
+        {...surcharge, surcharge: visibleSurcharge/100}
+      )
+    },
+    [visibleSurcharge]
   )
 
   useEffect(
@@ -534,264 +562,397 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           !isPortal &&
           <div className='logo-header'>
             <div className='logo-container'>
+  const selectedTotal = invoice
+    ? invoice.reduce((sum, item) => sum + (item.Selected !== false ? item.Balance : 0), 0)
+    : (amount ?? 0);
 
-              <img style={{ maxHeight: "100%" }} src={isTabletOrMobile ? vendor.MobileLogoUrl : vendor.LogoUrl}></img>
+  const logoHeader = !isPortal && (
+    <div className='logo-header'>
+      <div className='logo-container'>
+        <img style={{ maxHeight: "100%" }} src={isTabletOrMobile ? vendor.MobileLogoUrl : vendor.LogoUrl} />
+      </div>
+    </div>
+  );
 
+  
+  if (step === "complete") {
+    return <ThankYouPage />;
+  }
 
+  if (step === "invoices") {
+    return (
+      <>
+        {!isPortal && (
+          <div className='logo-header'>
+            <div className='logo-container'>
+              <img style={{ maxHeight: "100%" }} src={isTabletOrMobile ? vendor.MobileLogoUrl : vendor.LogoUrl} />
             </div>
           </div>
-        }
-        <div className='main' >
+        )}
+        <InvoiceSummary invoices={invoice ?? []} onProceed={() => setStep("payment")} accountCode={accountCode} />
+      </>
+    );
+  }
 
+  // ── Portal: restore original two-panel layout ──────────────────────────
+  if (isPortal) {
+    return (
+      <>
+        {showModal && (
+          <ConfirmationModal onClose={() => setShowModal(false)} showButton={false}>
+            <div style={{ margin: '5px' }}>{message}</div>
+          </ConfirmationModal>
+        )}
+        <div>
+          <div className='main'>
+            <div><p className="error-field">{error}</p></div>
+            <div className='payment-container'>
 
-
-        {/* {isSigned && <div style={{backgroundColor: "white", padding: "4px"}}> ✅Policy signed successfully. Please proceed to payment.
-            <a onClick={() => DownloadPolicyDocument(policy.DocumentId, policy.PolicyId, vendor.subdomain)} style={{paddingLeft:"20px", cursor:"pointer", textDecoration: "underline", color: "#148dc2", fontWeight: "600"}}> Download Signed Policy</a>
-          </div>} */}
-        {error != "" && <div style={{ backgroundColor: "#b82630", color: 'white', paddingLeft: "10px" }}>
-          <p >{error}</p>
-        </div>
-        }
-        <div className='payment-container'>
-
-          <div className='payment-left-panel'>
-            <div className='payment-card'>
-              <div >
-                <h3>
-
-                  Invoice Details
-                </h3>
-              </div>
-              <div >
-
-                <div className="form-group">
-                  <label htmlFor="cardholder-name" className="form-label">Account ID:</label>
-
-
-
-
-                  <>
-                    <input
-                      className={`form-input ${accountFocused && accountCode == "" ? "invalid" : ""}`}
-                      ref={accountRef}
-                      type="text"
-                      value={accountCode}
-                      disabled={!accountIDIsEditable}
-                      placeholder="Account ID"
-                      onFocus={() => { setFocusedField("Account") }}
-                      onBlur={() => { setFocusedField("") }}
-                      onChange={(e) => setAccountCode(e.target.value)}
-                    />
-                    {
-                      accountFocused && accountCode == "" ?
-                        <div className="toast show" id="toast-for-accountid">Account ID required.</div>
-                        : ''
-                    }
-                  </>
-
-
-                </div>
-
-                {
-                  (!invoice || invoice.length <= 1) ?
+              <div className='payment-left-panel'>
+                <div className='payment-card'>
+                  <div><h3>Invoice Details</h3></div>
+                  <div>
                     <div className="form-group">
-                      <label htmlFor="invoice-id" className="form-label">Invoice Number:</label>
+                      <label htmlFor="cardholder-name" className="form-label">Account ID:</label>
                       <input
+                        className={`form-input ${accountFocused && accountCode === '' ? 'invalid' : ''}`}
+                        ref={accountRef}
+                        type="text"
+                        value={accountCode}
+                        disabled={!accountIDIsEditable}
+                        placeholder="Account ID"
+                        onFocus={() => setAccountFocused(true)}
+                        onBlur={() => setAccountFocused(false)}
+                        onChange={(e) => setAccountCode(e.target.value)}
+                      />
+                      {accountFocused && accountCode === '' && (
+                        <div className="toast show">Account ID required.</div>
+                      )}
+                    </div>
+
+                    {(!invoice || invoice.length <= 1) ? (
+                      <div className="form-group">
+                        <label htmlFor="invoice-id" className="form-label">Invoice Number:</label>
+                        <input
+                          className="form-input"
+                          type="text"
+                          placeholder="Invoice ID"
+                          value={invoiceID}
+                          disabled={!invoiceIdIsEditable}
+                          onChange={(e) => setInvoiceID(e.target.value)}
+                        />
+                      </div>
+                    ) : (
+                      <table className="invoice-table">
+                        <thead><tr><th></th><th>Invoice Number</th><th>Balance</th></tr></thead>
+                        <tbody>
+                          {invoice.map((inv, index) => {
+                            if (inv.Selected === undefined) inv.Selected = true;
+                            return (
+                              <tr key={inv.AppliedEpicInvoiceNumber || index}>
+                                <td><input type="checkbox" checked={inv.Selected} onChange={() => handleSelectChange(index)} /></td>
+                                <td>{inv.AppliedEpicInvoiceNumber}</td>
+                                <td>
+                                  {inv.IsEditable ? (
+                                    <input
+                                      onChange={(e) => handleInvoiceAmountChange(index, e.target.value)}
+                                      value={inv.AmountDisplay}
+                                      onFocus={() => handleInvoiceFocus(index)}
+                                      onBlur={() => handlInvoiceAmountBlur(index)}
+                                    />
+                                  ) : FormatCurrency(inv.Balance)}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+
+                    <div className="form-group">
+                      <label htmlFor="invoice-id" className="form-label">Amount:</label>
+                      <input
+                        ref={amountRef}
                         className="form-input"
                         type="text"
-                        placeholder="Invoice ID"
-                        value={invoiceID}
-                        disabled={!invoiceIdIsEditable}
+                        placeholder="$0.00"
+                        value={invoice && invoice.length > 1
+                          ? FormatCurrency(invoice.reduce((sum, item) => sum + (item.Selected ? item.Balance : 0), 0))
+                          : amntDisplayValue}
+                        onChange={handleAmountChange}
+                        onBlur={handleAmountBlur}
+                        onFocus={handleFocus}
+                        disabled={!amountIsEditable}
+                      />
+                      {amountFocused && amount <= 0 && (
+                        <div className="toast show">Amount required.</div>
+                      )}
+                    </div>
 
-                        onChange={(e) => setInvoiceID(e.target.value)}
+                    <div className="form-group">
+                      <label htmlFor="surcharge-rate" className="form-label">Surcharge Rate:</label>
+                      <input
+                        className="form-input"
+                        type="number"
+                        id="surcharge-rate"
+                        value={visibleSurcharge}
+                        onChange={(e) => setVisibleSurcharge(Number(e.target.value))}
                       />
                     </div>
-                    :
-                    <table className="invoice-table">
-                      <thead>
-                        <tr>
-                          <th></th>
-                          <th>Invoice Number</th>
-                          <th>Balance</th>
-                        </tr>
-                      </thead>
-                      <tbody>
 
-                        {invoice.map((inv, index) => {
-                          if (inv.Selected == undefined) inv['Selected'] = true;
-                          return <tr key={inv.AppliedEpicInvoiceNumber || index}>
-                            {/* Select checkbox */}
-                            <td>
-                              <input
-                                type="checkbox"
-                                checked={inv.Selected}
-                                onChange={() => handleSelectChange(index)}
-                              />
-                            </td>
-
-                            {/* Invoice Number */}
-                            <td>{inv.AppliedEpicInvoiceNumber}</td>
-
-                            {/* Balance */}
-                            <td>
-                              {inv.IsEditable ? (
-                                <input
-                                  onChange={(e) => { handleInvoiceAmountChange(index, e.target.value) }}
-                                  value={inv.AmountDisplay}
-                                  onFocus={() => { handleInvoiceFocus(index) }}
-                                  onBlur={() => { handlInvoiceAmountBlur(index) }}
-                                />
-                              ) : (
-                                FormatCurrency(inv.Balance)
-                              )}
-                            </td>
-                          </tr>
-                        })}
-                      </tbody>
-                    </table>
-                }
-
-                <div className="form-group">
-                  <label htmlFor="invoice-id" className="form-label">Amount:</label>
-
-
-                  <input
-                    ref={amountRef}
-                    className="form-input"
-                    type="text"
-                    placeholder="$0.00"
-                    value={invoice && invoice.length > 1 ? FormatCurrency(invoice.reduce((sum, item) => sum + (item.Selected ? item.Balance : 0), 0)) : amntDisplayValue}
-                    onChange={handleAmountChange}
-                    onBlur={handleAmountBlur}
-                    onFocus={handleFocus}
-                    disabled={!amountIsEditable}
-                  />
-                  {
-                    amountFocused && amount <= 0 ?
-                      <div className="toast show" id="toast-for-accountid">Amount required.</div>
-                      : ''
-                  }
-                </div>
-                <div className="form-group">
-                  <label htmlFor="notes">Notes (Optional)</label>
-                  <textarea className='form-input' id="notes" name="notes" rows="3"></textarea>
+                    <div className="form-group">
+                      <label htmlFor="notes">Notes (Optional)</label>
+                      <textarea className='form-input' id="notes" name="notes" rows="3" onChange={(e) => setNotes(e.target.value)}></textarea>
+                    </div>
+                  </div>
                 </div>
 
+                <div className='card'>
+                  <div className="card-header"><h3>Billing Information</h3></div>
+                  <div className='card-body'>
+                    <div className="form-group">
+                      <label htmlFor="cardholder-name" className="form-label">Cardholder Name</label>
+                      <input type="text" id="cardholder-name" placeholder='Cardholder' className="form-input" onChange={(e) => setCardHolderName(e.target.value)} />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="address" className="form-label">Billing Address</label>
+                      <input type="text" id="address" placeholder='Address' className="form-input" onChange={(e) => setBillingAddress(e.target.value)} />
+                    </div>
+                    <div className="form-row">
+                      <div className="form-group form-col">
+                        <label htmlFor="city" className="form-label">City</label>
+                        <input type="text" id="city" className="form-input city-select" onChange={(e) => setCity(e.target.value)} />
+                      </div>
+                      <div className="form-group form-col">
+                        <label htmlFor="state" className="form-label">State</label>
+                        <Select
+                          inputId="state"
+                          options={states}
+                          value={state}
+                          onChange={(selectedOption) => setState(selectedOption?.value)}
+                          isClearable={false}
+                          placeholder=""
+                          styles={customStyles}
+                          components={{ IndicatorSeparator: () => null }}
+                          classNamePrefix="Select"
+                        />
+                      </div>
+                      <div className="form-group form-col">
+                        <label htmlFor="zip" className="form-label">ZIP Code</label>
+                        <input type="text" id="zip" onChange={(e) => setZip(e.target.value)} className="form-input zip-input" />
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="phone">Phone</label>
+                      <input className='form-input' type="tel" id="phone" placeholder="(XXX) XXX-XXXX" onChange={(e) => setPhone(e.target.value)} />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="email">Email</label>
+                      <input className='form-input' type="email" id="email" placeholder="user@email.com" onChange={(e) => setEmail(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-            </div>
-
-            <div className='card'>
-              <div className="card-header">
-                <h3>
-                  Billing Information
-                </h3>
-              </div>
-              <div className='card-body'>
-
-                <div className="form-group">
-                  <label htmlFor="cardholder-name" className="form-label">Cardholder Name</label>
-                  <input
-                    type="text"
-                    id="cardholder-name"
-                    name="cardholder-name"
-                    placeholder='Cardholder'
-                    className="form-input"
-                    onChange={(e) => setCardHolderName(e.target.value)}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="address" className="form-label">Billing Address</label>
-                  <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    placeholder='Address'
-                    className="form-input" onChange={(e) => setBillingAddress(e.target.value)}
-                  />
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group form-col">
-                    <label htmlFor="city" className="form-label">City</label>
-                    <input
-                      type="text"
-                      id="city" name="city"
-                      className="form-input city-select"
-                      onChange={(e) => setCity(e.target.value)}
-                    />
+              <div className='payment-right-panel'>
+                <div className='card'>
+                  <div>
+                    <h3>
+                      Payment Info
+                      <FontAwesomeIcon icon={faLock} style={{ color: '#444', fontSize: '1rem', padding: '4px', verticalAlign: 'middle' }} />
+                    </h3>
                   </div>
-                  <div className="form-group form-col">
-                    <label htmlFor="state" className="form-label">
-                      State
-                    </label>
-                    <Select
-                      inputId="state"
-                      options={states}
-                      value={state}
-                      onChange={(selectedOption) => setState(selectedOption?.value)}
-                      isClearable={false}
-                      placeholder=""
-                      styles={customStyles}
-                      components={{
-                        IndicatorSeparator: () => null  // This removes the vertical line separator
-                      }}
-                      classNamePrefix="Select"
-                    />
+                  <div>
+                    <PaymentTabs setActiveTab={setActiveTab} tabs={paymentTabData} activeTab={activeTab} />
                   </div>
-                  <div className="form-group form-col">
-                    <label htmlFor="zip" className="form-label">ZIP Code</label>
-                    <input type="text" id="zip" name="zip" onChange={(e) => setZip(e.target.value)} className="form-input  zip-input" />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="phone">Phone </label>
-                  <input
-                    className='form-input'
-                    type="tel" id="phone"
-                    name="phone"
-                    placeholder="(XXX) XXX-XXXX"
-                    onChange={(e) => setPhone(e.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="email">Email</label>
-                  <input
-                    className='form-input'
-                    type="email"
-                    id="email"
-                    name="email"
-                    required=""
-                    placeholder="user@email.com"
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
                 </div>
               </div>
 
             </div>
-
-
           </div>
-          <div className='payment-right-panel'>
-            <div className='card'>
-              <div>
-                <h3>
-                  Payment Info
-                  <FontAwesomeIcon icon={faLock} style={{
-                    color: '#444',
-                    fontSize: '1rem',
-                    padding: '4px',
-                    verticalAlign: 'middle'
-                  }} />
-                </h3>
-              </div>
-              <div>
-                <PaymentTabs setActiveTab={setActiveTab} tabs={paymentTabData} activeTab={activeTab} />
-              </div>
+          {(isLoading || isInvLoading) && <Loader />}
+        </div>
+      </>
+    );
+  }
+
+  // ── Public: wizard layout ───────────────────────────────────────────────
+  const STEPS = invoiceIDparam ? ['Summary', 'Payment', 'Complete'] : ['Payment', 'Complete'];
+  const ACTIVE_STEP = invoiceIDparam ? 1 : 0;
+
+  const wizardStyle = {
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0', marginBottom: '36px',
+  };
+  const stepCircleBase = {
+    width: '32px', height: '32px', borderRadius: '50%', display: 'flex',
+    alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700', flexShrink: 0,
+  };
+  const connectorStyle = { flex: 1, height: '2px', backgroundColor: '#e2e8f0', maxWidth: '60px' };
+
+  return (
+    <>
+      {showModal && (
+        <ConfirmationModal onClose={() => setShowModal(false)} showButton={false}>
+          <div style={{ margin: '5px' }}>{message}</div>
+        </ConfirmationModal>
+      )}
+
+      {!isPortal && (
+        <div className='logo-header'>
+          <div className='logo-container'>
+            <img style={{ maxHeight: '100%' }} src={isTabletOrMobile ? vendor.MobileLogoUrl : vendor.LogoUrl} />
+          </div>
+        </div>
+      )}
+
+      <div style={{
+        fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+        backgroundColor: '#f0f4f8', minHeight: '100vh', display: 'flex',
+        flexDirection: 'column', alignItems: 'center', padding: '48px 20px', color: '#1e293b',
+      }}>
+
+        {/* Wizard progress */}
+        <div style={{ width: '100%', maxWidth: '560px', marginBottom: '8px' }}>
+          <div style={wizardStyle}>
+            {STEPS.map((label, i) => (
+              <React.Fragment key={label}>
+                {i > 0 && <div style={connectorStyle} />}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                  <div style={{
+                    ...stepCircleBase,
+                    backgroundColor: i === ACTIVE_STEP ? '#0070ba' : i < ACTIVE_STEP ? '#0070ba' : '#e2e8f0',
+                    color: i <= ACTIVE_STEP ? '#fff' : '#94a3b8',
+                    opacity: i < ACTIVE_STEP ? 0.5 : 1,
+                  }}>
+                    {i + 1}
+                  </div>
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: i === ACTIVE_STEP ? '700' : '400',
+                    color: i === ACTIVE_STEP ? '#0070ba' : '#94a3b8',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {label}
+                  </span>
+                </div>
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+
+        {/* Card */}
+        <div style={{
+          backgroundColor: '#ffffff', borderRadius: '14px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+          width: '100%', maxWidth: '560px', padding: '40px 36px',
+        }}>
+          {error && <p style={{ color: '#dc2626', marginTop: 0 }}>{error}</p>}
+
+          {/* Account header — only when pre-filled from URL */}
+          {!accountIDIsEditable && accountCode && (
+            <div style={{ marginBottom: '20px' }}>
+              <span style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '3px' }}>
+                Account
+              </span>
+              <span style={{ fontSize: '20px', fontWeight: '700', color: '#1e293b' }}>
+                {accountCode}
+              </span>
             </div>
+          )}
 
+          {/* Amount — editable input when not in URL */}
+          {invoiceAmount === null && (
+            <div style={{ marginBottom: '20px' }}>
+              <span style={{ fontSize: '12px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>
+                Amount
+              </span>
+              <input
+                ref={amountRef}
+                className={`form-input ${amountFocused && !amount ? 'invalid' : ''}`}
+                type="text"
+                value={amntDisplayValue}
+                placeholder="$0.00"
+                onChange={handleAmountChange}
+                onBlur={handleAmountBlur}
+                onFocus={handleFocus}
+                style={{ width: '100%', boxSizing: 'border-box' }}
+              />
+              {amountFocused && !amount && (
+                <div className="toast show">Amount required.</div>
+              )}
+            </div>
+          )}
 
+          {/* Total — top of card */}
+          <span style={{ fontSize: '12px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>
+            Total
+          </span>
+          {(() => {
+            const base = invoice && invoice.length > 1
+              ? invoice.reduce((sum, item) => sum + (item.Selected !== false ? item.Balance : 0), 0)
+              : parseFloat(amount ?? 0) || 0;
+            const surchargeAmt = activeTab === 'Credit Card'
+              ? (invoice && invoice.length > 1
+                  ? invoice.reduce((sum, item) => sum + (item.Selected !== false ? item.Balance * (item.Surcharge || 0) : 0), 0)
+                  : base * (surcharge.surcharge || 0))
+              : 0;
+            const grandTotal = base + surchargeAmt;
+            return (
+              <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px 14px', marginBottom: '20px' }}>
+                {surchargeAmt > 0 && (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#64748b', marginBottom: '6px' }}>
+                      <span>Subtotal</span>
+                      <span>{FormatCurrency(base)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#64748b', marginBottom: '10px', paddingBottom: '10px', borderBottom: '1px solid #e2e8f0' }}>
+                      <span>Electronic Transfer Fee</span>
+                      <span>{FormatCurrency(surchargeAmt)}</span>
+                    </div>
+                  </>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>
+                    {surchargeAmt > 0 ? 'Grand Total' : 'Amount Due'}
+                  </span>
+                  <span style={{ fontSize: '22px', fontWeight: '800', color: '#1e293b' }}>
+                    {FormatCurrency(grandTotal)}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Account ID — editable input only when not pre-filled from URL */}
+          {accountIDIsEditable && (
+            <div style={{ marginBottom: '20px' }}>
+              <span style={{ fontSize: '12px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' }}>
+                Account ID
+              </span>
+              <input
+                ref={accountRef}
+                className={`form-input ${accountFocused && accountCode === '' ? 'invalid' : ''}`}
+                type="text"
+                value={accountCode}
+                placeholder="Enter Account ID"
+                onChange={(e) => setAccountCode(e.target.value)}
+                onFocus={() => setAccountFocused(true)}
+                onBlur={() => setAccountFocused(false)}
+                style={{ width: '100%', boxSizing: 'border-box' }}
+              />
+              {accountFocused && accountCode === '' && (
+                <div className="toast show">Account ID required.</div>
+              )}
+            </div>
+          )}
+
+          {/* Payment options */}
+          <div style={{ borderTop: '2px solid #e2e8f0', paddingTop: '24px' }}>
+            <span style={{ fontSize: '12px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px' }}>
+              Payment Method
+              <FontAwesomeIcon icon={faLock} style={{ color: '#94a3b8', fontSize: '11px' }} />
+            </span>
+            <PaymentTabs setActiveTab={setActiveTab} tabs={paymentTabData} activeTab={activeTab} />
           </div>
 
 
@@ -799,9 +960,8 @@ export default function PaymentForm({ isPortal, onSuccess }) {
 
 
       </div>
-      {(isLoading || isInvLoading) && <Loader />}
-    </div>
 
-  </div >
-     </>);
+      {(isLoading || isInvLoading) && <Loader />}
+    </>
+  );
 }

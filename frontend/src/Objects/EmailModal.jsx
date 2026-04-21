@@ -57,7 +57,7 @@ export const EmailModal = ({ transaction, close }) => {
         confirmButtonText={"Send Receipt"}
         onConfirm={handleConfirm}
         onClose={close}
-
+        loading={isSubmitting}
     >
         {!isSuccess ? (
             <>

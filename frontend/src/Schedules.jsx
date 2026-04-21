@@ -10,6 +10,7 @@ export default function Schedules() {
    const [schedule, setSchedule] = useState(null);
    const [nextToken, setNextToken] = useState("");
    const [data, setData] = useState([]);
+   const [loading, setLoading] = useState(false);
 
 
 
@@ -159,25 +160,28 @@ export default function Schedules() {
          PageSize: 100
       }
 
-      const response = await fetchWithAuth("list-schedules", req)
+      setLoading(true);
+      try {
+         const response = await fetchWithAuth("list-schedules", req)
 
-      const formattedData = response.Schedules.map((schedule) => {
-         return {
-            ...schedule,
-            amtFormatted: <span className='amount positive'>{FormatCurrency(schedule.Amount)}</span>,
-            Status: <span className={`status ${schedule.IsActive ? "approved" : "chargeback"}`}>{schedule.IsActive ? "Active" : "Stopped"} </span>,
-            RemainingPayments: Number(schedule.TotalPayments) - Number(schedule.PaymentsProcessed)
-         }
+         const formattedData = response.Schedules.map((schedule) => {
+            return {
+               ...schedule,
+               amtFormatted: <span className='amount positive'>{FormatCurrency(schedule.Amount)}</span>,
+               Status: <span className={`status ${schedule.IsActive ? "approved" : "chargeback"}`}>{schedule.IsActive ? "Active" : "Stopped"} </span>,
+               RemainingPayments: Number(schedule.TotalPayments) - Number(schedule.PaymentsProcessed)
+            }
+         })
 
-      })
-
-      const allData = [
-         ...nextToken == '' || nextToken == undefined ? [] : data,
-         ...formattedData
-      ]
-      setNextToken(response.NextToken)
-      setData(allData)
-
+         const allData = [
+            ...nextToken == '' || nextToken == undefined ? [] : data,
+            ...formattedData
+         ]
+         setNextToken(response.NextToken)
+         setData(allData)
+      } finally {
+         setLoading(false);
+      }
    }
 
    useEffect(() => {
@@ -231,7 +235,14 @@ export default function Schedules() {
 
 
       }
-      <Grid rowClick={setSchedule} JsonObjectList={data} headerList={headers} SetHeaderList={setHeaders} Sort={sortData}  />
+      <div style={{ position: "relative" }}>
+         {loading && (
+            <div className="loader-overlay" style={{ position: "absolute" }}>
+               <div className="spinner" />
+            </div>
+         )}
+         <Grid rowClick={setSchedule} JsonObjectList={data} headerList={headers} SetHeaderList={setHeaders} Sort={sortData} />
+      </div>
 
       <SuccessModal />
    </>
