@@ -8,9 +8,10 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.15" />
+    <PackageReference Include="itext.bouncy-castle-adapter" Version="9.6.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="QuestPDF" Version="2026.2.2" />
-    <PackageReference Include="itext7" Version="8.0.5" />
+    <PackageReference Include="itext7" Version="9.6.0" />
   </ItemGroup>
 
   <ItemGroup>
