@@ -27,30 +27,30 @@ export const CheckingInfo = ({
                         {submitPressed && accountName == "" ? <div className="toast show" id="toast-for-account-holder">Account holder name required.</div> : ''}
 
                     </div>
-                    <div className="form-group">
-                        <label htmlFor="account-number" className="form-label">Account Number</label>
-                        <input
-                            type="text"
-                            id="account-number"
-                            name="account-number"
-                            className={`form-input ${submitPressed && accountNumber == "" ? "invalid" : ""}`}
-                            onChange={(e) => setAccountNumber(e.target.value)}
-                        />
-                        {submitPressed && accountNumber == "" ? <div className="toast show" id="toast-for-account-number">Account number required.</div> : ''}
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label htmlFor="account-number" className="form-label">Account Number</label>
+                            <input
+                                type="text"
+                                id="account-number"
+                                name="account-number"
+                                className={`form-input ${submitPressed && accountNumber == "" ? "invalid" : ""}`}
+                                onChange={(e) => setAccountNumber(e.target.value)}
+                            />
+                            {submitPressed && accountNumber == "" ? <div className="toast show" id="toast-for-account-number">Account number required.</div> : ''}
+                        </div>
 
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="routing-number" className="form-label">Routing Number</label>
-                        <input
-                            type="text"
-                            id="routing-number"
-                            name="routing-number"
-                            className={`form-input ${submitPressed && routingNumber == "" ? "invalid" : ""}`}
-                            onChange={(e) => setRoutingNumber(e.target.value)}
-                        />
-                        {submitPressed && routingNumber == "" ? <div className="toast show" id="toast-for-routing-number">Routing number required.</div> : ''}
-
+                        <div className="form-group">
+                            <label htmlFor="routing-number" className="form-label">Routing Number</label>
+                            <input
+                                type="text"
+                                id="routing-number"
+                                name="routing-number"
+                                className={`form-input ${submitPressed && routingNumber == "" ? "invalid" : ""}`}
+                                onChange={(e) => setRoutingNumber(e.target.value)}
+                            />
+                            {submitPressed && routingNumber == "" ? <div className="toast show" id="toast-for-routing-number">Routing number required.</div> : ''}
+                        </div>
                     </div>
 
     </>

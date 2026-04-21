@@ -53,15 +53,25 @@ export const CustomerInfo = ({
           </div>
         </div>
 
-        <div className="form-group">
-          <label>Company *</label>
-          <input
-            type="text"
-            value={company}
-            onChange={(e) => setCompany(e.target.value)}
-          />
-           {submitPressed && company == "" ? <div className="toast show" id="toast-for-account-holder">Company required.</div> : ''}
+        <div className="form-row">
+          <div className="form-group">
+            <label>Company *</label>
+            <input
+              type="text"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+            />
+            {submitPressed && company == "" ? <div className="toast show" id="toast-for-account-holder">Company required.</div> : ''}
+          </div>
 
+          <div className="form-group">
+            <label>Customer #</label>
+            <input
+              type="text"
+              value={customerNumber}
+              onChange={(e) => setCustomerNumber(e.target.value)}
+            />
+          </div>
         </div>
 
         <div className="form-group">
@@ -70,15 +80,6 @@ export const CustomerInfo = ({
             value={note}
             onChange={(e) => setNote(e.target.value)}
           ></textarea>
-        </div>
-
-        <div className="form-group">
-          <label>Customer #</label>
-          <input
-            type="text"
-            value={customerNumber}
-            onChange={(e) => setCustomerNumber(e.target.value)}
-          />
         </div>
       </section>
 
@@ -122,23 +123,25 @@ export const CustomerInfo = ({
 
       <section className="form-section">
         <h3>Contact Info</h3>
-        <div className="form-group">
-          <label>Phone Number</label>
-          <input
-            type="text"
-            placeholder="(718)-000-0000"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-        </div>
-        <div className="form-group">
-          <label>Email Address</label>
-          <input
-            type="text"
-            placeholder="user@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+        <div className="form-row">
+          <div className="form-group">
+            <label>Phone Number</label>
+            <input
+              type="text"
+              placeholder="(718)-000-0000"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label>Email Address</label>
+            <input
+              type="text"
+              placeholder="user@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
         </div>
       </section>
     </>

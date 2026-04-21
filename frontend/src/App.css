@@ -547,6 +547,10 @@ tr:hover {
   gap: 1rem;
 }
 
+.form-row .form-group {
+  flex: 1;
+}
+
 .payment-total-line {
   display: flex;
   justify-content: flex-start;

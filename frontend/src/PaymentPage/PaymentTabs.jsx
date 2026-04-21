@@ -17,7 +17,7 @@ const PaymentTabs = ({ tabs, setActiveTab, activeTab }) => {
                 padding: '7px 18px',
                 borderRadius: '20px',
                 border: isActive ? 'none' : '1px solid #e2e8f0',
-                backgroundColor: isActive ? '#0070ba' : '#f1f5f9',
+                backgroundColor: isActive ? '#043969' : '#f1f5f9',
                 color: isActive ? '#ffffff' : '#475569',
                 fontWeight: isActive ? '700' : '500',
                 fontSize: '13px',
