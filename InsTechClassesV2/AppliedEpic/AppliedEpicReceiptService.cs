@@ -245,6 +245,7 @@ namespace InsTechClassesV2.AppliedEpic
             {
                 Console.WriteLine($"We couldn't create a new receipt using the standard vendor agency code. Trying again vendors secondary agency code.({vendor.SecondaryAgencyCode})");
                 receipt.DetailValue.DetailItemsValue.DetailItem[0].StructureAgencyCode = SecurityElement.Escape(vendor.SecondaryAgencyCode);
+                receipt.DetailValue.DetailItemsValue.DetailItem[0].StructureBranchCode = SecurityElement.Escape(client.BranchCode[vendor.SecondaryAgencyCode]);
                 response = await AppliedApiClient.PostObject(_url, receipt, vendor);
                 responseString = await response.Content.ReadAsStringAsync();
             }
