@@ -11,40 +11,9 @@ import { ACH_TYPE } from "@cardknox/react-ifields";
 import { fetchWithAuth } from "../Utilities";
 
 
-const ProcessButton = ({ onClick }) => {
-  const [hovered, setHovered] = React.useState(false);
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        width: '100%',
-        backgroundColor: hovered ? '#005ea6' : '#0070ba',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '10px',
-        padding: '18px 24px',
-        fontSize: '16px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        letterSpacing: '0.3px',
-        marginTop: '16px',
-        transition: 'background-color 0.18s ease, box-shadow 0.18s ease',
-        boxShadow: hovered ? '0 6px 20px rgba(0,112,186,0.35)' : '0 2px 8px rgba(0,112,186,0.18)',
-      }}
-    >
-      <FontAwesomeIcon icon={faCreditCard} style={{ paddingRight: '8px' }} />
-      Process Payment
-    </button>
-  );
-};
-
 export const CheckTab = (
     { 
         amount, 
-        vendor, 
         accountCode, 
         csrCode, 
         csrEmail, 
@@ -132,7 +101,10 @@ export const CheckTab = (
             Software: isPortal ? "Instech-Pay-Portal" : "Instech-Payment-Site",
             isDevelopment: import.meta.env.VITE_ENV === 'development'
         };
-         
+         const clientid =
+            (context ?? "app") === "app"
+                ? BaseUrl().split('.')[0].split('//')[1]
+                : (context ?? "ins-dev");
         try {
             let responseBody = null;
             if (isPortal) {
@@ -140,7 +112,7 @@ export const CheckTab = (
             }
             else {
             
-            const response = await fetch(`${BaseUrl()}/pay/${vendor.subdomain}/make-check-payment-to-cardknox`, {
+            const response = await fetch(`${BaseUrl()}/pay/${clientid.replace("test", "ins-dev")}/make-check-payment-to-cardknox`, {
                 method: 'POST',
                 body: JSON.stringify(request),
                 headers: { 'Content-Type': 'application/json' }
@@ -167,92 +139,142 @@ export const CheckTab = (
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-
-            {/* Account Type + Holder Name — side by side */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label">Account Type</label>
-                    <select className="form-input" id="accountType" value={accountType} onChange={handleAccountTypeChange}>
-                        <option value="checking">Checking</option>
-                        <option value="savings">Savings</option>
-                    </select>
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                    <label htmlFor="account-name" className="form-label">Account Holder</label>
-                    <input
-                        type="text"
-                        id="account-name"
-                        placeholder="Full name"
-                        className={`form-input ${submitPressed && accountName === '' ? 'invalid' : ''}`}
-                        onChange={(e) => setAccountName(e.target.value)}
-                    />
-                </div>
-            </div>
-            {submitPressed && accountName === '' && (
-                <div className="toast show">Account holder name required.</div>
-            )}
-
-            {/* Account Number + Routing — side by side */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label">Account Number</label>
-                    <CardnoxField
-                        ifieldType={ACH_TYPE}
-                        onToken={onCheckToken}
-                        handle3DSResults={verify3DS}
-                        ref={checkRef}
-                        className="ifields"
-                        ifieldsKey={ifieldsKey}
-                    />
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                    <label htmlFor="routing-number" className="form-label">Routing Number</label>
-                    <input
-                        type="text"
-                        id="routing-number"
-                        placeholder="Routing"
-                        className={`form-input ${submitPressed && routingNumber === '' ? 'invalid' : ''}`}
-                        onChange={(e) => setRoutingNumber(e.target.value)}
-                    />
-                </div>
-            </div>
-            {submitPressed && (checkToken === '' || routingNumber === '') && (
-                <div className="toast show">Account number and routing number required.</div>
-            )}
-
-            {/* ACH Authorization */}
-            {!isPortal && (
-                <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 12px', fontSize: '12px', color: '#475569' }}>
-                    <div style={{ maxHeight: achChecked ? '0' : '72px', overflow: 'hidden', transition: 'max-height 0.2s ease', marginBottom: achChecked ? '0' : '8px', lineHeight: '1.5' }}>
-                        I authorize this company to debit my bank account via ACH within 1–3 business days. I understand returned payments may incur fees and I remain responsible for the amount owed.
+        <div>
+            <div>
+                    `<div className="form-group" >
+                        <label className="form-label" >Select Account Type: </label>
+                        <select className="form-input" id="accountType" value={accountType} onChange={handleAccountTypeChange}>
+                            <option value="checking">Checking</option>
+                            <option value="savings">Savings</option>
+                        </select>
                     </div>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: '600', color: '#1e293b' }}>
-                        <input type="checkbox" id="ach-agree" onChange={handleCheckboxChange} style={{ accentColor: '#0070ba' }} />
-                        I agree to the ACH authorization terms
-                    </label>
-                    {submitPressed && !achChecked && (
-                        <div className="toast show" style={{ marginTop: '6px' }}>ACH authorization must be accepted.</div>
-                    )}
-                </div>
-            )}
+                    <div className="form-group">
+                        <label htmlFor="account-name" className="form-label">Account Holder Name</label>
+                        <input
+                            type="text"
+                            id="account-name"
+                            name="account-name"
+                            placeholder="Account Name"
+                            className={`form-input ${submitPressed && accountName == "" ? "invalid" : ""}`}
+                            onChange={(e) => setAccountName(e.target.value)}
+                        />
+                        {submitPressed && accountName == "" ? <div className="toast show" id="toast-for-account-holder">Account holder name required.</div> : ''}
 
-            {/* reCAPTCHA */}
-            {!isPortal && (
-                <div>
-                    <ReCAPTCHA
-                        sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                        onChange={(token) => setCaptchaToken(token)}
-                    />
-                    {submitPressed && (captchaToken === '' || captchaToken == null) && (
-                        <div className="toast show">Recaptcha check required.</div>
-                    )}
-                </div>
-            )}
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="account-number" className="form-label">Account Number</label>
+                          <CardnoxField
+                            
+                            ifieldType={ACH_TYPE}
+                             onToken={onCheckToken}
+                            handle3DSResults={verify3DS}
+                            ref={checkRef}
+                            className={`ifields`}
+                            ifieldsKey={ifieldsKey}
+                        />
+                        {submitPressed && checkToken == "" ? <div className="toast show" id="toast-for-account-number">Account number required.</div> : ''}
 
-            {/* Submit */}
-            {showProcess && <ProcessButton onClick={submitToGateway} />}
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="routing-number" className="form-label">Routing Number</label>
+                        <input
+                            type="text"
+                            id="routing-number"
+                            placeholder="Routing"
+                            name="routing-number"
+                            className={`form-input ${submitPressed && routingNumber == "" ? "invalid" : ""}`}
+                            onChange={(e) => setRoutingNumber(e.target.value)}
+                        />
+                        {submitPressed && routingNumber == "" ? <div className="toast show" id="toast-for-routing-number">Routing number required.</div> : ''}
+
+                    </div>
+`
+
+                {
+                    !isPortal &&
+                    <>
+                        <div className="achagree achField">
+
+                            <div >
+                                <div id="ps-group-ps-ach-auth"
+                                    className="ps-group ps-style-full" data-gid="35267" data-key="ps-ach-auth">
+
+                                    <div
+                                        className="ps-contract"
+                                        data-agreed="true"
+                                    >
+                                        <div style={{ fontSize: "larger" }}>ACH Authorization</div>
+                                        <div >
+                                            <table className="ps-contract-options-links">
+                                                <tbody><tr>
+                                                    <td className="ps-contract-options-left">
+                                                        <div className="ps-expand-button" style={{ display: "none" }}>Expand Contract</div>
+                                                    </td>
+
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div style={{ paddingBottom: "40px" }} >
+                                            <div style={{ display: (achChecked ? "none" : "block") }} >
+                                                <span style={{ backgroundColor: "initial" }} cursorposition="890">
+                                                    I hereby authorize this company to debit my bank account through the electronic Automated Clearing House (ACH) network within one to three business days from the payment date for the amount or payment plan amount listed above. I am aware that in the event this company is unable to secure funds from my bank account for this transaction for any reason, including but not limited to insufficient funds in my account or insufficient or inaccurate information I provided when I submitted the electronic payment, further collection action may be undertaken by this company, including the application of returned check fees to the extent permitted by law. If my bank returns the payment, I am still responsible for making a payment to this company. If this is a recurring schedule, I understand this will remain in effect until a written request is submitted to this company requesting a change.
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="ach-checkbox-container" style={{
+                                            border: "1px solid lightblue",
+                                            fontSize: 'smaller'
+
+                                        }}>
+
+                                            <div className="ach-checkbox-wrapper">
+                                                <input type="checkbox" id="ach-agree" name="ach-agree" required="" onChange={handleCheckboxChange} />
+                                            </div>
+
+                                            <label htmlFor="ach-agree">I acknowledge that I have read, understand and agree to the full terms and conditions set forth above.</label>
+
+                                        </div>
+                                        {
+                                            submitPressed && !achChecked ?
+                                                <div className="toast show" id="toast-for-ach-agreement">ACH Authorization must be checked.</div>
+                                                : <></>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <br />
+                        </div>
+                        <div style={{ padding: "25px" }} >
+                            <ReCAPTCHA
+                                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                                onChange={(token) => setCaptchaToken(token)}
+                            />
+                            {(captchaToken == '' || captchaToken == null) && submitPressed ? <div className="toast show" id="toast-for-recap">Recaptcha check required.</div> : ''}
+
+                        </div>
+                    </>
+                }
+                {showProcess &&<> <div id="total">
+                    Your Total: <span id="total-amount">{FormatCurrency(parseFloat(amount))}</span>
+                </div>
+
+
+                <div className="button-spaced mt-3">
+                    <button className="btn btn-primary" type="button" onClick={submitToGateway}>
+                        <FontAwesomeIcon icon={faCreditCard} style={{ paddingRight: '5px' }} />
+                        Process Payment
+                    </button>
+                </div>
+
+                </>
+    }
+            </div>
         </div>
+
+
     )
 };
 
