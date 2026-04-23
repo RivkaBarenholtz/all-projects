@@ -24,7 +24,7 @@ export const ClientInfo: React.FC<ClientInfoProps> = ({
   accountId,
   surcharge,
   onShowCopied,
-  paylinkSubdomain = subdomain,
+  paylinkSubdomain ,
   setPaylinkSubdomain,
   isDev
 }) => {
@@ -63,6 +63,9 @@ export const ClientInfo: React.FC<ClientInfoProps> = ({
     async function getAccounts() {
       const accounts = await apiService.getCardknoxAccounts(client?.LookupCode ?? "")
       setAccountList(accounts)
+      if (accounts.length === 1) {
+        setPaylinkSubdomain(accounts[0].Subdomain);
+      }
     }
      if(client?.LookupCode ?? "" != "") getAccounts();
 
@@ -73,7 +76,7 @@ export const ClientInfo: React.FC<ClientInfoProps> = ({
 
   const handleGenerateLink = async () => {
     setSubmitted(true);
-    if (!amount || !client) return;
+    if (!amount || !client || (accountList.length > 1 && !paylinkSubdomain)) return;
 
     const url = generatePaymentUrl(paylinkSubdomain, client.LookupCode, accountId, {
       amount: parseFloat(amount)
@@ -88,7 +91,7 @@ export const ClientInfo: React.FC<ClientInfoProps> = ({
 
   const mailBody = () => {
     
-    if (!amount || !client) return "";
+    if (!amount || !client || (accountList.length > 1 && !paylinkSubdomain))  return "";
     
     const url = generatePaymentUrl(paylinkSubdomain, client.LookupCode, accountId, {
       amount: parseFloat(amount)
@@ -113,6 +116,7 @@ If you have any questions or need assistance, please let us know`;
   }
 
   const handleCollectPayment = () => {
+    if( (accountList.length > 1 && !paylinkSubdomain)) return;
     chrome.runtime.sendMessage({
       action: "OPEN_PAYMENT_WINDOW",
       invoiceId: "-1",
@@ -160,7 +164,7 @@ If you have any questions or need assistance, please let us know`;
       </div>
       <div className="card-body">
 
-        {accountList.length > 1 && <div style={{ display: 'flex', alignItems: 'center' }}>
+        {accountList.length > 1 && <div >
           Payment Account:
           <select
             value={paylinkSubdomain}
@@ -177,12 +181,15 @@ If you have any questions or need assistance, please let us know`;
               outline: 'none'
             }}
           >
+            <option value="">Select account</option>
             {accountList.map((account, index) => (
               <option key={index} value={account.Subdomain}>
                 <span style={{ fontWeight: "bold" }}>{account.CardknoxAccountCode}</span> - {account.AgencyCode}
               </option>
             ))}
           </select>
+          {submitted && !paylinkSubdomain && accountList.length > 1 && <div style={toastStyle}>Account required.</div>}
+      
         </div>
         }
         <div>
@@ -195,7 +202,7 @@ If you have any questions or need assistance, please let us know`;
             style={{...{ textAlign: 'left', marginLeft: '10px', width: '150px' }, ...(submitted && !amount ? { border: '1px solid red' } : {})}}
             onChange={(e) => setAmount(e.target.value)}
           />
-           {submitted && !amount && <div style={toastStyle}>Amount required.</div>}
+           {submitted && !amount && <div style={{...toastStyle, left: '125px', top: '-52px',}}>Amount required.</div>}
         </div>
 
         <div style={{ marginLeft: '5px', marginTop: '20px', textDecoration: 'underline', display: 'flex' }}>

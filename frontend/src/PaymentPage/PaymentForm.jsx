@@ -409,7 +409,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
           result = await response.json();
         }
         setSurcharge(result);
-        setVisibleSurcharge(result.surcharge * 100 )
+        setVisibleSurcharge((result.surcharge * 100 ).toFixed(2));
       } catch (err) {
         setError(err.message); // Set error if something goes wrong
       }
@@ -578,7 +578,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
               <div >
 
                 <div className="form-group">
-                  <label htmlFor="cardholder-name" className="form-label">Account ID:</label>
+                  <label htmlFor="cardholder-name" className="form-label">Policy Holder Name or Account ID*:</label>
 
 
 
@@ -608,7 +608,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
                 {
                   (!invoice || invoice.length <= 1) ?
                     <div className="form-group">
-                      <label htmlFor="invoice-id" className="form-label">Invoice Number:</label>
+                      <label htmlFor="invoice-id" className="form-label">Policy Or Invoice Number*:</label>
                       <input
                         className="form-input"
                         type="text"
@@ -665,7 +665,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
                 }
 
                 <div className="form-group">
-                  <label htmlFor="invoice-id" className="form-label">Amount:</label>
+                  <label htmlFor="invoice-id" className="form-label">Amount*:</label>
 
 
                   <input
@@ -685,7 +685,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
                       : ''
                   }
                 </div>
-                {isPortal && (
+                {isPortal  && activeTab === "Credit Card" && (
                   <div className="form-group">
                     <label htmlFor="surcharge-rate" className="form-label">Surcharge Rate:</label>
                     <input
@@ -699,7 +699,7 @@ export default function PaymentForm({ isPortal, onSuccess }) {
                 )}
                 <div className="form-group">
                   <label htmlFor="notes">Notes (Optional)</label>
-                  <textarea className='form-input' id="notes" name="notes" rows="3"></textarea>
+                  <textarea className='form-input' id="notes" name="notes" rows="3" value={notes} onChange={(e) => setNotes(e.target.value)}></textarea>
                 </div>
 
               </div>

@@ -49,129 +49,101 @@ chrome.webRequest.onBeforeRequest.addListener(
 );
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "OPEN_PAYMENT_WINDOW") {
+  console.log('Background received message:', message);
+
+  if (message.action === 'OPEN_PAYMENT_WINDOW') {
     chrome.windows.create({
       url: `popup/payment.html?invoice=${message.invoiceId}&subdomain=${message.subdomain}&amount=${message.amount}&customerid=${message.customerLookup}&accountId=${message.accountId}&surcharge=${message.surcharge}&clientName=${encodeURIComponent(message.clientName)}`,
       type: "popup",
       width: 480,
       height: 640
     });
+    return false;
   }
-});
-chrome.runtime.onMessage.addListener(
-  (
-    request: { action: string; url: string; options: any },
-    sender: chrome.runtime.MessageSender,
-    sendResponse: (response: any) => void
-  ): boolean => {
-    if (request.action === 'proxyFetch') {
-      const { url, options } = request;
 
-      // Build fetch options
-      const fetchOptions: RequestInit = {
-        method: options.method || 'GET',
-        headers: options.headers || {}
-      };
+  if (message.action === 'proxyFetch') {
+    const { url, options } = message;
 
-      if (options.body) {
-        fetchOptions.body = options.body;
-      }
+    const fetchOptions: RequestInit = {
+      method: options.method || 'GET',
+      headers: options.headers || {}
+    };
 
-      fetch(url, fetchOptions)
-        .then(async (response: Response) => {
-          const contentType = response.headers.get('content-type');
-          let data: string;
+    if (options.body) {
+      fetchOptions.body = options.body;
+    }
 
-          if (contentType && contentType.includes('application/json')) {
-            data = await response.text(); // Get as text, let caller parse
-          } else {
-            data = await response.text();
-          }
-
+    fetch(url, fetchOptions)
+      .then(response =>
+        response.text().then(data => {
           const headersObj: Record<string, string> = {};
           response.headers.forEach((value, key) => {
             headersObj[key] = value;
           });
-
           sendResponse({
             success: true,
             status: response.status,
             statusText: response.statusText,
-            data: data,
+            data,
             headers: headersObj
           });
         })
-        .catch((error: Error) => {
-          sendResponse({
-            success: false,
-            error: error.message
-          });
+      )
+      .catch((error: any) => {
+        sendResponse({
+          success: false,
+          error: error.message
         });
+      });
 
-      return true; // CRITICAL: keeps message channel open for async
-    }
-
-    return false;
+    return true; // keep channel open for async sendResponse
   }
-);
 
-
-
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   if (message.action === 'OPEN_WEBSITE_SSO') {
-    try {
-      // Get tokens
-      var tokens  = await chrome.storage.local.get(['cognito_refresh_token', 'cognito_id_token', 'cognito_user_info'])
+    chrome.storage.local.get(['cognito_refresh_token', 'cognito_id_token', 'cognito_user_info'])
       .then(result => {
         const idToken = result['cognito_id_token'] || null;
         const refreshToken = result['cognito_refresh_token'] || null;
         const userInfo = result['cognito_user_info'] || null;
-        return { idToken, refreshToken, userInfo };
-      } );
+        const username = userInfo ? JSON.parse(userInfo).email : null;
 
-      const username = tokens.userInfo ? JSON.parse(tokens.userInfo).email : null;
-       
-      const url = message.isDev? 'http://127.0.0.1:3000' : 'https://portal.instechpay.co';
-      // Get one-time code from backend
-      const response = await fetch(`${url}/portal-v1/${message.subdomain}/generate-sso-code`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${tokens.idToken}`,
-          'Content-Type': 'application/json', 
-           'user': username || '' // Pass username if available
-        },
-        body: JSON.stringify({ idToken: tokens.idToken, refreshToken: tokens.refreshToken, subdomain : message.subdomain })
-      });
-      
-      const { code } = await response.json();
-      const searchParams = new URLSearchParams({ code , accountID: message.accountId});
-      // Open new tab with code
-      chrome.tabs.create({ 
-        url: message.isDev? `http://localhost:5173/sso?${searchParams.toString()}` :`https://portal.instechpay.co/sso?${searchParams.toString()}` 
-      });
-      
-    } catch (error) {
-      console.error('SSO failed:', error);
-    }
+        const url = message.isDev ? 'http://127.0.0.1:3000' : 'https://portal.instechpay.co';
+        return fetch(`${url}/portal-v1/${message.subdomain}/generate-sso-code`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${idToken}`,
+            'Content-Type': 'application/json',
+            'user': username || ''
+          },
+          body: JSON.stringify({ idToken, refreshToken, subdomain: message.subdomain })
+        }).then(r => r.json()).then(({ code }) => {
+          const searchParams = new URLSearchParams({ code, accountID: message.accountId });
+          chrome.tabs.create({
+            url: message.isDev
+              ? `http://localhost:5173/sso?${searchParams.toString()}`
+              : `https://portal.instechpay.co/sso?${searchParams.toString()}`
+          });
+        });
+      })
+      .catch((error: any) => console.error('SSO failed:', error));
+
+    return false;
   }
-});
-
-// Handle messages from content script
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('Background received message:', message);
 
   if (message.type === 'xhrRequestIntercepted') {
     console.log('XHR Request Intercepted:');
     console.log('  URL:', message.url);
     console.log('  Response:', message.response);
     sendResponse({ status: 'received' });
+    return false;
   }
 
   if (message.type === 'epic-screen-activated') {
     console.log('Epic Screen Activated:');
     console.log('  Screen:', message.data?.screenName);
     sendResponse({ status: 'screen-activation-processed' });
+    return false;
   }
 
-  return true;
+  return false;
 });
