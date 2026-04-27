@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncCardknoxToDynamo", "Syn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebhookHandler", "WebhookHandler\WebhookHandler.csproj", "{64706DAF-6340-847E-5A93-F02C12722D33}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{5B84EA81-831F-4764-911F-228081FF0921}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{64706DAF-6340-847E-5A93-F02C12722D33}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{64706DAF-6340-847E-5A93-F02C12722D33}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{64706DAF-6340-847E-5A93-F02C12722D33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B84EA81-831F-4764-911F-228081FF0921}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B84EA81-831F-4764-911F-228081FF0921}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B84EA81-831F-4764-911F-228081FF0921}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B84EA81-831F-4764-911F-228081FF0921}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

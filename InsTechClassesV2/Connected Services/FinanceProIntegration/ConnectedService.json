@@ -1,0 +1,16 @@
+{
+  "ExtendedData": {
+    "inputs": [
+      "https://secure.financepro.net/financepro/webservices/QuoteService.asmx?wsdl"
+    ],
+    "collectionTypes": [
+      "System.Array",
+      "System.Collections.Generic.Dictionary`2"
+    ],
+    "namespaceMappings": [
+      "*, FinanceProIntegration"
+    ],
+    "targetFramework": "net8.0",
+    "typeReuseMode": "None"
+  }
+}

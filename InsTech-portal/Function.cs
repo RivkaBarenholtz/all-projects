@@ -24,6 +24,7 @@ using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.ServiceModel;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -76,6 +77,7 @@ public class Function
                 response.Body = "Success";
                 return response;
             }
+
             var caseInsensitiveHeaders = new Dictionary<string, string>(request.Headers, StringComparer.OrdinalIgnoreCase);
 
 
@@ -96,6 +98,7 @@ public class Function
                 secondToLastSegment = segments[0];
                 lastSegment = "";
             }
+            
             if (string.IsNullOrEmpty(lastSegment))
             {
                 var a = request.Headers.TryGetValue("host", out string? fullDomain);
@@ -118,7 +121,21 @@ public class Function
                     }
                 };
             }
-
+            if (lastSegment == "create-quote")
+            {
+                try
+                {
+                    var quoteResponse = await InsTechClassesV2.FinancePro.FinanceProService.GenerateQuoteAsync();
+                    string body = JsonConvert.SerializeObject(quoteResponse);
+                    response.Body = body;
+                    return response;
+                }
+                catch (ProtocolException ex )
+                {
+                    Console.WriteLine(ex.Message);
+                }
+               
+            }
             List<Cognito> user = new();
             Console.WriteLine(JsonConvert.SerializeObject(request));
 
@@ -196,7 +213,7 @@ public class Function
                 await errorEmail.Send();
             }
 
-            
+
 
             if (lastSegment == "transaction-report")
             {
@@ -209,14 +226,14 @@ public class Function
             else if (lastSegment == "get-policy-list")
             {
                 //will become too slow hopefully by that time a new employee will deal with this
-                var result= await Policy.GetListOfPoliciesFromDb(vendor.Id.ToString());
+                var result = await Policy.GetListOfPoliciesFromDb(vendor.Id.ToString());
                 response.Body = JsonConvert.SerializeObject(result);
                 return response;
             }
             else if (lastSegment == "create-policy")
             {
                 var policy = JsonConvert.DeserializeObject<Policy>(request.Body);
-                if(string.IsNullOrEmpty(policy.Customer.CustomerId))
+                if (string.IsNullOrEmpty(policy.Customer.CustomerId))
                 {
                     var customer = policy.Customer;
                     //save in cardknox 
@@ -239,23 +256,23 @@ public class Function
 
                     };
                     var rsp = await cardknoxCustomer.PostToCardknox(vendor);
-                    var rspString = await rsp.Content.ReadAsStringAsync(); 
+                    var rspString = await rsp.Content.ReadAsStringAsync();
                     var ckResponse = JsonConvert.DeserializeObject<dynamic>(rspString);
-                    policy.Customer.CustomerId = ckResponse["CustomerId"]?.ToString()??"";
+                    policy.Customer.CustomerId = ckResponse["CustomerId"]?.ToString() ?? "";
                 }
-                await  policy?.InsertIntoDynamo(vendor);
+                await policy?.InsertIntoDynamo(vendor);
                 string uploadUrl = "";
-                if(!String.IsNullOrEmpty(policy.QuoteFileName))
+                if (!String.IsNullOrEmpty(policy.QuoteFileName))
                 {
                     var s3 = new AmzS3Bucket("policy-uploads", $"{vendor.CardknoxMerchantId}/{policy.Id}");
                     uploadUrl = await s3.GetUploadUrlAsync();
                 }
-                    
+
                 response.Body = JsonConvert.SerializeObject(new
                 {
                     Message = "Success",
-                    PolicyId = policy.Id, 
-                    UploadUrl = uploadUrl 
+                    PolicyId = policy.Id,
+                    UploadUrl = uploadUrl
 
                 });
 
@@ -264,7 +281,7 @@ public class Function
             {
                 var policyid = request.QueryStringParameters["policyid"];
                 var s3 = new AmzS3Bucket("policy-uploads", $"{vendor.CardknoxMerchantId}/{policyid}");
-                var s3Url =  s3.GetDownloadPreSignedUrl();
+                var s3Url = s3.GetDownloadPreSignedUrl();
 
                 response.Body = JsonConvert.SerializeObject(new
                 {
@@ -748,7 +765,7 @@ public class Function
             else if (lastSegment == "get-invoice")
             {
 
-              List<  InsTechClassesV2.AppliedEpic.Invoice> body = await AppliedEpicDataService.GetInvoiceFromInvoiceNumberAndLookupCode(vendor, request.Body);
+                List<InsTechClassesV2.AppliedEpic.Invoice> body = await AppliedEpicDataService.GetInvoiceFromInvoiceNumberAndLookupCode(vendor, request.Body);
                 response.Body = JsonConvert.SerializeObject(body);
                 return response;
 
@@ -757,7 +774,7 @@ public class Function
 
             else if (lastSegment == "get-open-invoices")
             {
-               List<InsTechClassesV2.AppliedEpic.Invoice> openInvoices = await AppliedEpicDataService.GetInvoiceList(vendor, request.Body);
+                List<InsTechClassesV2.AppliedEpic.Invoice> openInvoices = await AppliedEpicDataService.GetInvoiceList(vendor, request.Body);
 
                 response.Body = JsonConvert.SerializeObject(openInvoices);
                 return response;
@@ -768,6 +785,13 @@ public class Function
                 var surcharge = await MakePaymentService.GetClientSurcharge(request.Body, vendor);
                 var responseBody = new { surcharge = surcharge, vendorSurcharge = vendor.InsureTechFeePercentage };
                 response.Body = JsonConvert.SerializeObject(responseBody);
+                return response;
+            }
+            else if (lastSegment == "create-quote")
+            {
+                var quoteResponse = await InsTechClassesV2.FinancePro.FinanceProService.GenerateQuoteAsync();
+                string body = JsonConvert.SerializeObject(quoteResponse);
+                response.Body = body;
                 return response;
             }
 
