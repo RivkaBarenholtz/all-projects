@@ -43,6 +43,7 @@ export const CreditCardTab = (
     }) => {
 
 
+    const [isProcessing, setIsProcessing] = useState(false);
     const [issuer, setIssuer] = useState('');
     const [captchaToken, setCaptchaToken] = useState('');
     const [cardToken, setCardToken] = useState('');
@@ -167,6 +168,7 @@ export const CreditCardTab = (
                     (context ?? "app") === "app"
                         ? BaseUrl().split('.')[0].split('//')[1]
                         : (context ?? "ins-dev");
+        setIsProcessing(true);
         try {
             let responseBody = null;
             if (isPortal) {
@@ -194,7 +196,8 @@ export const CreditCardTab = (
                 verify3DS(responseBody);
         } catch (error) {
             onError("❌ An error occurred while processing the payment. Please try again.");
-            //setGatewayResponse(error);
+        } finally {
+            setIsProcessing(false);
         }
     }
 
@@ -341,9 +344,9 @@ export const CreditCardTab = (
                 {amount > 0 && !isNaN(surcharge) && accountValid && !isPortal ? <GooglePay amount={amount} surcharge={surcharge} AccountID={accountCode} captchaToken={captchaToken} cardHolderName={cardHolderName} csrCode={csrCode} csrEmail={csrEmail} invoiceID={invoiceID} zip={zip} /> : <></>}
 
                 <div className="button-spaced mt-3">
-                    <button className="btn btn-primary" type="button" onClick={submitToGateway}>
+                    <button className="btn btn-primary" type="button" onClick={submitToGateway} disabled={isProcessing}>
                         <FontAwesomeIcon icon={faCreditCard} style={{ paddingRight: '5px' }} />
-                        Process Payment
+                        {isProcessing ? 'Processing...' : 'Process Payment'}
                     </button>
                 </div>
                 <p className="secure-info">

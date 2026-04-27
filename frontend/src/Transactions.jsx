@@ -649,7 +649,7 @@ function Transactions({ user }) {
       {
         showSuccess && <ConfirmationModal
 
-          onClose={() => { setShowSuccess(false); search(getFilters()); }}
+          onClose={() => { setShowSuccess(false); }}
           showButton={false}>
           <div>
             <h2> Transaction Successful</h2>
