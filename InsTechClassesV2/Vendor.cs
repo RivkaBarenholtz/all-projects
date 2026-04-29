@@ -50,5 +50,9 @@ namespace InsTechClassesV2
         public Boolean NoSurcharge { get; set; } = false;
         public string SecondaryDomain { get; set; } = "SECONDARYDOMAIN";
         public string CompanyCityStateZip { get; set; }
+
+        public string FinanceProName { get; set; }
+        public string FinanceProSearchCode { get; set; }
+        public string ZipCode { get; set; }
     }
 }

@@ -1,12 +1,14 @@
-import { useState, forwardRef, useImperativeHandle, useEffect, useRef } from "react";
+import { useState, useMemo, forwardRef, useImperativeHandle, useEffect, useRef } from "react";
 import { ConfirmationModal } from "./ConfimationModal";
 import { CustomerInfo } from "./CustomerInfo";
-import { fetchWithAuth, extractPages, uploadToS3, FormatCurrency, FINANCE_COMPANIES, calcQuote } from "../Utilities";
+import { fetchWithAuth, extractPages, uploadToS3, FormatCurrency } from "../Utilities";
 import { TextractBedrockProcessor } from "./BedrockProcessor";
 import { CustomerSearch } from "../Objects/CustomerSearch";
 import { ActionButton } from "../Components/UI/actionButton";
 import { PdfViewer } from "./PdfViewer";
 import { AiField } from "./AiField";
+import Select from "react-select";
+import insuranceCompanies from "../shared/InsuranceCompaniesFinancePro.json";
 
 import { X } from "lucide-react";
 
@@ -45,7 +47,13 @@ export const Policy = forwardRef(
     const [subbroker, setSubbroker] = useState("");
     const [policyStart, setPolicyStart] = useState(policy?.PolicyStartDate??new Date);
     const [policyEnd, setPolicyEnd] = useState(policy?.PolicyEndDate??new Date);
-    const [carrier, setCarrier] = useState(policy?.CarrierName??"");
+    const [carrier, setCarrier] = useState(policy?.CarrierName ?? "");
+    const [carrierSearchCode, setCarrierSearchCode] = useState(policy?.CarrierSearchCode ?? "");
+    const [carrierZip, setCarrierZip] = useState(policy?.CarrierZip ?? "");
+    const [insuranceType, setInsuranceType] = useState(policy?.InsuranceType ?? "");
+    const carrierOptions = useMemo(() => insuranceCompanies.map(c => ({ label: c.Name, value: c.Name, searchCode: c.SearchCode, zip: c.zip })), []);
+    const carrierValue = carrier ? (carrierOptions.find(o => o.value === carrier) ?? null) : null;
+
     const [subbrokerCommission, setSubbrokerCommission] = useState(0);
     const [highlightText, setHighlightText] = useState("")
     const [paidToCarrier, setPaidToCarrier] = useState(policy?.PaidToCarrier)
@@ -54,9 +62,6 @@ export const Policy = forwardRef(
       (policy?.LineItems ?? []).filter(x => (x.Type ?? x.type) !== "premium")
     );
     const [showLineItems, setShowLineItems] = useState(policy?.ShowLineItems ?? true);
-    const [quotes, setQuotes] = useState([]);
-    const [quotesGenerated, setQuotesGenerated] = useState(false);
-    const [attachedQuote, setAttachedQuote] = useState(policy?.AttachedFinanceQuote ?? null);
     const [invoicePdfUrl, setInvoicePdfUrl] = useState(null);
     const [generatingPdf, setGeneratingPdf] = useState(false);
 
@@ -83,7 +88,14 @@ export const Policy = forwardRef(
         applyField(setPolicyCode,        bedrockResult.PolicyId,                                                          'policyCode');
         applyField(setPolicyDescription, bedrockResult.PolicyName,                                                       'policyDescription');
         applyField(setPolicyAmount,      bedrockResult.TotalPremiumAmount ? bedrockResult.TotalPremiumAmount.replace('$', '').replace(',', '') : "", 'policyAmount');
-        applyField(setCarrier,           bedrockResult.Carrier,                                                          'carrier');
+        const aiCarrier = bedrockResult.Carrier ?? "";
+        const carrierMatch = carrierOptions.find(o => o.label.toLowerCase() === aiCarrier.toLowerCase());
+        if (carrierMatch) {
+          setCarrier(carrierMatch.value);
+          setCarrierSearchCode(carrierMatch.searchCode);
+          setCarrierZip(carrierMatch.zip);
+          filled.add('carrier');
+        }
         applyField(setPolicyStart,       bedrockResult.PolicyStartDate,                                                  'policyStart');
         applyField(setPolicyEnd,         bedrockResult.PolicyEndDate,                                                    'policyEnd');
         applyField(setStreet,            bedrockResult.CustomerAddressLine1,                                             'street');
@@ -192,9 +204,12 @@ export const Policy = forwardRef(
         ...policy,
         PolicyCode: policyCode,
         PolicyDescription: policyDescription,
+        InsuranceType: insuranceType,
         PolicyStartDate: policyStart,
         PolicyEndDate: policyEnd,
         CarrierName: carrier,
+        CarrierSearchCode: carrierSearchCode,
+        CarrierZip: carrierZip,
         SubbrokerName: subbroker,
         SubbrokerAmount: subbrokerCommission,
         Amount: policyAmount,
@@ -208,7 +223,6 @@ export const Policy = forwardRef(
           ...otherLineItems.map(x => ({ ...x, amount: Number(x.amount ?? x.Amount) || 0 })),
         ],
         ShowLineItems: showLineItems,
-        AttachedFinanceQuote: attachedQuote,
         ... (isEdit ? { PolicyId: policy.PolicyId } : {})
       };
 
@@ -272,7 +286,6 @@ export const Policy = forwardRef(
           ...otherLineItems.map(x => ({ ...x, amount: Number(x.amount ?? x.Amount) || 0 })),
         ],
         ShowLineItems: showLineItems,
-        AttachedFinanceQuote: attachedQuote,
       }),
     }));
 
@@ -345,16 +358,40 @@ export const Policy = forwardRef(
             </div>
 
             <div className="form-group">
+              <label>Insurance Type</label>
+              <input type="text" value={insuranceType} onChange={(e) => setInsuranceType(e.target.value)} />
+            </div>
+
+            <div className="form-group">
               <label>Carrier</label>
-              <AiField field="carrier" locked={isLocked('carrier')} onUnlock={unlockField} onHighlight={setHighlightText}>
-                <input type="text" value={carrier} onChange={(e) => setCarrier(e.target.value)} onFocus={() => setHighlightText(carrier)} />
-              </AiField>
+              {isLocked('carrier') ? (
+                <AiField field="carrier" locked={true} onUnlock={unlockField} onHighlight={() => setHighlightText(carrier)}>
+                  <Select value={carrierValue} options={carrierOptions} onChange={opt => { setCarrier(opt?.value ?? ""); setCarrierSearchCode(opt?.searchCode ?? ""); setCarrierZip(opt?.zip ?? ""); }} />
+                </AiField>
+              ) : (
+                <Select
+                  options={carrierOptions}
+                  value={carrierValue}
+                  onChange={opt => { setCarrier(opt?.value ?? ""); setCarrierSearchCode(opt?.searchCode ?? ""); setCarrierZip(opt?.zip ?? ""); }}
+                  isClearable
+                  placeholder="Search carrier..."
+                  menuPortalTarget={document.body}
+                  menuPosition="fixed"
+                  styles={{ menuPortal: base => ({ ...base, zIndex: 10001 }) }}
+                />
+              )}
             </div>
 
             <div className="form-group">
               <label>Subbroker</label>
               <input type="text" value={subbroker} onChange={(e) => setSubbroker(e.target.value)} />
             </div>
+
+             <div className="form-group">
+              <label>Subbroker Commission</label>
+              <input type="text" value={subbrokerCommission} onChange={(e) => setSubbrokerCommission(e.target.value)} />
+            </div>
+
 
             <div className="form-group">
               <label>Policy Start Date</label>
@@ -370,11 +407,7 @@ export const Policy = forwardRef(
               </AiField>
             </div>
 
-            <div className="form-group">
-              <label>Subbroker Commission</label>
-              <input type="text" value={subbrokerCommission} onChange={(e) => setSubbrokerCommission(e.target.value)} />
-            </div>
-
+           
             {isEdit && <>
               <div className="form-group">
                 <label>Customer Paid</label>
@@ -490,41 +523,6 @@ export const Policy = forwardRef(
           </>}
         </>}
 
-           {/* ── Finance Quotes ── */}
-        <section className="form-section">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <h3 style={{ margin: 0 }}>Finance Quotes</h3>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => { setQuotes(FINANCE_COMPANIES.map(c => calcQuote(Number(policyAmount) || 0, c))); setQuotesGenerated(true); }}
-              disabled={!policyAmount || Number(policyAmount) <= 0}
-            >
-              Generate Quotes
-            </button>
-          </div>
-          {!quotesGenerated ? (
-            <p style={{ color: "#999", fontSize: 13, margin: 0 }}>Enter a premium amount above then click Generate Quotes.</p>
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-              {quotes.map(q => {
-                const isSel = attachedQuote?.company === q.company;
-                return (
-                  <div key={q.company} style={{ border: `2px solid ${isSel ? "#148dc2" : "#e5e7eb"}`, borderRadius: 8, padding: 12, background: isSel ? "#f0f9ff" : "#fff" }}>
-                    <div style={{ fontWeight: 700, fontSize: 12, color: "#148dc2", marginBottom: 8, minHeight: 36, lineHeight: 1.3 }}>{q.company}</div>
-                    {[["Down", `${FormatCurrency(q.downPaymentAmount)} (${q.downPaymentPercent}%)`], ["Financed", FormatCurrency(q.amountFinanced)], ["Monthly", FormatCurrency(q.monthlyPayment)], ["APR", `${q.apr.toFixed(2)}%`], ["Term", `${q.term} mo`]].map(([l, v]) => (
-                      <div key={l} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#555", marginBottom: 3 }}><span>{l}</span><span>{v}</span></div>
-                    ))}
-                    <button onClick={() => setAttachedQuote(isSel ? null : q)} style={{ marginTop: 8, width: "100%", padding: "5px", background: isSel ? "#148dc2" : "#fff", color: isSel ? "#fff" : "#148dc2", border: "1px solid #148dc2", borderRadius: 4, cursor: "pointer", fontSize: 11, fontWeight: 600 }}>
-                      {isSel ? "✓ Selected" : "Select"}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          {attachedQuote && <p style={{ marginTop: 8, fontSize: 12, color: "#148dc2", fontWeight: 600 }}>✓ Financing through {attachedQuote.company} attached.</p>}
-        </section>
       </>
     );
 

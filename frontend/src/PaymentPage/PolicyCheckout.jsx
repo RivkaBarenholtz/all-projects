@@ -8,6 +8,22 @@ import Select from "react-select";
 import Loader from "./Loader";
 import { ConfirmationModal } from "../Objects/ConfimationModal";
 
+// Finance agreement overlay fields — positions are approximate; adjust after viewing the PDF
+const FINANCE_FIELDS = [
+    { id: "fin-signature",     type: "signature", page: 1,  x: 0.07, y: 0.84, width: 0.40, height: 0.05, optional: true },
+    { id: "fin-date",          type: "date",      page: 1,  x: 0.07, y: 0.90, width: 0.22, height: 0.04, optional: true },
+    // Last page — EFT Authorization form (page: -1 = last page of finance PDF)
+    { id: "fin-acct-type",     type: "radio",     page: -1, x: 0.07, y: 0.32, width: 0.42, height: 0.04, optional: true, options: ["", ""] },
+    { id: "fin-bank-name",     type: "text",      page: -1, x: 0.183, y: 0.486, width: 0.25, height: 0.02, optional: true, label: "" },
+    { id: "fin-bank-address",  type: "text",      page: -1, x: 0.63, y: 0.486, width: 0.25, height: 0.02, optional: true, label: "" },
+    { id: "fin-account-num",   type: "text",      page: -1, x: 0.59, y: 0.506, width: 0.20, height: 0.02, optional: true, label: "" },
+    { id: "fin-routing-num",   type: "text",      page: -1, x: 0.17, y: 0.506, width: 0.2, height: 0.02, optional: true, label: "" },
+    { id: "fin-eft-name",      type: "text",      page: -1, x: 0.16, y: 0.85, width: 0.2, height: 0.03, optional: true, label: "" },
+    { id: "fin-eft-name-2",      type: "text",      page: -1, x: 0.16, y: 0.88, width: 0.2, height: 0.03, optional: true, label: "" },
+    { id: "fin-eft-signature", type: "signature", page: -1, x: 0.45, y: 0.85, width: 0.3, height: 0.03, optional: true },
+    { id: "fin-eft-signature-2", type: "signature", page: -1, x: 0.45, y: 0.88, width: 0.3, height: 0.03, optional: true },
+];
+
 const STATES = ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"]
     .map(s => ({ value: s, label: s }));
 
@@ -26,6 +42,7 @@ export default function PolicyCheckout() {
     const [vendor, setVendor] = useState(null);
     const [policy, setPolicy] = useState(null);
     const [surcharge, setSurcharge] = useState({});
+    const [paymentOption, setPaymentOption] = useState("full");
     const [eSignData, setESignData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState("");
@@ -33,6 +50,8 @@ export default function PolicyCheckout() {
     const [submitPressed, setSubmitPressed] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [confirmationData, setConfirmationData] = useState(null);
+    const [financeAgreementUrl, setFinanceAgreementUrl] = useState(null);
+    const [financeAgreementLoading, setFinanceAgreementLoading] = useState(false);
 
     // Billing fields (pre-filled from policy where available)
     const [cardholderName, setCardholderName] = useState("");
@@ -95,6 +114,16 @@ export default function PolicyCheckout() {
     const total         = baseAmount + surchargeAmt;
     const hasESign      = !!(policy?.SignatureFields?.length > 0 && policy?.PdfUrl);
 
+    useEffect(() => {
+        if (step !== 2 || paymentOption !== "monthly" || financeAgreementUrl || financeAgreementLoading) return;
+        setFinanceAgreementLoading(true);
+        fetch(`${BaseUrl()}/pay/${vendor.subdomain}/get-finance-agreement?policyid=${policyId}`)
+            .then(r => r.json())
+            .then(res => setFinanceAgreementUrl(res.agreementUrl ?? null))
+            .catch(() => {})
+            .finally(() => setFinanceAgreementLoading(false));
+    }, [step, paymentOption]);
+
     const handleESignReady = (data) => setESignData(data);
 
     const handlePaymentApproved = async (totalAmount, refNum) => {
@@ -110,6 +139,7 @@ export default function PolicyCheckout() {
                         signerName:    eSignData.signerName,
                         signerEmail:   eSignData.signerEmail,
                         auditTrail:    eSignData.auditTrail,
+                        financeData:   eSignData.financeData ?? null,
                     }),
                 });
                 if (!res.ok) throw new Error();
@@ -223,18 +253,51 @@ export default function PolicyCheckout() {
                             </table>
                         )}
 
-                        <div style={totalBox}>
-                            <div style={totalRow}>
-                                <span style={{ color: "#555" }}>Premium</span>
-                                <span>{FormatCurrency(baseAmount)}</span>
-                            </div>
-                            <div style={{ ...totalRow, borderTop: "1px solid #e5e7eb", paddingTop: 10, marginTop: 6, fontWeight: 700, fontSize: 16 }}>
-                                <span>Total Due</span>
-                                <span style={{ color: "#148dc2" }}>{FormatCurrency(baseAmount)}</span>
-                            </div>
-                        </div>
+                        {policy?.AttachedFinanceQuote ? (
+                            <div style={{ marginTop: 20 }}>
+                                <p style={{ fontWeight: 600, marginBottom: 12, color: "#374151" }}>Choose a payment option:</p>
+                                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                                    <div
+                                        onClick={() => setPaymentOption("full")}
+                                        style={{
+                                            flex: 1, minWidth: 180, padding: "18px 20px", borderRadius: 10, cursor: "pointer",
+                                            border: paymentOption === "full" ? "2px solid #148dc2" : "2px solid #e5e7eb",
+                                            background: paymentOption === "full" ? "#eff8ff" : "#fff",
+                                        }}
+                                    >
+                                        <div style={{ fontWeight: 700, fontSize: 14, color: paymentOption === "full" ? "#148dc2" : "#6b7280", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Pay In Full</div>
+                                        <div style={{ fontSize: 26, fontWeight: 800, color: paymentOption === "full" ? "#148dc2" : "#111827" }}>{FormatCurrency(baseAmount)}</div>
+                                        <div style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>One-time payment</div>
+                                    </div>
 
-                        <button onClick={() => setStep(hasESign ? 2 : 3)} style={primaryBtn}>
+                                    <div
+                                        onClick={() => setPaymentOption("monthly")}
+                                        style={{
+                                            flex: 1, minWidth: 180, padding: "18px 20px", borderRadius: 10, cursor: "pointer",
+                                            border: paymentOption === "monthly" ? "2px solid #148dc2" : "2px solid #e5e7eb",
+                                            background: paymentOption === "monthly" ? "#eff8ff" : "#fff",
+                                        }}
+                                    >
+                                        <div style={{ fontWeight: 700, fontSize: 14, color: paymentOption === "monthly" ? "#148dc2" : "#6b7280", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Monthly Payments</div>
+                                        <div style={{ fontSize: 26, fontWeight: 800, color: paymentOption === "monthly" ? "#148dc2" : "#111827" }}>{FormatCurrency(policy.AttachedFinanceQuote.DownPaymentAmount)} <span style={{ fontSize: 14, fontWeight: 600 }}>due today</span></div>
+                                        <div style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>then {FormatCurrency(policy.AttachedFinanceQuote.MonthlyPayment)}/mo for {policy.AttachedFinanceQuote.Term} months</div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={totalBox}>
+                                <div style={totalRow}>
+                                    <span style={{ color: "#555" }}>Premium</span>
+                                    <span>{FormatCurrency(baseAmount)}</span>
+                                </div>
+                                <div style={{ ...totalRow, borderTop: "1px solid #e5e7eb", paddingTop: 10, marginTop: 6, fontWeight: 700, fontSize: 16 }}>
+                                    <span>Total Due</span>
+                                    <span style={{ color: "#148dc2" }}>{FormatCurrency(baseAmount)}</span>
+                                </div>
+                            </div>
+                        )}
+
+                        <button onClick={() => setStep(hasESign ? 2 : 3)} style={{ ...primaryBtn, marginTop: 24 }}>
                             {hasESign ? "Continue to E-Sign →" : "Continue to Payment →"}
                         </button>
                     </div>
@@ -250,6 +313,8 @@ export default function PolicyCheckout() {
                         onReady={handleESignReady}
                         onClose={() => setStep(3)}
                         inline={true}
+                        financeAgreementUrl={paymentOption === "monthly" ? financeAgreementUrl : null}
+                        financeFields={paymentOption === "monthly" ? FINANCE_FIELDS : null}
                     />
                 )}
 

@@ -20,6 +20,7 @@ namespace InsTechClassesV2
     public class FinanceQuote
     {
         public string Company { get; set; }
+        public int QuoteId { get; set; }
         public decimal DownPaymentPercent { get; set; }
         public decimal DownPaymentAmount { get; set; }
         public decimal AmountFinanced { get; set; }

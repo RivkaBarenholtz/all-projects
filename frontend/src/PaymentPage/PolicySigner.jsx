@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import { SignatureCanvas } from "../Objects/SignatureCanvas";
-import { BaseUrl } from "../Utilities";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   "../../node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
@@ -11,13 +10,15 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 const COLORS = { signature: "rgba(20,141,194,0.18)", date: "rgba(34,197,94,0.18)" };
 const BORDER = { signature: "#148dc2", date: "#16a34a" };
 
-export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady, onClose, submitPressed, inline = false }) {
-  const containerRef  = useRef(null);
-  const fieldRefs     = useRef({});
-  const consentRef    = useRef(null);
-  const doneButtonRef = useRef(null);
-  const [pages, setPages]               = useState([]);
-  const [pageRects, setPageRects]       = useState([]);
+export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady, onClose, submitPressed, inline = false, financeAgreementUrl = null, financeFields = null }) {
+  const containerRef    = useRef(null);
+  const fieldRefs       = useRef({});
+  const consentRef      = useRef(null);
+  const doneButtonRef   = useRef(null);
+  const [pages, setPages]                     = useState([]);
+  const [pageRects, setPageRects]             = useState([]);
+  const [policyPageCount, setPolicyPageCount] = useState(0);
+  const [financePageCount, setFinancePageCount] = useState(0);
   const [capturedSignature, setCapturedSignature] = useState(null);
   const [fieldValues, setFieldValues]   = useState({});
   const [showCanvas, setShowCanvas]     = useState(false);
@@ -28,8 +29,21 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
   const consentShownRef = useRef(new Date().toISOString());
   const consentTimestamp = useRef(null);
 
-  const fields =
-    (policy?.SignatureFields?.map(f => ({
+  // Resolve finance field page numbers:
+  //   positive page = 1-based within finance doc
+  //   negative page = from-end (-1 = last page)
+  const resolvedFinanceFields =
+    financeAgreementUrl && financeFields && policyPageCount > 0 && financePageCount > 0
+      ? financeFields.map(f => ({
+          ...f,
+          page: f.page < 0
+            ? policyPageCount + financePageCount + 1 + f.page   // -1 → last finance page
+            : policyPageCount + f.page,
+        }))
+      : [];
+
+  const fields = [
+    ...(policy?.SignatureFields?.map(f => ({
       id:     f.id     ?? f.Id,
       type:   f.type   ?? f.Type,
       page:   f.page   ?? f.Page,
@@ -37,12 +51,15 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
       y:      f.y      ?? f.Y,
       width:  f.width  ?? f.Width,
       height: f.height ?? f.Height,
-    })) ?? []).sort((a, b) =>
-      a.page !== b.page ? a.page - b.page : a.y !== b.y ? a.y - b.y : a.x - b.x
-    );
+    })) ?? []),
+    ...resolvedFinanceFields,
+  ].sort((a, b) =>
+    a.page !== b.page ? a.page - b.page : a.y !== b.y ? a.y - b.y : a.x - b.x
+  );
 
   const today     = new Date().toLocaleDateString("en-US");
-  const allSigned = fields.length > 0 && fields.every(f => fieldValues[f.id]);
+  // Optional fields don't block completion
+  const allSigned = fields.length > 0 && fields.filter(f => !f.optional).every(f => fieldValues[f.id]);
 
   const jumpToNext = (currentId) => {
     const currentIndex = fields.findIndex(f => f.id === currentId);
@@ -55,10 +72,11 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
     }
   };
 
-  // Render PDF pages
+  // Render policy PDF pages
   useEffect(() => {
     if (!pdfUrl) return;
     setPages([]);
+    setPolicyPageCount(0);
     let cancelled = false;
     const load = async () => {
       const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
@@ -83,11 +101,52 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
         if (cancelled) return;
         dims.push({ width: viewport.width, height: viewport.height });
       }
+      setPolicyPageCount(pdf.numPages);
       setPages(dims);
     };
     load();
     return () => { cancelled = true; };
   }, [pdfUrl]);
+
+  // Append finance PDF pages into the same container after policy pages
+  useEffect(() => {
+    if (!financeAgreementUrl || !policyPageCount) return;
+    let cancelled = false;
+    const load = async () => {
+      const pdf = await pdfjsLib.getDocument(financeAgreementUrl).promise;
+      if (cancelled) return;
+      const container = containerRef.current;
+      if (!container) return;
+
+      // Separator bar
+      const sep = document.createElement("div");
+      sep.style.cssText = "height:20px;background:#148dc2;border-radius:4px;margin:12px 0;display:flex;align-items:center;justify-content:center;";
+      sep.innerHTML = '<span style="color:#fff;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Finance Agreement</span>';
+      container.appendChild(sep);
+
+      const financeDims = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        if (cancelled) return;
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.5 });
+        const wrap = document.createElement("div");
+        wrap.dataset.page = policyPageCount + i;
+        wrap.style.cssText = `position:relative;width:${viewport.width}px;height:${viewport.height}px;margin-bottom:12px;`;
+        const canvas = document.createElement("canvas");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        wrap.appendChild(canvas);
+        container.appendChild(wrap);
+        await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+        if (cancelled) return;
+        financeDims.push({ width: viewport.width, height: viewport.height });
+      }
+      setFinancePageCount(pdf.numPages);
+      setPages(prev => [...prev, ...financeDims]);
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [financeAgreementUrl, policyPageCount]);
 
   // Track page positions for overlay rendering
   useEffect(() => {
@@ -107,8 +166,8 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
   }, [pages]);
 
   const handleFieldClick = (field) => {
+    if (field.type === "text" || field.type === "radio") return;
     if (!agreedToSign) {
-      // Pulse the consent checkbox and scroll to it
       consentRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       setConsentPulse(true);
       setTimeout(() => setConsentPulse(false), 1200);
@@ -144,16 +203,36 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
       makeEvent("Viewed",        viewedAtRef.current,      "Signer opened document"),
       makeEvent("ConsentShown",  consentShownRef.current,  "Electronic signature consent displayed"),
       makeEvent("ConsentAgreed", consentTimestamp.current, `${signerName} agreed to sign electronically`),
-      ...fields.map(f => makeEvent(
+      ...fields.filter(f => !f.optional).map(f => makeEvent(
         f.type === "signature" ? "FieldSigned" : "FieldDateConfirmed",
         fieldValues[f.id],
         `${f.type} field on page ${f.page} confirmed`
       )),
     ];
-    onReady?.({ capturedSignature, signerName, signerEmail, auditTrail });
+    const financeData = resolvedFinanceFields.length > 0 && financeAgreementUrl
+      ? {
+          agreementUrl: financeAgreementUrl,
+          fields: resolvedFinanceFields
+            .filter(rf => !!fieldValues[rf.id])
+            .map(rf => ({
+              id:     rf.id,
+              type:   rf.type,
+              page:   rf.page - policyPageCount,   // 1-based within finance doc
+              x:      rf.x,
+              y:      rf.y,
+              width:  rf.width,
+              height: rf.height,
+              value:  rf.type === "date"
+                        ? new Date().toLocaleDateString("en-US")
+                        : (rf.type === "text" || rf.type === "radio")
+                        ? (fieldValues[rf.id] ?? "")
+                        : null,                    // signature: backend uses signatureData
+            })),
+        }
+      : null;
+    onReady?.({ capturedSignature, signerName, signerEmail, auditTrail, financeData });
   }, [allSigned, capturedSignature]);
 
-  // Scroll to and focus the Done button when all fields are signed
   useEffect(() => {
     if (!allSigned) return;
     setTimeout(() => {
@@ -174,7 +253,6 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
     <div style={outerStyle}>
     <div style={innerStyle}>
 
-      {/* Non-inline: keep the existing consent overlay */}
       {!inline && !agreedToSign && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 99998, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ background: "#fff", borderRadius: 10, padding: 32, maxWidth: 480, width: "90%", boxShadow: "0 8px 40px rgba(0,0,0,0.25)" }}>
@@ -206,12 +284,11 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
         />
       )}
 
-      {/* Header bar — no X button when inline */}
       <div style={headerBar}>
         <span style={{ fontWeight: 600, color: "#fff" }}>Review &amp; Sign Policy</span>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 12, color: "rgba(255,255,255,0.8)" }}>
-            {fields.filter(f => f.type === "signature").length} signature field(s) · click to sign
+            {fields.filter(f => f.type === "signature" && !f.optional).length} signature field(s) · click to sign
           </span>
           {!allSigned && (
             <button
@@ -222,7 +299,7 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
                   setTimeout(() => setConsentPulse(false), 1200);
                   return;
                 }
-                const first = fields.find(f => !fieldValues[f.id]);
+                const first = fields.find(f => !f.optional && !fieldValues[f.id]);
                 if (first) fieldRefs.current[first.id]?.scrollIntoView({ behavior: "smooth", block: "center" });
               }}
               style={{ padding: "4px 12px", background: "#fff", color: "#148dc2", border: "1px solid #fff", borderRadius: 4, cursor: "pointer", fontSize: 12, fontWeight: 600 }}
@@ -230,7 +307,6 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
               ↓ Jump to Signature
             </button>
           )}
-          {/* X button only for non-inline (modal) mode */}
           {!inline && onClose && (
             <button
               onClick={onClose}
@@ -241,7 +317,6 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
         </div>
       </div>
 
-      {/* Inline consent checkbox — above the PDF */}
       {inline && (
         <div
           ref={consentRef}
@@ -279,63 +354,89 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
         </div>
       )}
 
-      {/* PDF + field overlays */}
+      {/* All pages (policy + finance) in one container, fields overlaid by the same loop */}
       <div style={{ position: "relative", overflowX: "auto", overflowY: "auto", maxHeight: "80vh", background: "#f5f5f5", padding: 16 }}>
         <div ref={containerRef} style={{ display: "inline-block", position: "relative" }} />
 
         {pageRects.length > 0 && fields.map(f => {
           const pr = pageRects[f.page - 1];
           if (!pr) return null;
-          const isFilled = fieldValues[f.id];
+          const isFilled = !!fieldValues[f.id];
+          const left   = pr.left + f.x * pr.width;
+          const top    = pr.top  + f.y * pr.height;
+          const width  = f.width  * pr.width;
+          const height = f.height * pr.height;
+
           return (
             <div
               key={f.id}
               ref={el => fieldRefs.current[f.id] = el}
-              style={{
-                position: "absolute",
-                left:   pr.left + f.x * pr.width,
-                top:    pr.top  + f.y * pr.height,
-                width:  f.width  * pr.width,
-                height: f.height * pr.height,
-              }}
+              style={{ position: "absolute", left, top, width, height }}
             >
-              <div
-                onClick={() => handleFieldClick(f)}
-                style={{
-                  width: "100%", height: "100%",
-                  background: isFilled ? "transparent" : COLORS[f.type],
-                  border: `2px ${isFilled ? "solid" : "dashed"} ${BORDER[f.type]}`,
-                  borderRadius: 3,
-                  cursor: "pointer",
-                  overflow: "hidden",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxSizing: "border-box",
-                }}
-              >
-                {isFilled && f.type === "signature" ? (
-                  <img src={capturedSignature.data} alt="signature" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
-                ) : isFilled && f.type === "date" ? (
-                  <span style={{ fontSize: Math.min(f.height * pr.height * 0.5, 13), color: "#16a34a", fontWeight: 500 }}>{today}</span>
-                ) : (
-                  <span style={{ fontSize: 11, color: BORDER[f.type], fontWeight: 600 }}>
-                    {f.type === "signature" ? "Click to sign" : "Click to confirm date"}
-                  </span>
-                )}
-              </div>
+              {!f.optional && (
+                <div style={{ position: "absolute", top: -6, left: -6, zIndex: 10, width: 14, height: 14, borderRadius: "50%", background: "#dc2626", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#fff", fontWeight: 700, boxShadow: "0 1px 3px rgba(0,0,0,0.3)", pointerEvents: "none" }}>★</div>
+              )}
+              {f.type === "text" ? (
+                <div style={{ width: "100%", height: "100%", background: isFilled ? "transparent" : COLORS.signature, border: `2px ${isFilled ? "solid" : "dashed"} ${BORDER.signature}`, borderRadius: 3, display: "flex", alignItems: "center", boxSizing: "border-box" }}>
+                  <input
+                    type="text"
+                    placeholder={f.label || ""}
+                    value={fieldValues[f.id] || ""}
+                    onChange={e => setFieldValues(prev => ({ ...prev, [f.id]: e.target.value }))}
+                    style={{ width: "100%", border: "none", background: "transparent", fontSize: Math.min(height * 0.45, 13), padding: "2px 6px", outline: "none", fontFamily: "inherit" }}
+                  />
+                </div>
+              ) : f.type === "radio" ? (
+                <div style={{ width: "100%", height: "100%", background: fieldValues[f.id] ? "transparent" : COLORS.signature, border: `2px ${fieldValues[f.id] ? "solid" : "dashed"} ${BORDER.signature}`, borderRadius: 3, display: "flex", alignItems: "center", gap: 16, padding: "0 8px", boxSizing: "border-box" }}>
+                  {f.options?.map(opt => (
+                    <label key={opt} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: Math.min(height * 0.45, 12), cursor: "pointer", fontFamily: "inherit" }}>
+                      <input
+                        type="radio"
+                        name={f.id}
+                        value={opt}
+                        checked={fieldValues[f.id] === opt}
+                        onChange={() => setFieldValues(prev => ({ ...prev, [f.id]: opt }))}
+                        style={{ cursor: "pointer", accentColor: "#148dc2" }}
+                      />
+                      {opt}
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <div
+                  onClick={() => handleFieldClick(f)}
+                  style={{
+                    width: "100%", height: "100%",
+                    background: isFilled ? "transparent" : COLORS[f.type] ?? "rgba(20,141,194,0.18)",
+                    border: `2px ${isFilled ? "solid" : "dashed"} ${BORDER[f.type] ?? "#148dc2"}`,
+                    borderRadius: 3, cursor: "pointer", overflow: "hidden",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  {isFilled && f.type === "signature" ? (
+                    <img src={capturedSignature.data} alt="signature" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                  ) : isFilled && f.type === "date" ? (
+                    <span style={{ fontSize: Math.min(height * 0.5, 13), color: "#16a34a", fontWeight: 500 }}>{today}</span>
+                  ) : (
+                    <span style={{ fontSize: 11, color: BORDER[f.type] ?? "#148dc2", fontWeight: 600 }}>
+                      {f.type === "signature" ? "Click to sign" : "Click to confirm date"}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Jump arrow — on all fields when any other field is unfilled */}
               {fields.some(other => other.id !== f.id && !fieldValues[other.id]) && (
                 <button
                   onClick={e => { e.stopPropagation(); jumpToNext(f.id); }}
                   title="Jump to next field"
                   style={{
-                    position: "absolute",
-                    right: -26, top: "50%", transform: "translateY(-50%)",
+                    position: "absolute", right: -26, top: "50%", transform: "translateY(-50%)",
                     width: 22, height: 22, borderRadius: "50%",
-                    background: BORDER[f.type], color: "#fff",
+                    background: BORDER[f.type] ?? "#148dc2", color: "#fff",
                     border: "none", cursor: "pointer",
-                    fontSize: 12, lineHeight: "22px", textAlign: "center",
-                    padding: 0, zIndex: 5,
+                    fontSize: 12, lineHeight: "22px", textAlign: "center", padding: 0, zIndex: 5,
                   }}
                 >↓</button>
               )}
@@ -344,7 +445,6 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
         })}
       </div>
 
-      {/* Signing status */}
       <div style={{ padding: "16px 0 24px", textAlign: "center" }}>
         {allSigned ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
@@ -361,7 +461,7 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
           </div>
         ) : (
           <p style={{ color: "#888", fontSize: 13, margin: 0 }}>
-            {agreedToSign ? "Please sign all fields above to continue" : "Agree to sign below, then click each field to sign"}
+            {agreedToSign ? "Please sign all required fields above to continue" : "Agree to sign below, then click each field to sign"}
           </p>
         )}
       </div>

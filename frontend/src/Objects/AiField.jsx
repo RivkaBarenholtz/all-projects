@@ -3,7 +3,8 @@ import { Pencil } from "lucide-react";
 export function AiField({ field, locked, onUnlock, onHighlight, children }) {
     if (!locked) return children;
 
-    const value = children?.props?.value ?? "";
+    const raw = children?.props?.value;
+    const value = (raw && typeof raw === "object" ? raw.label : raw) ?? "";
 
     return (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>

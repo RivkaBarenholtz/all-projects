@@ -19,6 +19,9 @@ namespace InsTechClassesV2
         public decimal PaidToCarrier { get; set; }
         public string SubBrokerName { get; set; }
         public string CarrierName { get; set; }
+        public string CarrierSearchCode { get; set; }
+        public string CarrierZip { get; set; }
+        public string InsuranceType { get; set; }
         public DateTime? PolicyStartDate { get; set; }
         public DateTime? PolicyEndDate { get; set; }
         public string VendorId { get; set;  }
@@ -114,6 +117,7 @@ namespace InsTechClassesV2
                 policy.QuoteFileName,
                 policy.SignatureFields,
                 policy.SignedPdfKey,
+                policy.AttachedFinanceQuote,
                 PdfUrl = pdfUrl
             };
         }
@@ -165,7 +169,10 @@ namespace InsTechClassesV2
                 PaidToCarrier = item.ContainsKey("PaidToCarrier") && !string.IsNullOrEmpty(item["PaidToCarrier"].N)
                     ? decimal.Parse(item["PaidToCarrier"].N) : 0,
                 PolicyCode = item.ContainsKey("PolicyCode") ? item["PolicyCode"].S : "",
+                InsuranceType = item.ContainsKey("InsuranceType") ? item["InsuranceType"].S : "",
                 CarrierName = item.ContainsKey("CarrierName") ? item["CarrierName"].S : "",
+                CarrierSearchCode = item.ContainsKey("CarrierSearchCode") ? item["CarrierSearchCode"].S : "",
+                CarrierZip = item.ContainsKey("CarrierZip") ? item["CarrierZip"].S : "",
                 SubBrokerName = item.ContainsKey("SubBrokerName") ? item["SubBrokerName"].S : "",
                 PolicyStartDate = ParseDate(item.ContainsKey("PolicyStartDate") ? item["PolicyStartDate"].S : ""),
                 PolicyEndDate = ParseDate(item.ContainsKey("PolicyEndDate") ? item["PolicyEndDate"].S : ""),
@@ -229,6 +236,9 @@ namespace InsTechClassesV2
             AddNumber("PaidToCarrier", PaidToCarrier);
             AddNumber("PaidByCustomer", PaidByCustomer);
             AddString("PolicyCode", PolicyCode);
+            AddString("InsuranceType", InsuranceType);
+            AddString("CarrierSearchCode", CarrierSearchCode);
+            AddString("CarrierZip", CarrierZip);
             AddString("PolicyDescription", PolicyDescription);
             AddString("QuoteFileName", QuoteFileName);
             AddString("Index1", DocumentId);

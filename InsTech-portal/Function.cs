@@ -121,21 +121,7 @@ public class Function
                     }
                 };
             }
-            if (lastSegment == "create-quote")
-            {
-                try
-                {
-                    var quoteResponse = await InsTechClassesV2.FinancePro.FinanceProService.GenerateQuoteAsync();
-                    string body = JsonConvert.SerializeObject(quoteResponse);
-                    response.Body = body;
-                    return response;
-                }
-                catch (ProtocolException ex )
-                {
-                    Console.WriteLine(ex.Message);
-                }
-               
-            }
+           
             List<Cognito> user = new();
             Console.WriteLine(JsonConvert.SerializeObject(request));
 
@@ -261,6 +247,14 @@ public class Function
                     policy.Customer.CustomerId = ckResponse["CustomerId"]?.ToString() ?? "";
                 }
                 await policy?.InsertIntoDynamo(vendor);
+
+                var financeQuote = await InsTechClassesV2.FinancePro.FinanceProService.SubmitQuoteForPolicyAsync(policy, vendor);
+                if (financeQuote != null)
+                {
+                    policy.AttachedFinanceQuote = financeQuote;
+                    await policy.UpdateDynamoAsync(vendor.Id.ToString());
+                }
+
                 string uploadUrl = "";
                 if (!String.IsNullOrEmpty(policy.QuoteFileName))
                 {
@@ -272,8 +266,8 @@ public class Function
                 {
                     Message = "Success",
                     PolicyId = policy.Id,
-                    UploadUrl = uploadUrl
-
+                    UploadUrl = uploadUrl,
+                    FinanceQuote = financeQuote
                 });
 
             }
@@ -297,10 +291,25 @@ public class Function
 
                 //save in dynamo
                 await policy.UpdateDynamoAsync(vendor.Id.ToString());
+
+                string uploadUrl = "";
+                if (!string.IsNullOrEmpty(policy.QuoteFileName))
+                {
+                    dynamic rawBody = JsonConvert.DeserializeObject<dynamic>(request.Body)!;
+                    string policyIdRaw = rawBody?.PolicyId?.ToString() ?? "";
+                    string bareId = policyIdRaw.Replace("Policy#", "");
+                    if (!string.IsNullOrEmpty(bareId))
+                    {
+                        var s3 = new AmzS3Bucket("policy-uploads", $"{vendor.CardknoxMerchantId}/{bareId}");
+                        uploadUrl = await s3.GetUploadUrlAsync();
+                    }
+                }
+
                 response.Body = JsonConvert.SerializeObject(new
                 {
                     Message = "Success",
-                    PolicyId = policy.Id
+                    PolicyId = policy.Id,
+                    UploadUrl = uploadUrl
                 });
                 return response;
             }
@@ -787,13 +796,7 @@ public class Function
                 response.Body = JsonConvert.SerializeObject(responseBody);
                 return response;
             }
-            else if (lastSegment == "create-quote")
-            {
-                var quoteResponse = await InsTechClassesV2.FinancePro.FinanceProService.GenerateQuoteAsync();
-                string body = JsonConvert.SerializeObject(quoteResponse);
-                response.Body = body;
-                return response;
-            }
+            
 
             else if (lastSegment == "save-surcharge")
             {

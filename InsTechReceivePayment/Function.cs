@@ -123,6 +123,10 @@ public class Function
                 string signerName  = body["signerName"]?.ToString() ?? "";
                 string signerEmail = body["signerEmail"]?.ToString() ?? "";
                 string sigType     = body["signatureType"]?.ToString() ?? "Drawn";
+                string financeAgreementUrl = body["financeData"]?["agreementUrl"]?.ToString() ?? "";
+                var financeFields = body["financeData"]?["fields"] != null
+                    ? JsonConvert.DeserializeObject<List<PolicySignatureField>>(body["financeData"]["fields"].ToString()) ?? new List<PolicySignatureField>()
+                    : new List<PolicySignatureField>();
                 var frontendEvents = body["auditTrail"] != null
                     ? JsonConvert.DeserializeObject<List<ESignAuditEvent>>(body["auditTrail"].ToString()) ?? new List<ESignAuditEvent>()
                     : new List<ESignAuditEvent>();
@@ -233,7 +237,87 @@ public class Function
                     await notification.Send();
                 }
 
+                // Sign and email finance agreement if present
+                if (!string.IsNullOrEmpty(financeAgreementUrl) && financeFields.Count > 0)
+                {
+                    using var httpFin = new System.Net.Http.HttpClient();
+                    byte[] financeBytes = await httpFin.GetByteArrayAsync(financeAgreementUrl);
+
+                    byte[] signedFinanceBytes = PdfSigningService.EmbedSignatures(
+                        financeBytes,
+                        financeFields,
+                        sigData,
+                        signerName,
+                        DateTime.UtcNow);
+
+                    string signedFinanceKey = $"{vendor.CardknoxMerchantId}/{policyId}-finance-signed";
+                    var financeS3 = new AmzS3Bucket("policy-uploads", signedFinanceKey);
+                    await financeS3.UploadFileToS3(Convert.ToBase64String(signedFinanceBytes), "application/pdf");
+
+                    int totalPages = PdfSigningService.GetPageCount(signedFinanceBytes);
+
+                    // Pages 1–2 → contracts team
+                    byte[] contractPages = PdfSigningService.ExtractPages(signedFinanceBytes, 1, 2);
+                    var contractEmail = new SimpleEmail(
+                        new List<string> { "contracts@agile-pf.com" },
+                        $"Finance Agreement — {policy.PolicyCode}",
+                        $"<p>Signed finance agreement for policy <strong>{policy.PolicyCode}</strong> ({signerName}).</p>",
+                        new List<string>()
+                    );
+                    contractEmail.attachmentFiles.Add(new SimpleEmail.AttachmentFile
+                    {
+                        FileName = $"finance_agreement_{policy.PolicyCode}.pdf",
+                        FileContent = contractPages
+                    });
+                    await contractEmail.Send();
+
+                    // Last page (EFT form) → account services
+                    byte[] eftPage = PdfSigningService.ExtractPages(signedFinanceBytes, totalPages, totalPages);
+                    var eftEmail = new SimpleEmail(
+                        new List<string> { "accountservices@agile-pf.com" },
+                        $"EFT Authorization — {policy.PolicyCode}",
+                        $"<p>Signed EFT authorization form for policy <strong>{policy.PolicyCode}</strong> ({signerName}).</p>",
+                        new List<string>()
+                    );
+                    eftEmail.attachmentFiles.Add(new SimpleEmail.AttachmentFile
+                    {
+                        FileName = $"eft_authorization_{policy.PolicyCode}.pdf",
+                        FileContent = eftPage
+                    });
+                    await eftEmail.Send();
+                }
+
                 response.Body = JsonConvert.SerializeObject(new { success = true });
+                return response;
+            }
+            else if (lastSegment == "get-finance-agreement")
+            {
+                var policyId = request.QueryStringParameters?.TryGetValue("policyid", out var pid) == true ? pid : "";
+                var policy = await Policy.GetPolicyByIdAsync(vendor.Id.ToString(), policyId);
+                if (policy?.AttachedFinanceQuote == null || policy.AttachedFinanceQuote.QuoteId == 0)
+                {
+                    response.StatusCode = 404;
+                    response.Body = JsonConvert.SerializeObject(new { message = "No finance quote found for this policy" });
+                    return response;
+                }
+
+                var agreementUrl = await InsTechClassesV2.FinancePro.FinanceProService.GetQuoteAgreementUrlAsync(policy.AttachedFinanceQuote.QuoteId);
+                if (string.IsNullOrEmpty(agreementUrl))
+                {
+                    response.StatusCode = 502;
+                    response.Body = JsonConvert.SerializeObject(new { message = "FinancePro did not return an agreement URL" });
+                    return response;
+                }
+                Console.WriteLine("GOT ALL THE WAY HERE!!!");
+                // Proxy the PDF through S3 so the browser can load it without CORS issues
+                using var http = new System.Net.Http.HttpClient();
+                var pdfBytes = await http.GetByteArrayAsync(agreementUrl);
+                var s3Key = $"temp-finance-agreements/{policyId}-{Guid.NewGuid()}.pdf";
+                var s3 = new AmzS3Bucket("temp-document-storage", s3Key);
+                await s3.UploadBytesAsync(pdfBytes, "application/pdf");
+                var presignedUrl = s3.GetDownloadPreSignedUrl();
+
+                response.Body = JsonConvert.SerializeObject(new { agreementUrl = presignedUrl });
                 return response;
             }
             else if (lastSegment == "get-surcharge")

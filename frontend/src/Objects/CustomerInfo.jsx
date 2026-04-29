@@ -61,14 +61,7 @@ export const CustomerInfo = ({
           <textarea value={note} onChange={(e) => setNote(e.target.value)}></textarea>
         </div>
 
-        <div className="form-group">
-          <label>Customer #</label>
-          <input
-            type="text"
-            value={customerNumber}
-            onChange={(e) => setCustomerNumber(e.target.value)}
-          />
-        </div>
+     
       </section>
 
       <section className="form-section">

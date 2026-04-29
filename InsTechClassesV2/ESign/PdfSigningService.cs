@@ -73,12 +73,43 @@ namespace InsTechClassesV2.ESign
                         .ShowText(dateText)
                         .EndText();
                 }
+                else if ((field.Type == "text" || field.Type == "radio") && !string.IsNullOrEmpty(field.Value))
+                {
+                    float fontSize = Math.Min(fieldHeight * 0.55f, 11f);
+                    canvas.BeginText()
+                        .SetFontAndSize(font, fontSize)
+                        .MoveText(x + 2, y + (fieldHeight - fontSize) / 2)
+                        .ShowText(field.Value)
+                        .EndText();
+                }
 
                 canvas.Release();
             }
 
             pdfDoc.Close();
             return outputStream.ToArray();
+        }
+
+        public static int GetPageCount(byte[] pdfBytes)
+        {
+            using var input = new MemoryStream(pdfBytes);
+            var doc = new PdfDocument(new PdfReader(input));
+            int n = doc.GetNumberOfPages();
+            doc.Close();
+            return n;
+        }
+
+        public static byte[] ExtractPages(byte[] pdfBytes, int startPage, int endPage)
+        {
+            using var input = new MemoryStream(pdfBytes);
+            using var output = new MemoryStream();
+            var srcDoc = new PdfDocument(new PdfReader(input));
+            var destDoc = new PdfDocument(new PdfWriter(output));
+            int last = Math.Min(endPage, srcDoc.GetNumberOfPages());
+            srcDoc.CopyPagesTo(startPage, last, destDoc);
+            srcDoc.Close();
+            destDoc.Close();
+            return output.ToArray();
         }
     }
 }
