@@ -54,6 +54,8 @@ namespace InsTechClassesV2
         public List<CardknoxSubAccount> SubAccounts { get; set; }
         public string DefaultSubAccountId { get; set; }
 
+        public string Name { get; set; }
+
         public async Task<string> GetCardknoxSecretName(string subAccountId = null)
         {
             var id = subAccountId ?? DefaultSubAccountId;

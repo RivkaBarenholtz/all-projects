@@ -84,7 +84,6 @@ export default function NewSchedule({ CloseNewSchedule, OnSuccess }) {
   const [expYear, setExpYear] = useState("");
 
   // General
-  const [submitPressed, setSubmitPressed] = useState(false);
   const [loading, setLoading] = useState(false);
 
     //General
@@ -113,57 +112,9 @@ export default function NewSchedule({ CloseNewSchedule, OnSuccess }) {
 
     
     
-    const CreateSchedule =async() => 
-    {
-        setSubmitPressed(true);
-        if( firstName == '' || lastName == '' || company == '' || Number(formData.amount) <= 0 || Number(formData.frequencyNum) <= 0 ) return ; 
-        if( formData.isCheck && (accountName == '' || accountNumber=='' || routingNumber == '' )   ) return ;
-        if (!formData.isCheck && (expMonth =='' || expYear == '' || cardToken=='' )) return; 
-        const NewCustomer = {
-            CustomerNumber: customerNumber , 
-            CustomerNotes: note, 
-            Email : email, 
-            BillFirstName : firstName, 
-            BillLastName : lastName, 
-            BillCompany: company, 
-            BillStreet : street, 
-            BillCity : city, 
-            BillState : state, 
-            BillZip : zip
-        }
-        const NewPaymentMethod = {
-            TokenType : formData.isCheck? "Check": "CC"
-        }
-        let  NewSchedule = {
-            NewCustomer: NewCustomer,
-            NewPaymentMethod: NewPaymentMethod,
-            IntervalType: formData.frequency,
-            Amount : formData.includeFee && !formData.isCheck ? Number(formData.amount) + (formData.amount * formData.transferFee/100).toFixed(2) : formData.amount,
-            Description:formData.description,
-            Invoice:formData.invoice ,
-            ScheduleName: formData.scheduleName,
-            IntervalCount:formData.frequencyNum,
-            FailedTransactionRetryTimes: formData.retryAttempts,
-            DaysBetweenRetries: formData.retryDays,
-            SkipSaturdayAndHolidays:formData.skipDays,
-            StartDate: formData.startDate,
-            AfterMaxRetriesAction: formData.afterFail,
-            ...(isAdmin && selectedSubAccountId !== undefined ? { SubAccountId: selectedSubAccountId } : {})
-        }
-        if (formData.endOption == "NumberOfPayments")
-        {
-            NewSchedule = {
-                ...NewSchedule, 
-                TotalPayments: formData.numberOfPayments
-            }
-        }
-        if (formData.endOption == "Date")
-        {
-            NewSchedule = {
-                ...NewSchedule, 
-                EndDate: formData.endDate
-            }
-        }
+  
+        
+        
   const nextStep = () => {
     setStepError("");
     if (currentStep === 1) {
@@ -201,6 +152,12 @@ export default function NewSchedule({ CloseNewSchedule, OnSuccess }) {
   };
 
   const CreateSchedule = async () => {
+
+    setSubmitPressed(true);
+      if( firstName == '' || lastName == '' || company == '' || Number(formData.amount) <= 0 || Number(formData.frequencyNum) <= 0 ) return ; 
+      if( formData.isCheck && (accountName == '' || accountNumber=='' || routingNumber == '' )   ) return ;
+      if (!formData.isCheck && (expMonth =='' || expYear == '' || cardToken=='' )) return; 
+
     const NewCustomer = {
       CustomerNumber: customerNumber,
       CustomerNotes: note,
@@ -348,6 +305,21 @@ export default function NewSchedule({ CloseNewSchedule, OnSuccess }) {
         }}>
           <h2 style={{ margin: "0 0 4px", fontSize: "16px", fontWeight: 600, color: "#111827" }}>
             Create Schedule
+
+             {isAdmin && subAccounts.length > 1 && (
+                  <div className="form-group">
+                    <label className="form-label">Sub-Account</label>
+                    <select
+                      className="form-input"
+                      value={selectedSubAccountId}
+                      onChange={e => setSelectedSubAccountId(e.target.value)}
+                    >
+                      {subAccounts.map(sa => (
+                        <option key={sa.Id || "default"} value={sa.Id}>{sa.Name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
           </h2>
          
           <div style={{ position: "relative", marginTop: "35px" }}>
