@@ -41,7 +41,7 @@ const ProcessButton = ({ onClick }) => {
   );
 };
 
-export const CheckTab = (
+export const CheckTab = forwardRef((
     { 
         amount, 
         vendor, 
@@ -290,8 +290,8 @@ export const CheckTab = (
         </div>
         
     )
-    
-}
+
+})
 
 
 

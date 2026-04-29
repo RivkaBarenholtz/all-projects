@@ -44,7 +44,7 @@ const ProcessButton = ({ onClick }) => {
   );
 };
 
-export const CreditCardTab = (
+export const CreditCardTab = forwardRef((
     {
         amount,
         surcharge,
@@ -376,5 +376,5 @@ export const CreditCardTab = (
 
 
     )
-};
+});
 

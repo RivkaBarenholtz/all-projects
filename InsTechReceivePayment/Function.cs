@@ -259,7 +259,7 @@ public class Function
                     // Pages 1–2 → contracts team
                     byte[] contractPages = PdfSigningService.ExtractPages(signedFinanceBytes, 1, 2);
                     var contractEmail = new SimpleEmail(
-                        new List<string> { "contracts@agile-pf.com" },
+                        new List<string> { "rivkyswiatycki@gmail.com" },
                         $"Finance Agreement — {policy.PolicyCode}",
                         $"<p>Signed finance agreement for policy <strong>{policy.PolicyCode}</strong> ({signerName}).</p>",
                         new List<string>()
@@ -274,7 +274,7 @@ public class Function
                     // Last page (EFT form) → account services
                     byte[] eftPage = PdfSigningService.ExtractPages(signedFinanceBytes, totalPages, totalPages);
                     var eftEmail = new SimpleEmail(
-                        new List<string> { "accountservices@agile-pf.com" },
+                        new List<string> { "rivkyswia@gmail.com" },
                         $"EFT Authorization — {policy.PolicyCode}",
                         $"<p>Signed EFT authorization form for policy <strong>{policy.PolicyCode}</strong> ({signerName}).</p>",
                         new List<string>()

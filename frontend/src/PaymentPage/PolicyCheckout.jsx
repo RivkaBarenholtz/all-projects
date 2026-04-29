@@ -10,7 +10,7 @@ import { ConfirmationModal } from "../Objects/ConfimationModal";
 
 // Finance agreement overlay fields — positions are approximate; adjust after viewing the PDF
 const FINANCE_FIELDS = [
-    { id: "fin-signature",     type: "signature", page: 1,  x: 0.07, y: 0.84, width: 0.40, height: 0.05, optional: true },
+    { id: "fin-signature",     type: "signature", page: 1,  x: 0.07, y: 0.84, width: 0.40, height: 0.05 },
     { id: "fin-date",          type: "date",      page: 1,  x: 0.07, y: 0.90, width: 0.22, height: 0.04, optional: true },
     // Last page — EFT Authorization form (page: -1 = last page of finance PDF)
     { id: "fin-acct-type",     type: "radio",     page: -1, x: 0.07, y: 0.32, width: 0.42, height: 0.04, optional: true, options: ["", ""] },
@@ -377,6 +377,7 @@ export default function PolicyCheckout() {
                                 isPortal={false}
                                 onFinish={() => {}}
                                 onError={msg => setErrorMessage(msg)}
+                                vendor= {vendor}
                                 subdomain={vendor?.subdomain}
                                 submitPressed={submitPressed}
                                 setSubmitPressed={setSubmitPressed}
@@ -412,6 +413,7 @@ export default function PolicyCheckout() {
                                 showProcess={false}
                                 onPaymentApproved={handlePaymentApproved}
                                 policyId={policyId}
+                                vendor={vendor}
                             />
                         </div>
 
