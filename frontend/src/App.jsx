@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useLocation, Routes, Route, useParams } from "react-router-dom";
-import { GlobalLoader } from "./Components/GlobalLoader";
 import PrivateRoute from "./PrivateRoute";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
@@ -105,7 +104,6 @@ function App() {
         <Route path="/" element={<div>404 – Not Found</div>} />
         <Route path="*" element={<div>404 – Not Found</div>} /> */}
       </Routes>
-      <GlobalLoader />
     </>
   );
 }

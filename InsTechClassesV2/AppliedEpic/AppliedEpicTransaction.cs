@@ -73,11 +73,11 @@ namespace InsTechClassesV2.AppliedEpic
         public string AgencyCode { get; set; }
         public Option BillingModeOption { get; set; }
         public string BranchCode { get; set; }
-        public string DepartmentCode { get; set; }
+        //public string DepartmentCode { get; set; }
         public DateTime EffectiveDate { get; set; }
         public DateTime GenerateInvoiceDate { get; set; }
         public int ProductionMonth { get; set; }
-        public string ProfitCenterCode { get; set; }
+        //public string ProfitCenterCode { get; set; }
         public object Reason { get; set; }
         public object ReasonDetails { get; set; }
         public object GeneralLedgerAccount { get; set; }

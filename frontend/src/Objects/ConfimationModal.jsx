@@ -6,7 +6,11 @@ return <div className="modal-overlay dark">
           <button onClick={onClose} type='button' className="modal-close">&times;</button>
             {children}
         <div className="modal-footer">
-            {showButton && <button className="btn btn-primary" type="button" onClick={onConfirm}> {confirmButtonText}</button>}
+            {showButton && (
+                <button className="btn btn-primary" type="button" onClick={onConfirm} disabled={loading}>
+                    {loading ? <div className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> : confirmButtonText}
+                </button>
+            )}
         </div>
         </div>
     

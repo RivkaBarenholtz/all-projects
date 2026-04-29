@@ -19,6 +19,7 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
 
 
     const [show, setShow] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     const VoidTransaction = async () => {
         if (transaction.xCommand.includes("Wire")) {
@@ -31,7 +32,12 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
             OriginalTransaction: transaction.xRefNum,
             IsCheck: transaction.xCommand.toLowerCase().includes("check")
         }
-        await fetchWithAuth("void-transaction", voidRequest);
+        setLoading(true);
+        try {
+            await fetchWithAuth("void-transaction", voidRequest);
+        } finally {
+            setLoading(false);
+        }
         getTransactions();
         setShowVoidConfirm(false);
         setShow(!show);
@@ -59,10 +65,14 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
                 Surcharge: 0
             }
         }
-        await fetchWithAuth("issue-refund-cardknox", RefundRequest);
+        setLoading(true);
+        try {
+            await fetchWithAuth("issue-refund-cardknox", RefundRequest);
+        } finally {
+            setLoading(false);
+        }
         setShowRefundConfirm(false);
         setShow(!show);
-
     }
 
     const RefundWireTransaction = async () => {
@@ -71,17 +81,26 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
             amount: amt,
             RefNum: transaction.xRefNum
         }
-        await fetchWithAuth("refund-wire", refundRequest);
+        setLoading(true);
+        try {
+            await fetchWithAuth("refund-wire", refundRequest);
+        } finally {
+            setLoading(false);
+        }
         setShowRefundConfirm(false);
         setShow(!show);
-
     }
 
     const VoidWireTransaction = async () => {
         const VoidRequest = {
             RefNum: transaction.xRefNum
         }
-        await fetchWithAuth("void-wire", VoidRequest);
+        setLoading(true);
+        try {
+            await fetchWithAuth("void-wire", VoidRequest);
+        } finally {
+            setLoading(false);
+        }
         setShowRefundConfirm(false);
         setShow(!show);
     }
@@ -90,7 +109,12 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
         const ConfirmRequest = {
             RefNum: transaction.xRefNum
         }
-        await fetchWithAuth("confirm-wire", ConfirmRequest);
+        setLoading(true);
+        try {
+            await fetchWithAuth("confirm-wire", ConfirmRequest);
+        } finally {
+            setLoading(false);
+        }
         setShowConfirmWire(false);
         setShow(!show);
         getTransactions();
@@ -112,8 +136,12 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
             };
 
             const urlEndpoint = !transaction.xCommand.startsWith("CC") ? "make-check-payment-to-cardknox" : "make-payment-cardknox"
-            await fetchWithAuth(urlEndpoint, newTransactionRequest);
-
+            setLoading(true);
+            try {
+                await fetchWithAuth(urlEndpoint, newTransactionRequest);
+            } finally {
+                setLoading(false);
+            }
             setShowNewTransaction(false);
 
             // Optionally show success message or refresh transaction list
@@ -125,7 +153,7 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
     }
 
     return <>
-        {showVoidConfirm && <ConfirmationModal onConfirm={VoidTransaction} onClose={() => { setShowVoidConfirm(false); setShow(!show) }} confirmButtonText="Void" >
+        {showVoidConfirm && <ConfirmationModal onConfirm={VoidTransaction} onClose={() => { setShowVoidConfirm(false); setShow(!show) }} confirmButtonText="Void" loading={loading}>
             <div className="all-padding-bottom">
                 <h2>Void Transaction</h2>
                 <span>Are you sure you want to void this transaction?</span>
@@ -152,7 +180,7 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
                 </div>
             </div>
         </ConfirmationModal>}
-        {showRefundConfirm && <ConfirmationModal onConfirm={RefundTransaction} onClose={() => { setShowRefundConfirm(false) }} confirmButtonText="Issue Refund">
+        {showRefundConfirm && <ConfirmationModal onConfirm={RefundTransaction} onClose={() => { setShowRefundConfirm(false) }} confirmButtonText="Issue Refund" loading={loading}>
 
             <div className="all-padding-bottom">
                 <h2>Refund Transaction</h2>
@@ -218,7 +246,7 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
         </ConfirmationModal>}
 
         {
-            showConfirmWire && <ConfirmationModal confirmButtonText={"Confirm"} onClose={() => setShowConfirmWire(false)} onConfirm={ConfirmWireTransaction}>
+            showConfirmWire && <ConfirmationModal confirmButtonText={"Confirm"} onClose={() => setShowConfirmWire(false)} onConfirm={ConfirmWireTransaction} loading={loading}>
 
                 <h2>Confirm  Wire Transaction</h2>
                 <span> Are you sure you want to confirm this transaction?</span>
@@ -227,7 +255,7 @@ export const TransactionActionDropdown = ({ transaction, getTransactions }) => {
 
         {
             showNewTransaction &&
-            <ConfirmationModal onConfirm={NewTransaction} confirmButtonText={"Process"} onClose={() => { setShowNewTransaction(false) }}>
+            <ConfirmationModal onConfirm={NewTransaction} confirmButtonText={"Process"} onClose={() => { setShowNewTransaction(false) }} loading={loading}>
 
 
                 <div className="form-group">

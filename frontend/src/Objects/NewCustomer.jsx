@@ -26,6 +26,7 @@ export const NewCustomer = forwardRef(
     const [subAccounts, setSubAccounts] = useState([]);
     const [selectedSubAccountId, setSelectedSubAccountId] = useState("");
     const [isAdmin, setIsAdmin] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
       if (isEdit) return;
@@ -75,7 +76,13 @@ export const NewCustomer = forwardRef(
       };
 
       const urlEndpoint = isEdit ? "update-customer" : "create-customer";
-      const resp = await fetchWithAuth(urlEndpoint, NewCustomer);
+      setLoading(true);
+      let resp;
+      try {
+        resp = await fetchWithAuth(urlEndpoint, NewCustomer);
+      } finally {
+        setLoading(false);
+      }
 
       if (resp.Error) {
         console.error("Error:", resp.Error);
@@ -116,6 +123,7 @@ export const NewCustomer = forwardRef(
         confirmButtonText="Save"
         onClose={Close}
         onConfirm={CreateOrUpdateCustomer}
+        loading={loading}
       >
         {isAdmin && subAccounts.length > 1 && (
           <div className="form-group">

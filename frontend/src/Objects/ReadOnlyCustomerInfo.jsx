@@ -3,20 +3,31 @@ import { fetchWithAuth } from "../Utilities";
 
 export const ReadOnlyCustomerInfo = ({customerID,  setCustomerObj})=> 
 {
-    const [customer, setCustomer ] = useState({}); 
+    const [customer, setCustomer ] = useState({});
+    const [loading, setLoading] = useState(false);
 
     useEffect(()=> {
-        const getCustomer = async()=> 
+        const getCustomer = async()=>
         {
-            const cust= await  fetchWithAuth("get-cardknox-customers", {CustomerId : customerID})
-            setCustomer(cust.Customers[0]) ;
-            setCustomerObj && setCustomerObj(cust.Customers[0])
+            setLoading(true);
+            try {
+                const cust = await fetchWithAuth("get-cardknox-customers", {CustomerId : customerID})
+                setCustomer(cust.Customers[0]);
+                setCustomerObj && setCustomerObj(cust.Customers[0])
+            } finally {
+                setLoading(false);
+            }
         }
         if (customerID != null && customerID!= "")
           getCustomer();
 
     }, [customerID])
-    return <>
+    return <div style={{ position: "relative" }}>
+      {loading && (
+        <div className="loader-overlay" style={{ position: "absolute" }}>
+          <div className="spinner" />
+        </div>
+      )}
      <div >
         <p className="id-label">cust #:
             
@@ -79,6 +90,6 @@ export const ReadOnlyCustomerInfo = ({customerID,  setCustomerObj})=>
                   
                 </div>
               </div>
-              </>
+              </div>
 
 }

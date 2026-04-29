@@ -7,6 +7,7 @@ export default function Header({ title,openNav, setOpenNav }) {
   const [user, setUser] = useState({});
   const [availableVendors, setAvailableVendors] = useState([]);
   const [selectedVendor, setSelectedVendor] = useState();
+  const [loading, setLoading] = useState(false);
   const menuRef = useRef(null);
 
   const toggleMenu = () => setOpen(!open);
@@ -34,12 +35,17 @@ export default function Header({ title,openNav, setOpenNav }) {
 
   useEffect(() => {
     async function getVendors() {
-      const vendors = await fetchWithAuth("get-available-vendors", {});
-      setAvailableVendors(vendors);
-      if (!localStorage.getItem("currentVendor")) {
-        setSelected(vendors[0].Id);
-      } else {
-        setSelectedVendor(localStorage.getItem("currentVendor"));
+      setLoading(true);
+      try {
+        const vendors = await fetchWithAuth("get-available-vendors", {});
+        setAvailableVendors(vendors);
+        if (!localStorage.getItem("currentVendor")) {
+          setSelected(vendors[0].Id);
+        } else {
+          setSelectedVendor(localStorage.getItem("currentVendor"));
+        }
+      } finally {
+        setLoading(false);
       }
     }
     getVendors();
@@ -54,6 +60,12 @@ export default function Header({ title,openNav, setOpenNav }) {
   const currentVendor = availableVendors.find((x) => x.Id == selectedVendor);
 
   return (
+    <>
+    {loading && (
+      <div className="loader-overlay">
+        <div className="spinner" />
+      </div>
+    )}
     <header className="app-header">
       <div className="nav-left">
         {/* Hamburger button (only visible on mobile) */}
@@ -147,5 +159,6 @@ export default function Header({ title,openNav, setOpenNav }) {
         )}
       </div>
     </header>
+    </>
   );
 }

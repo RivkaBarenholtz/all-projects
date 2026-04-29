@@ -5,9 +5,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 //import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
 import { faPrint, faEnvelope, faDownload } from "@fortawesome/free-solid-svg-icons";
 export const PrintPDFButton = ({ transaction }) => {
+  const [loading, setLoading] = React.useState(false);
+
   const handlePrint = async () => {
+    setLoading(true);
     try {
-      // Fetch Base64 PDF from API
       let blob = await fetchWithAuth("generate-receipt", transaction, false, true);
 
 
@@ -26,26 +28,20 @@ export const PrintPDFButton = ({ transaction }) => {
     } catch (error) {
       console.error('Error generating receipt:', error);
       alert('Failed to generate receipt. Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    // try {
-    //   // Fetch Base64 PDF from API
-
-    //   // Print using iframe
-
-    // } catch (error) {
-    //   console.error("Error printing PDF:", error);
-    // }
   };
 
-
-  return <ReceiptButton onClick={handlePrint} label={<><FontAwesomeIcon icon={faPrint} />Print</>}/>;;
+  return <ReceiptButton onClick={handlePrint} disabled={loading} label={loading ? <div className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> : <><FontAwesomeIcon icon={faPrint} />Print</>} />;
 };
 
 export const DownloadPDFButton = ({ transaction }) => {
+  const [loading, setLoading] = React.useState(false);
+
   const handleDownload = async () => {
+    setLoading(true);
     try {
-      // Fetch Base64 PDF from API
       let blob = await fetchWithAuth("generate-receipt", transaction, false, true);
 
       // Create download link       
@@ -62,13 +58,16 @@ export const DownloadPDFButton = ({ transaction }) => {
     } catch (error) {
       console.error('Error generating receipt:', error);
       alert('Failed to generate receipt. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
-  return <ReceiptButton onClick={handleDownload} label={<><FontAwesomeIcon icon={faDownload} />Download</>}/>;
+
+  return <ReceiptButton onClick={handleDownload} disabled={loading} label={loading ? <div className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> : <><FontAwesomeIcon icon={faDownload} />Download</>} />;
 }
 
-export const ReceiptButton =({onClick, label})=>{
-    return <button style={{...{flex:1, justifyContent: "center"}, ... {
+export const ReceiptButton =({onClick, label, disabled})=>{
+    return <button disabled={disabled} style={{...{flex:1, justifyContent: "center"}, ... {
   background: '#148DC2',
   color: '#fff',
   padding: '10px',

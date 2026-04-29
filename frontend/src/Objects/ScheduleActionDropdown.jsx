@@ -13,6 +13,7 @@ export const ScheduleActionDropdown =({schedule, setSchedule})=>
     const [showEnableConfirm, setShowEnableConfirm] = useState(false);
 
     const [show, setShow] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     const DeleteSchedule = async()=> 
     {
@@ -20,9 +21,14 @@ export const ScheduleActionDropdown =({schedule, setSchedule})=>
         { 
             ScheduleId:schedule.ScheduleId, 
         }
-        await fetchWithAuth("delete-schedule", DeleteRequest );
+        setLoading(true);
+        try {
+            await fetchWithAuth("delete-schedule", DeleteRequest);
+        } finally {
+            setLoading(false);
+        }
         setShowDeleteConfirm(false);
-        await setSchedule(); 
+        await setSchedule();
         setShow(!show);
     }
     
@@ -32,11 +38,15 @@ export const ScheduleActionDropdown =({schedule, setSchedule})=>
         { 
             ScheduleId:schedule.ScheduleId, 
         }
-        const response=  await fetchWithAuth("disable-schedule", StopRequest );
+        setLoading(true);
+        try {
+            await fetchWithAuth("disable-schedule", StopRequest);
+        } finally {
+            setLoading(false);
+        }
         await setSchedule();
         setShowStopConfirm(false);
         setShow(!show);
-
     }
 
     const EnableSchedule = async()=>
@@ -45,16 +55,20 @@ export const ScheduleActionDropdown =({schedule, setSchedule})=>
         { 
             ScheduleId:schedule.ScheduleId, 
         }
-        await fetchWithAuth("enable-schedule", StopRequest );
+        setLoading(true);
+        try {
+            await fetchWithAuth("enable-schedule", StopRequest);
+        } finally {
+            setLoading(false);
+        }
         setShowEnableConfirm(false);
-        await setSchedule(); 
+        await setSchedule();
         setShow(!show);
-
     }
 
    
     return <>
-       { showStopConfirm && <ConfirmationModal onConfirm={StopSchedule} onClose={()=>{setShowStopConfirm(false); setShow(!show)}} confirmButtonText="Stop Schedule" >
+       { showStopConfirm && <ConfirmationModal onConfirm={StopSchedule} onClose={()=>{setShowStopConfirm(false); setShow(!show)}} confirmButtonText="Stop Schedule" loading={loading}>
         <div className="all-padding-bottom">
             <h2>Stop Schedule</h2>
             <span>Are you sure you want to stop this schedule?</span>
@@ -66,7 +80,7 @@ export const ScheduleActionDropdown =({schedule, setSchedule})=>
             </div>
         </div>
        </ConfirmationModal>  }
-       { showEnableConfirm && <ConfirmationModal onConfirm={EnableSchedule} onClose={()=>{setShowEnableConfirm(false)} }  confirmButtonText="Enable Schedule">
+       { showEnableConfirm && <ConfirmationModal onConfirm={EnableSchedule} onClose={()=>{setShowEnableConfirm(false)} }  confirmButtonText="Enable Schedule" loading={loading}>
             
         <div className="all-padding-bottom">
             <h2>Enable Schedule</h2>
@@ -83,7 +97,7 @@ export const ScheduleActionDropdown =({schedule, setSchedule})=>
 
        </ConfirmationModal>  }
 
-        { showDeleteConfirm && <ConfirmationModal onConfirm={DeleteSchedule} onClose={()=>{setShowDeleteConfirm(false)} }  confirmButtonText="Delete Schedule">
+        { showDeleteConfirm && <ConfirmationModal onConfirm={DeleteSchedule} onClose={()=>{setShowDeleteConfirm(false)} }  confirmButtonText="Delete Schedule" loading={loading}>
             
         <div className="all-padding-bottom">
             <h2>Delete Schedule</h2>

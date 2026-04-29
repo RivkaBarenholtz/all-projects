@@ -11,6 +11,7 @@ export const PaymentMethods =({CustomerId, defaultMethodId})=> {
 
     const [paymentMethods , setPaymentMethods ] = useState([])
     const [submitPressed , setSubmitPressed]= useState (false)
+    const [loading, setLoading] = useState(false)
 
      const [accountType , setAccountType ] = useState("Checking");
     const [accountName , setAccountName ] = useState("");
@@ -43,10 +44,15 @@ export const PaymentMethods =({CustomerId, defaultMethodId})=> {
                 CustomerId: CustomerId
             }
         }
-        const response =  await fetchWithAuth("list-payment-methods", request) 
-        setPaymentMethods(response.PaymentMethods);
+        setLoading(true);
+        try {
+            const response = await fetchWithAuth("list-payment-methods", request)
+            setPaymentMethods(response.PaymentMethods);
+        } finally {
+            setLoading(false);
+        }
     }
-    getData(); 
+    getData();
     },[])
 
 
@@ -115,15 +121,16 @@ export const PaymentMethods =({CustomerId, defaultMethodId})=> {
             CustomerId
         }
 
-        if(activeTab ==  "Credit Card")
-        {
-            rsp = await fetchWithAuth("create-payment-method-cc", CcInfo)
+        setLoading(true);
+        try {
+            if(activeTab ==  "Credit Card")
+                rsp = await fetchWithAuth("create-payment-method-cc", CcInfo)
+            else
+                rsp = await fetchWithAuth("create-payment-method-check", CheckInfo)
+        } finally {
+            setLoading(false);
         }
-        else 
-        {
-            rsp = await fetchWithAuth("create-payment-method-check", CheckInfo)
-        }
-        
+
         if (rsp.Error != "") {
             // Show error message if backend provided 
             const message = data.message || `Request failed: ${response.Error}`;
@@ -140,9 +147,13 @@ export const PaymentMethods =({CustomerId, defaultMethodId})=> {
             PaymentMethodId: selectedMethod.PaymentMethodId,
             CustomerId: CustomerId
         }
-        var rsp = await fetchWithAuth ("delete-payment-method", req);
-        if (rsp.Error == "")
-        {
+        setLoading(true);
+        try {
+            var rsp = await fetchWithAuth("delete-payment-method", req);
+        } finally {
+            setLoading(false);
+        }
+        if (rsp.Error == "") {
             showSuccess("Successfully deleted payment method")
             setShowDeleteConfirm(false);
         }
@@ -164,9 +175,14 @@ export const PaymentMethods =({CustomerId, defaultMethodId})=> {
         {...req, 
             SetAsDefault : true
         }
-        const rsp = await fetchWithAuth("update-payment-method", reqWithDefault)
-        if (rsp.Error == "")
-        {
+        setLoading(true);
+        let rsp;
+        try {
+            rsp = await fetchWithAuth("update-payment-method", reqWithDefault)
+        } finally {
+            setLoading(false);
+        }
+        if (rsp.Error == "") {
             showSuccess("Successfully updated default method")
             setShowUpdateDefaultConfirm(false);
             setDefaultMethod(selectedMethod.PaymentMethodId)
@@ -211,7 +227,12 @@ export const PaymentMethods =({CustomerId, defaultMethodId})=> {
           />
       }
 
-    return <div className="payment-methods">
+    return <div className="payment-methods" style={{ position: "relative" }}>
+      {loading && (
+        <div className="loader-overlay" style={{ position: "absolute" }}>
+          <div className="spinner" />
+        </div>
+      )}
       {paymentMethods.map((method) => (
         <div className="payment-method-div" key={method.PaymentMethodId}>
           <div className="icon">
@@ -250,7 +271,7 @@ export const PaymentMethods =({CustomerId, defaultMethodId})=> {
         <button className="btn btn-primary" type="button" onClick={()=>setShowNewPaymentMethod(true)}> New Payment Method</button>
       </div>
 
-      {showNewPaymentMethod && <ConfirmationModal confirmButtonText={"Save"}  onConfirm={AddPaymentMethod} onClose={()=>setShowNewPaymentMethod(false)}>
+      {showNewPaymentMethod && <ConfirmationModal confirmButtonText={"Save"} onConfirm={AddPaymentMethod} onClose={()=>setShowNewPaymentMethod(false)} loading={loading}>
          <section>
             <h3> Payment Info</h3>
         <PaymentTabs 
@@ -261,7 +282,7 @@ export const PaymentMethods =({CustomerId, defaultMethodId})=> {
         </section>
       </ConfirmationModal>}
 
-      {showDeleteConfirm && <ConfirmationModal confirmButtonText={ "Delete"} onClose={()=> setShowDeleteConfirm(false)} onConfirm={DeletePaymentMehtod}>
+      {showDeleteConfirm && <ConfirmationModal confirmButtonText={"Delete"} onClose={()=> setShowDeleteConfirm(false)} onConfirm={DeletePaymentMehtod} loading={loading}>
          <h2>Are you sure you want to delete this method?</h2>
         <span></span>
         <div>
@@ -272,7 +293,7 @@ export const PaymentMethods =({CustomerId, defaultMethodId})=> {
 
         </ConfirmationModal>}
 
-        {showUpdateDefaultConfirm && <ConfirmationModal confirmButtonText={ "Set Default"} onClose={()=> setShowUpdateDefaultConfirm(false)} onConfirm={ChangeDefaultMethod}>
+        {showUpdateDefaultConfirm && <ConfirmationModal confirmButtonText={"Set Default"} onClose={()=> setShowUpdateDefaultConfirm(false)} onConfirm={ChangeDefaultMethod} loading={loading}>
          <h2>Set payment method to default?</h2>
         <span></span>
         <div>

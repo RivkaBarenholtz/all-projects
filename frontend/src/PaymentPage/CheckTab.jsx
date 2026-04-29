@@ -34,6 +34,7 @@ export const CheckTab = (
         showProcess = true,
         subAccountId
     }) => {
+    const [isProcessing, setIsProcessing] = useState(false);
     const [accountName, setAccountName] = useState('');
     const [checkToken, setCheckToken] = useState('');
     const [routingNumber, setRoutingNumber] = useState('');
@@ -107,6 +108,7 @@ export const CheckTab = (
             (context ?? "app") === "app"
                 ? BaseUrl().split('.')[0].split('//')[1]
                 : (context ?? "ins-dev");
+        setIsProcessing(true);
         try {
             let responseBody = null;
             if (isPortal) {
@@ -137,6 +139,8 @@ export const CheckTab = (
         } catch (error) {
             onError("❌ An error occurred while processing the payment. Please try again.");
             console.error(error);
+        } finally {
+            setIsProcessing(false);
         }
     }
 
@@ -265,9 +269,9 @@ export const CheckTab = (
 
 
                 <div className="button-spaced mt-3">
-                    <button className="btn btn-primary" type="button" onClick={submitToGateway}>
+                    <button className="btn btn-primary" type="button" onClick={submitToGateway} disabled={isProcessing}>
                         <FontAwesomeIcon icon={faCreditCard} style={{ paddingRight: '5px' }} />
-                        Process Payment
+                        {isProcessing ? 'Processing...' : 'Process Payment'}
                     </button>
                 </div>
 

@@ -46,7 +46,7 @@ namespace InsTechClassesV2.AppliedEpic
                 ApplyTo = "Account",
                 Description = $"{(debitCredit == DebitCredit.Credit?"Pymt":"Rfnd/void")}- acct {accountNum} for ref num {refNum}",
                 StructureAgencyCode = SecurityElement.Escape(agencyCode),
-                StructureBranchCode = SecurityElement.Escape(client.BranchCode),
+                StructureBranchCode = SecurityElement.Escape(client.BranchCode.GetValueOrDefault(agencyCode, "")),
                 Method= (method==PaymentMethod.CreditCard? "Credit Card":method.ToString()),
                 DebitCreditOption = new DebitCreditOption() { OptionName = debitCredit.ToString(), Value = (int)debitCredit },
                 PaymentID = refNum
@@ -64,7 +64,7 @@ namespace InsTechClassesV2.AppliedEpic
                     IsBankAccount = false,
                     Method = "Credit Card",
                     StructureAgencyCode = SecurityElement.Escape(agencyCode),
-                    StructureBranchCode = SecurityElement.Escape(client.BranchCode)
+                    StructureBranchCode = SecurityElement.Escape(client.BranchCode.GetValueOrDefault(agencyCode, ""))
 
                 });
             }
@@ -115,7 +115,7 @@ namespace InsTechClassesV2.AppliedEpic
                 IsBankAccount = false,
                 Flag = "Insert",
                 StructureAgencyCode = SecurityElement.Escape(agencyCode),
-                StructureBranchCode = SecurityElement.Escape(client.BranchCode),
+                StructureBranchCode = SecurityElement.Escape(client.BranchCode.GetValueOrDefault(agencyCode, "")),
                 PaymentID= refNum,
                 Method = (method == PaymentMethod.CreditCard ? "Credit Card" : method.ToString()),
                 DebitCreditOption = new DebitCreditOption() { OptionName = debitCredit.ToString(), Value = (int)debitCredit }
@@ -127,14 +127,14 @@ namespace InsTechClassesV2.AppliedEpic
                 receipt.DetailValue.DetailItemsValue.DetailItem.Add(new DetailItem
                 {
                     Amount = amountSwallowed,
-                    DebitCreditOption =  new DebitCreditOption() { OptionName = "Debit", Value = 0 }, 
+                    DebitCreditOption =  new DebitCreditOption() { OptionName = "Debit", Value = 0 },
                     DetailItemAccountLookupCode = SecurityElement.Escape(client.LookupCode),
                     ApplyTo = "Account",
                     Description = $"CC surcharge swallowed for pymt",
                     IsBankAccount = false,
                     Flag = "Insert",
                     StructureAgencyCode = SecurityElement.Escape(agencyCode),
-                    StructureBranchCode = SecurityElement.Escape(client.BranchCode)
+                    StructureBranchCode = SecurityElement.Escape(client.BranchCode.GetValueOrDefault(agencyCode, ""))
 
                 });
             }
@@ -253,6 +253,7 @@ namespace InsTechClassesV2.AppliedEpic
             {
                 Console.WriteLine($"We couldn't create a new receipt using the standard vendor agency code. Trying again vendors secondary agency code.({vendor.SecondaryAgencyCode})");
                 receipt.DetailValue.DetailItemsValue.DetailItem[0].StructureAgencyCode = SecurityElement.Escape(vendor.SecondaryAgencyCode);
+                receipt.DetailValue.DetailItemsValue.DetailItem[0].StructureBranchCode = SecurityElement.Escape(client.BranchCode.GetValueOrDefault(vendor.SecondaryAgencyCode, ""));
                 response = await AppliedApiClient.PostObject(_url, receipt, vendor);
                 responseString = await response.Content.ReadAsStringAsync();
             }
@@ -265,7 +266,7 @@ namespace InsTechClassesV2.AppliedEpic
                 var c = await AppliedGetClientRequest.Create(vendor.DummyAccountCode, vendor, log);
 
                 receipt.DetailValue.DetailItemsValue.DetailItem[0].DetailItemAccountLookupCode = SecurityElement.Escape(vendor.DummyAccountCode);
-                receipt.DetailValue.DetailItemsValue.DetailItem[0].StructureBranchCode = SecurityElement.Escape(c.BranchCode);
+                receipt.DetailValue.DetailItemsValue.DetailItem[0].StructureBranchCode = SecurityElement.Escape(c.BranchCode.GetValueOrDefault(vendor.AgencyCode, ""));
                 receipt.DetailValue.DetailItemsValue.DetailItem[0].StructureAgencyCode= SecurityElement.Escape(vendor.AgencyCode);
 
                 response = await AppliedApiClient.PostObject(_url, receipt, vendor);

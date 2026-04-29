@@ -1,26 +1,6 @@
 import { refreshSession, redirectToLogin } from "./AuthContext";
 
-/* ── Global loading counter ─────────────────────────────────────
-   Emits a custom DOM event so any component can listen without
-   being wired through props or context.
-   Uses a counter so concurrent requests don't cancel each other.
-────────────────────────────────────────────────────────────────── */
-let _loadingCount = 0;
-const _notifyLoading = () => {
-  const active = _loadingCount > 0;
-
-  // 👇 store current state globally
-  window.__instechLoadingActive = active;
-
-  window.dispatchEvent(
-    new CustomEvent("instech:loading", { detail: { active } })
-  );
-};
-const _loadStart = () => { _loadingCount++;                               _notifyLoading(); };
-const _loadEnd   = () => { _loadingCount = Math.max(0, _loadingCount - 1); _notifyLoading(); };
-
-export const fetchWithAuth = async (url, options = {}, isText = false, isBlob = false, silent = false) => {
-  if (!silent) _loadStart();
+export const fetchWithAuth = async (url, options = {}, isText = false, isBlob = false) => {
   const token = localStorage.getItem('idToken');
   const userEmail = SafeParseJson(localStorage.getItem('User')).email;
   const vendor = new URLSearchParams(window.location.search).get("vendor") || localStorage.getItem("currentVendor");
@@ -68,8 +48,10 @@ export const fetchWithAuth = async (url, options = {}, isText = false, isBlob = 
     if (isText) return await response.text();
     if (isBlob) return await response.blob();
     return await response.json();
-  } finally {
-    if (!silent) _loadEnd();
+  }
+    catch (error) {
+    console.error("Fetch error:", error);
+    throw error;
   }
 };
 
