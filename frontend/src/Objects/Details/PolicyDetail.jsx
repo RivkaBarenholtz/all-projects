@@ -80,6 +80,20 @@ export function PolicyDetail({ policy, onClose }) {
         URL.revokeObjectURL(a.href);
     }
 
+    async function downloadFinanceQuote() {
+        const data = await fetchWithAuth(`get-finance-agreement?policyid=${policy.PolicyId.replace("Policy#", "")}`);
+        const url = data.agreementUrl;
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `finance_agreement_${policy.PolicyCode}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(a.href);
+    }
+
     async function downloadSignedFile() {
         const data = await fetchWithAuth(`get-signed-doc-url?policyid=${policy.PolicyId.replace("Policy#", "")}`);
         const url = data.url;
@@ -268,11 +282,20 @@ export function PolicyDetail({ policy, onClose }) {
                                 <ReceiptText /> {loadingInvoicePdf ? "Loading…" : "View Invoice"}
                             </ActionButton>
            
-                            {policy.QuoteFileName &&
-                                <ActionButton onClick={downloadFile}>
-                                    <Download /> Download Policy Quote
-                                </ActionButton>
-                            }
+                            {(policy.QuoteFileName || policy.AttachedFinanceQuote) && (
+                                <div style={{ display: "flex", gap: 8 }}>
+                                    {policy.QuoteFileName &&
+                                        <ActionButton onClick={downloadFile}>
+                                            <Download /> Download Policy Quote
+                                        </ActionButton>
+                                    }
+                                    {policy.AttachedFinanceQuote &&
+                                        <ActionButton onClick={downloadFinanceQuote}>
+                                            <Download /> Download Finance Quote
+                                        </ActionButton>
+                                    }
+                                </div>
+                            )}
 
                             {policy.OwedAmount > 0 &&
                                 <ActionButton onClick={() => setShowRemitPayable(true)}>

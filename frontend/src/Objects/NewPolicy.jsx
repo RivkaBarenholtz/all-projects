@@ -62,6 +62,7 @@ export const Policy = forwardRef(
       (policy?.LineItems ?? []).filter(x => (x.Type ?? x.type) !== "premium")
     );
     const [showLineItems, setShowLineItems] = useState(policy?.ShowLineItems ?? true);
+    const [generateQuote, setGenerateQuote] = useState(true);
     const [invoicePdfUrl, setInvoicePdfUrl] = useState(null);
     const [generatingPdf, setGeneratingPdf] = useState(false);
 
@@ -223,6 +224,7 @@ export const Policy = forwardRef(
           ...otherLineItems.map(x => ({ ...x, amount: Number(x.amount ?? x.Amount) || 0 })),
         ],
         ShowLineItems: showLineItems,
+        GenerateQuote: generateQuote,
         ... (isEdit ? { PolicyId: policy.PolicyId } : {})
       };
 
@@ -483,12 +485,20 @@ export const Policy = forwardRef(
               </tr>
             </tfoot>
           </table>
-          <label style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12,marginBottom:15, cursor: "pointer", userSelect: "none" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, cursor: "pointer", userSelect: "none" }}>
             <div onClick={() => setShowLineItems(v => !v)} style={{ width: 40, height: 22, borderRadius: 11, background: showLineItems ? "#148dc2" : "#ccc", position: "relative", transition: "background 0.2s", cursor: "pointer", flexShrink: 0 }}>
               <div style={{ position: "absolute", top: 2, left: showLineItems ? 20 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }} />
             </div>
             <span style={{ fontSize: 13, color: "#333" }}>Show line items on invoice</span>
           </label>
+          {!isEdit && (
+            <label style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8, marginBottom: 15, cursor: "pointer", userSelect: "none" }}>
+              <div onClick={() => setGenerateQuote(v => !v)} style={{ width: 40, height: 22, borderRadius: 11, background: generateQuote ? "#148dc2" : "#ccc", position: "relative", transition: "background 0.2s", cursor: "pointer", flexShrink: 0 }}>
+                <div style={{ position: "absolute", top: 2, left: generateQuote ? 20 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }} />
+              </div>
+              <span style={{ fontSize: 13, color: "#333" }}>Generate finance quote</span>
+            </label>
+          )}
         </section>
 
      

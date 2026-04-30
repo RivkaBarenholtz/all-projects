@@ -248,11 +248,15 @@ public class Function
                 }
                 await policy?.InsertIntoDynamo(vendor);
 
-                var financeQuote = await InsTechClassesV2.FinancePro.FinanceProService.SubmitQuoteForPolicyAsync(policy, vendor);
-                if (financeQuote != null)
+                FinanceQuote financeQuote = null;
+                if (policy.GenerateQuote)
                 {
-                    policy.AttachedFinanceQuote = financeQuote;
-                    await policy.UpdateDynamoAsync(vendor.Id.ToString());
+                    financeQuote = await InsTechClassesV2.FinancePro.FinanceProService.SubmitQuoteForPolicyAsync(policy, vendor);
+                    if (financeQuote != null)
+                    {
+                        policy.AttachedFinanceQuote = financeQuote;
+                        await policy.UpdateDynamoAsync(vendor.Id.ToString());
+                    }
                 }
 
                 string uploadUrl = "";

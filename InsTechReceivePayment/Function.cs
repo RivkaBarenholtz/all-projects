@@ -252,6 +252,33 @@ public class Function
                         signerName,
                         DateTime.UtcNow);
 
+                    // Merge saved agency signature into the finance PDF before emailing
+                    try
+                    {
+                        var agencyFieldS3 = new AmzS3Bucket(vendor.s3BucketName, "agency-signature-field.json");
+                        string? agencyFieldJson = await agencyFieldS3.ReadS3File();
+                        if (!string.IsNullOrEmpty(agencyFieldJson))
+                        {
+                            var agencyField = JsonConvert.DeserializeObject<InsTechClassesV2.ESign.PolicySignatureField>(agencyFieldJson);
+                            var agencyImgS3 = new AmzS3Bucket(vendor.s3BucketName, "agency-signature.png");
+                            byte[] agencyImgBytes = await agencyImgS3.ReadS3FileBytes();
+                            if (agencyField != null && agencyImgBytes?.Length > 0)
+                            {
+                                string agencyDataUrl = $"data:image/png;base64,{Convert.ToBase64String(agencyImgBytes)}";
+                                signedFinanceBytes = PdfSigningService.EmbedSignatures(
+                                    signedFinanceBytes,
+                                    new List<InsTechClassesV2.ESign.PolicySignatureField> { agencyField },
+                                    agencyDataUrl,
+                                    "",
+                                    DateTime.UtcNow);
+                            }
+                        }
+                    }
+                    catch (Exception agencyEx)
+                    {
+                        Console.WriteLine($"Agency signature merge skipped: {agencyEx.Message}");
+                    }
+
                     string signedFinanceKey = $"{vendor.CardknoxMerchantId}/{policyId}-finance-signed";
                     var financeS3 = new AmzS3Bucket("policy-uploads", signedFinanceKey);
                     await financeS3.UploadFileToS3(Convert.ToBase64String(signedFinanceBytes), "application/pdf");

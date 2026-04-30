@@ -41,6 +41,7 @@ namespace InsTechClassesV2
         public bool UserFinanced { get; set; } = false;
         public List<InvoiceLineItem> LineItems { get; set; } = new();
         public bool ShowLineItems { get; set; } = true;
+        public bool GenerateQuote { get; set; } = true;
         public FinanceQuote AttachedFinanceQuote { get; set; }
 
         public static async Task<List<Policy>> GetListOfPoliciesFromDb(string vendorId)
