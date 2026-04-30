@@ -71,6 +71,7 @@ export const CustomerInfo = ({
           <AiField field="street" locked={isLocked('street')} onUnlock={unlockField} onHighlight={onHighlight}>
             <input type="text" value={street} onChange={(e) => setStreet(e.target.value)} />
           </AiField>
+          {submitPressed && street === "" ? <div className="toast show">Street required.</div> : ''}
         </div>
         <div className="form-row">
           <div className="form-group">
@@ -78,18 +79,21 @@ export const CustomerInfo = ({
             <AiField field="city" locked={isLocked('city')} onUnlock={unlockField} onHighlight={onHighlight}>
               <input type="text" value={city} onChange={(e) => setCity(e.target.value)} />
             </AiField>
+            {submitPressed && city === "" ? <div className="toast show">City required.</div> : ''}
           </div>
           <div className="form-group">
             <label>State</label>
             <AiField field="state" locked={isLocked('state')} onUnlock={unlockField} onHighlight={onHighlight}>
               <input type="text" value={state} onChange={(e) => setState(e.target.value)} />
             </AiField>
+            {submitPressed && state === "" ? <div className="toast show">State required.</div> : ''}
           </div>
           <div className="form-group">
             <label>Zip</label>
             <AiField field="zip" locked={isLocked('zip')} onUnlock={unlockField} onHighlight={onHighlight}>
               <input type="text" value={zip} onChange={(e) => setZip(e.target.value)} />
             </AiField>
+            {submitPressed && zip === "" ? <div className="toast show">Zip required.</div> : ''}
           </div>
         </div>
       </section>
@@ -105,6 +109,7 @@ export const CustomerInfo = ({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
+            {submitPressed && phone === "" ? <div className="toast show">Phone required.</div> : ''}
           </div>
           <div className="form-group">
             <label>Email Address</label>

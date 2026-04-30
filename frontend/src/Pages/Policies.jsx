@@ -166,6 +166,13 @@ export default function Policies() {
          Value: "CustomerId",
          SortString: "CustomerId",
          SortAsc: true
+      },
+      {
+         DisplayValue: "Financed",
+         Show: true,
+         Value: "UserFinancedString",
+         SortString: "UserFinanced",
+         SortAsc: true
       }
 
    ])
@@ -192,8 +199,9 @@ export default function Policies() {
                 OwedAmountString: FormatCurrency(policy.Amount - policy.CommissionAmount- policy.PaidToCarrier),
                 CustomerPaidString : FormatCurrency(policy.PaidByCustomer), 
                 CustomerBalanceString : FormatCurrency(policy.Amount - policy.PaidByCustomer),
-                CustomerBalance : policy.Amount - policy.PaidByCustomer, 
-                OwedAmount:policy.Amount - policy.CommissionAmount- policy.PaidToCarrier
+                CustomerBalance : policy.Amount - policy.PaidByCustomer,
+                OwedAmount:policy.Amount - policy.CommissionAmount- policy.PaidToCarrier,
+                UserFinancedString: policy.UserFinanced ? "Yes" : ""
 
             }
       })

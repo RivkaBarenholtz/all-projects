@@ -21,8 +21,8 @@ export  function useSuccessModal() {
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(-20px)",
         transition: "opacity 0.8s ease, transform 0.8s ease",
-        backgroundColor: "#ffffff", // green
-        color: "#22c55e",
+        backgroundColor: "#edf7ecff", // green
+        color: "#014e1dff",
         padding: "12px 24px",
         borderRadius: "8px",
         boxShadow: "0 4px 8px rgba(0,0,0,0.15)",

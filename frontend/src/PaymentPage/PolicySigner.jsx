@@ -231,7 +231,7 @@ export function PolicySigner({ pdfUrl, policy, signerName, signerEmail, onReady,
         }
       : null;
     onReady?.({ capturedSignature, signerName, signerEmail, auditTrail, financeData });
-  }, [allSigned, capturedSignature, financePageCount]);
+  }, [allSigned, capturedSignature, financePageCount, resolvedFinanceFields, fieldValues]);
 
   useEffect(() => {
     if (!allSigned) return;

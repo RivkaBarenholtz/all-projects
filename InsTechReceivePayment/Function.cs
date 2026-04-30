@@ -123,6 +123,7 @@ public class Function
                 string signerName  = body["signerName"]?.ToString() ?? "";
                 string signerEmail = body["signerEmail"]?.ToString() ?? "";
                 string sigType     = body["signatureType"]?.ToString() ?? "Drawn";
+                bool userFinanced = body["userFinanced"] != null && (bool)body["userFinanced"];
                 string financeAgreementUrl = body["financeData"]?["agreementUrl"]?.ToString() ?? "";
                 var financeFields = body["financeData"]?["fields"] != null
                     ? JsonConvert.DeserializeObject<List<PolicySignatureField>>(body["financeData"]["fields"].ToString()) ?? new List<PolicySignatureField>()
@@ -215,6 +216,7 @@ public class Function
                 // Mark policy as signed
                 policy.IsSigned = true;
                 policy.SignedPdfKey = signedKey;
+                if (userFinanced) policy.UserFinanced = true;
                 await policy.UpdateDynamoAsync(vendor.Id.ToString());
 
                 // Email signed document to signer

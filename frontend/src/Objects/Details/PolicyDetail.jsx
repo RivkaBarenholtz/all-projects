@@ -169,6 +169,7 @@ export function PolicyDetail({ policy, onClose }) {
                         <div className="trd-info-row"><span className="trd-label">Customer Balance</span><span className="trd-value">{policy.CustomerBalanceString}</span></div>
                         <div className="trd-info-row"><span className="trd-label">Sub-broker:</span><span className="trd-value">{policy.SubBrokerName}</span></div>
                         <div className="trd-info-row"><span className="trd-label">Sub-broker Commission:</span><span className="trd-value">{policy.SubBrokerAmountString}</span></div>
+                        {policy.UserFinanced && <div className="trd-info-row"><span className="trd-label">Financed:</span><span className="trd-value" style={{ color: "#148dc2", fontWeight: 600 }}>Yes — Agile PF</span></div>}
                     </div>
                 </div>
 

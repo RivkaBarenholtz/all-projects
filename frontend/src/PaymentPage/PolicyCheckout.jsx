@@ -108,7 +108,9 @@ export default function PolicyCheckout() {
         init();
     }, []);
 
-    const baseAmount    = policy?.Amount ?? parseFloat(searchParams.get("amount") ?? "0");
+    const baseAmount    = paymentOption === "monthly" && policy?.AttachedFinanceQuote?.DownPaymentAmount
+        ? policy.AttachedFinanceQuote.DownPaymentAmount
+        : (policy?.Amount ?? parseFloat(searchParams.get("amount") ?? "0"));
     const surchargeRate = surcharge?.surcharge ?? 0;
     const surchargeAmt  = paymentMethod === "card" ? baseAmount * surchargeRate : 0;
     const total         = baseAmount + surchargeAmt;
@@ -140,6 +142,7 @@ export default function PolicyCheckout() {
                         signerEmail:   eSignData.signerEmail,
                         auditTrail:    eSignData.auditTrail,
                         financeData:   eSignData.financeData ?? null,
+                        userFinanced:  paymentOption === "monthly",
                     }),
                 });
                 if (!res.ok) throw new Error();
@@ -455,15 +458,20 @@ export default function PolicyCheckout() {
                     <div style={{ padding: 36, textAlign: "center" }}>
                         <div style={greenCircle}>✓</div>
                         <h2 style={{ color: "#16a34a", margin: "0 0 8px", fontSize: 22 }}>Payment Confirmed!</h2>
-                        <p style={{ color: "#666", marginBottom: 24 }}>
+                        <p style={{ color: "#666", marginBottom: paymentOption === "monthly" ? 8 : 24 }}>
                             Thank you. Your policy has been signed and payment processed.
                         </p>
+                        {paymentOption === "monthly" && (
+                            <p style={{ color: "#148dc2", fontWeight: 600, marginBottom: 24, fontSize: 14 }}>
+                                This was your down payment. Your automatic monthly payments will be set up via Agile PF.
+                            </p>
+                        )}
                         <div style={{ ...totalBox, textAlign: "left" }}>
                             {policy?.PolicyCode             && <InfoRow label="Policy #"       value={policy.PolicyCode} />}
                             {confirmationData?.refNum       && <InfoRow label="Confirmation #"  value={confirmationData.refNum} />}
                             <InfoRow label="Date" value={new Date().toLocaleDateString("en-US")} />
                             <div style={{ ...totalRow, borderTop: "1px solid #e5e7eb", paddingTop: 10, marginTop: 6, fontWeight: 700, fontSize: 15 }}>
-                                <span>Amount Paid</span>
+                                <span>{paymentOption === "monthly" ? "Down Payment" : "Amount Paid"}</span>
                                 <span style={{ color: "#148dc2" }}>{FormatCurrency(confirmationData?.totalAmount)}</span>
                             </div>
                         </div>

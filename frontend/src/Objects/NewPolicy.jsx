@@ -183,7 +183,7 @@ export const Policy = forwardRef(
     const CreateOrUpdatePolicy = async () => {
       setSubmitPressed(true);
 
-      if (!firstName || !lastName || !policyCode || !policyDescription || !policyAmount || !email) return;
+      if (!firstName || !lastName || !policyCode || !policyDescription || !policyAmount || !email || !street || !city || !state || !zip || !phone) return;
 
 
       const NewCustomer = {
@@ -242,9 +242,10 @@ export const Policy = forwardRef(
           const pdfResp = await fetchWithAuth("generate-policy-pdf", { PolicyId: policyId.replace("Policy#", "") });
           if (pdfResp?.Url) {
             const blob = await fetch(pdfResp.Url).then(r => r.blob());
-            setInvoicePdfUrl(URL.createObjectURL(blob));
+            //setInvoicePdfUrl(URL.createObjectURL(blob));
             setGeneratingPdf(false);
-            return;
+            
+           
           }
         } catch (e) { console.error(e); }
         setGeneratingPdf(false);
