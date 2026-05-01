@@ -341,6 +341,9 @@ public class Function
                 // Proxy the PDF through S3 so the browser can load it without CORS issues
                 using var http = new System.Net.Http.HttpClient();
                 var pdfBytes = await http.GetByteArrayAsync(agreementUrl);
+                var pageCount = InsTechClassesV2.ESign.PdfSigningService.GetPageCount(pdfBytes);
+                if (pageCount > 1)
+                    pdfBytes = InsTechClassesV2.ESign.PdfSigningService.ExtractPages(pdfBytes, 1, pageCount - 1);
                 var s3Key = $"temp-finance-agreements/{policyId}-{Guid.NewGuid()}.pdf";
                 var s3 = new AmzS3Bucket("temp-document-storage", s3Key);
                 await s3.UploadBytesAsync(pdfBytes, "application/pdf");
@@ -417,6 +420,12 @@ public class Function
             {
                 var pamntResponse = await MakePaymentService.MakePaymentToCardknox(request.Body, vendor);
                 response.Body = JsonConvert.SerializeObject(pamntResponse);
+                return response;
+            }
+            else if (lastSegment == "save-payment-method-for-finance")
+            {
+                var saveRsp = await MakePaymentService.SaveFinancePaymentMethod(request.Body, vendor);
+                response.Body = JsonConvert.SerializeObject(saveRsp);
                 return response;
             }
             else if (lastSegment == "make-digital-payment")

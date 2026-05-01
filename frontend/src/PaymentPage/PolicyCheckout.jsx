@@ -13,15 +13,15 @@ const FINANCE_FIELDS = [
     { id: "fin-signature",     type: "signature", page: 1,  x: 0.07, y: 0.84, width: 0.40, height: 0.05 },
     { id: "fin-date",          type: "date",      page: 1,  x: 0.07, y: 0.90, width: 0.22, height: 0.04, optional: true },
     // Last page — EFT Authorization form (page: -1 = last page of finance PDF)
-    { id: "fin-acct-type",     type: "radio",     page: -1, x: 0.07, y: 0.32, width: 0.42, height: 0.04, optional: true, options: ["", ""] },
-    { id: "fin-bank-name",     type: "text",      page: -1, x: 0.183, y: 0.486, width: 0.25, height: 0.02, optional: true, label: "" },
-    { id: "fin-bank-address",  type: "text",      page: -1, x: 0.63, y: 0.486, width: 0.25, height: 0.02, optional: true, label: "" },
-    { id: "fin-account-num",   type: "text",      page: -1, x: 0.59, y: 0.506, width: 0.20, height: 0.02, optional: true, label: "" },
-    { id: "fin-routing-num",   type: "text",      page: -1, x: 0.17, y: 0.506, width: 0.2, height: 0.02, optional: true, label: "" },
-    { id: "fin-eft-name",      type: "text",      page: -1, x: 0.16, y: 0.85, width: 0.2, height: 0.03, optional: true, label: "" },
-    { id: "fin-eft-name-2",      type: "text",      page: -1, x: 0.16, y: 0.88, width: 0.2, height: 0.03, optional: true, label: "" },
-    { id: "fin-eft-signature", type: "signature", page: -1, x: 0.45, y: 0.85, width: 0.3, height: 0.03, optional: true },
-    { id: "fin-eft-signature-2", type: "signature", page: -1, x: 0.45, y: 0.88, width: 0.3, height: 0.03, optional: true },
+    // { id: "fin-acct-type",     type: "radio",     page: -1, x: 0.07, y: 0.32, width: 0.42, height: 0.04, optional: true, options: ["", ""] },
+    // { id: "fin-bank-name",     type: "text",      page: -1, x: 0.183, y: 0.486, width: 0.25, height: 0.02, optional: true, label: "" },
+    // { id: "fin-bank-address",  type: "text",      page: -1, x: 0.63, y: 0.486, width: 0.25, height: 0.02, optional: true, label: "" },
+    // { id: "fin-account-num",   type: "text",      page: -1, x: 0.59, y: 0.506, width: 0.20, height: 0.02, optional: true, label: "" },
+    // { id: "fin-routing-num",   type: "text",      page: -1, x: 0.17, y: 0.506, width: 0.2, height: 0.02, optional: true, label: "" },
+    // { id: "fin-eft-name",      type: "text",      page: -1, x: 0.16, y: 0.85, width: 0.2, height: 0.03, optional: true, label: "" },
+    // { id: "fin-eft-name-2",      type: "text",      page: -1, x: 0.16, y: 0.88, width: 0.2, height: 0.03, optional: true, label: "" },
+    // { id: "fin-eft-signature", type: "signature", page: -1, x: 0.45, y: 0.85, width: 0.3, height: 0.03, optional: true },
+    // { id: "fin-eft-signature-2", type: "signature", page: -1, x: 0.45, y: 0.88, width: 0.3, height: 0.03, optional: true },
 ];
 
 const STATES = ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"]
@@ -52,6 +52,8 @@ export default function PolicyCheckout() {
     const [confirmationData, setConfirmationData] = useState(null);
     const [financeAgreementUrl, setFinanceAgreementUrl] = useState(null);
     const [financeAgreementLoading, setFinanceAgreementLoading] = useState(false);
+    const [useCardForMonthly, setUseCardForMonthly] = useState(true);
+    const [monthlyPaymentApproved, setMonthlyPaymentApproved] = useState(false);
 
     // Billing fields (pre-filled from policy where available)
     const [cardholderName, setCardholderName] = useState("");
@@ -65,6 +67,9 @@ export default function PolicyCheckout() {
 
     const cardRef = useRef();
     const checkRef = useRef();
+    const monthlyCardRef = useRef();
+    const monthlyCheckRef = useRef();
+    const [monthlyPaymentMethod, setMonthlyPaymentMethod] = useState("card");
 
     useEffect(() => {
         const init = async () => {
@@ -156,8 +161,18 @@ export default function PolicyCheckout() {
         setStep(4);
     };
 
-    const handlePay = () => {
+    const handlePay = async () => {
         setErrorMessage("");
+        setSubmitPressed(true);
+        if (paymentOption === "monthly" && !useCardForMonthly) {
+            const saved = monthlyPaymentMethod === "card"
+                ? await monthlyCardRef.current?.savePaymentMethod()
+                : await monthlyCheckRef.current?.savePaymentMethod();
+            if (!saved) {
+                setErrorMessage("Failed to save monthly payment method. Please check your information and try again.");
+                return;
+            }
+        }
         if (paymentMethod === "card") cardRef.current?.submitToGateway();
         else checkRef.current?.submitToGateway();
     };
@@ -269,7 +284,7 @@ export default function PolicyCheckout() {
                                         }}
                                     >
                                         <div style={{ fontWeight: 700, fontSize: 14, color: paymentOption === "full" ? "#148dc2" : "#6b7280", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Pay In Full</div>
-                                        <div style={{ fontSize: 26, fontWeight: 800, color: paymentOption === "full" ? "#148dc2" : "#111827" }}>{FormatCurrency(baseAmount)}</div>
+                                        <div style={{ fontSize: 26, fontWeight: 800, color: paymentOption === "full" ? "#148dc2" : "#111827" }}>{FormatCurrency((policy?.Amount ?? parseFloat(searchParams.get("amount") ?? "0")))}</div>
                                         <div style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>One-time payment</div>
                                     </div>
 
@@ -349,6 +364,27 @@ export default function PolicyCheckout() {
                             ))}
                         </div>
 
+                        {paymentOption === "monthly" && (
+                            
+                           <> 
+                           <div style={{ background: "#e0f2fe", border: "1px solid #bae6fd", borderRadius: 6, padding: "12px 16px", color: "#0369a1", fontSize: 13, marginBottom: 16 }}>
+                                    Your down payment will be processed now. Monthly payments of ${policy?.AttachedFinanceQuote?.MonthlyPayment.toFixed(2)} will be chargeed on the same day of each month, starting next month.
+                                    
+                                                                 </div>
+                            <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, fontSize: 13, color: "#374151", cursor: "pointer" }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={useCardForMonthly}
+                                        onChange={e => setUseCardForMonthly(e.target.checked)}
+                                        style={{ width: 15, height: 15, accentColor: "#148dc2", cursor: "pointer" }}
+                                    />
+                                    Use the same payment method for monthly payments
+                                </label>
+                                
+                            </>
+                        
+                        )}
+
                         {/* Surcharge notice */}
                         {paymentMethod === "card" && surchargeRate > 0 && (
                             <div style={{ background: "#fef9c3", border: "1px solid #fde68a", borderRadius: 6, padding: "8px 12px", fontSize: 12, color: "#854d0e", marginBottom: 16 }}>
@@ -419,6 +455,96 @@ export default function PolicyCheckout() {
                                 vendor={vendor}
                             />
                         </div>
+
+                        {/* Monthly payment method — only when user opts for a different card */}
+                        {paymentOption === "monthly" && !useCardForMonthly && (
+                            <div style={{ marginTop: 24, borderTop: "1px solid #e5e7eb", paddingTop: 20 }}>
+                                <SectionLabel>Monthly Payment Method</SectionLabel>
+                                <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+                                    {[
+                                        { key: "card", label: "💳  Credit / Debit Card" },
+                                        { key: "ach",  label: "🏦  eCheck (ACH)" },
+                                    ].map(({ key, label }) => (
+                                        <button
+                                            key={key}
+                                            onClick={() => setMonthlyPaymentMethod(key)}
+                                            style={{
+                                                flex: 1, padding: "10px 14px", cursor: "pointer",
+                                                border: `2px solid ${monthlyPaymentMethod === key ? "#148dc2" : "#e5e7eb"}`,
+                                                borderRadius: 8,
+                                                background: monthlyPaymentMethod === key ? "#f0f8fd" : "#fff",
+                                                color: monthlyPaymentMethod === key ? "#148dc2" : "#555",
+                                                fontWeight: 600, fontSize: 13,
+                                            }}
+                                        >
+                                            {label}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div style={{ display: monthlyPaymentMethod === "card" ? "block" : "none" }}>
+                                    <CreditCardTab
+                                        ref={monthlyCardRef}
+                                        amount={0}
+                                        surcharge={0}
+                                        surchargeAmount={0}
+                                        accountCode={policy?.CustomerNumber ?? ""}
+                                        accountValid={true}
+                                        invoiceID=""
+                                        ifieldsKey={vendor?.CardknoxIFeildsKey}
+                                        cardHolderName={cardholderName}
+                                        billingAddress={billingAddress}
+                                        city={city}
+                                        state={stateVal}
+                                        email={email}
+                                        notes={notes}
+                                        phone={phone}
+                                        zip={zip}
+                                        setEverythingFocused={() => {}}
+                                        selectCustomStyles={selectStyles}
+                                        isPortal={false}
+                                        onFinish={() => {}}
+                                        onError={msg => setErrorMessage(msg)}
+                                        vendor={vendor}
+                                        subdomain={vendor?.subdomain}
+                                        submitPressed={submitPressed}
+                                        setSubmitPressed={setSubmitPressed}
+                                        hidePaymentButton={true}
+                                        showProcess={false}
+                                        onPaymentApproved={() => {}}
+                                        policyId={policyId}
+                                    />
+                                </div>
+                                <div style={{ display: monthlyPaymentMethod === "ach" ? "block" : "none" }}>
+                                    <CheckTab
+                                        ref={monthlyCheckRef}
+                                        amount={0}
+                                        accountCode={policy?.CustomerNumber ?? ""}
+                                        invoiceID=""
+                                        ifieldsKey={vendor?.CardknoxIFeildsKey}
+                                        cardHolderName={cardholderName}
+                                        billingAddress={billingAddress}
+                                        city={city}
+                                        state={stateVal}
+                                        email={email}
+                                        notes={notes}
+                                        phone={phone}
+                                        zip={zip}
+                                        setEverythingFocused={() => {}}
+                                        isPortal={false}
+                                        onFinish={() => {}}
+                                        onError={msg => setErrorMessage(msg)}
+                                        subdomain={vendor?.subdomain}
+                                        submitPressed={submitPressed}
+                                        setSubmitPressed={setSubmitPressed}
+                                        hidePaymentButton={true}
+                                        showProcess={false}
+                                        onPaymentApproved={() => {}}
+                                        policyId={policyId}
+                                        vendor={vendor}
+                                    />
+                                </div>
+                            </div>
+                        )}
 
                         {/* Total */}
                         <div style={{ ...totalBox, marginTop: 20 }}>

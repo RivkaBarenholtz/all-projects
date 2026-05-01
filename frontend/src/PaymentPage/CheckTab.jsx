@@ -71,8 +71,30 @@ export const CheckTab = forwardRef((
     }, ref) => {
 
     
-     useImperativeHandle(ref, () => ({
-        submitToGateway
+    useImperativeHandle(ref, () => ({
+        submitToGateway,
+        savePaymentMethod: async () => {
+            if (!checkToken || !routingNumber) return false;
+            try {
+                const res = await fetch(`${BaseUrl()}/pay/${vendor.subdomain}/save-payment-method-for-finance`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        PolicyId: policyId,
+                        IsCheck: true,
+                        CheckToken: checkToken,
+                        RoutingNumber: routingNumber,
+                        AccountType: accountType,
+                        AccountName: accountName,
+                    }),
+                });
+                if (!res.ok) return false;
+                const data = await res.json();
+                return data.xResult?.toLowerCase() === "a";
+            } catch {
+                return false;
+            }
+        },
     }));
 
 

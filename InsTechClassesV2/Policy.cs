@@ -39,6 +39,7 @@ namespace InsTechClassesV2
         public bool IsSigned { get; set; } = false;
         public bool IsSignedAndPaid { get; set; } = false;
         public bool UserFinanced { get; set; } = false;
+        public string FinancePaymentToken { get; set; }
         public List<InvoiceLineItem> LineItems { get; set; } = new();
         public bool ShowLineItems { get; set; } = true;
         public bool GenerateQuote { get; set; } = true;
@@ -187,6 +188,7 @@ namespace InsTechClassesV2
                 IsSignedAndPaid = item.ContainsKey("IsSignedAndPaid") && (item["IsSignedAndPaid"].BOOL ?? false),
                 IsSigned = item.ContainsKey("IsSigned") && (item["IsSigned"].BOOL ?? false),
                 UserFinanced = item.ContainsKey("UserFinanced") && (item["UserFinanced"].BOOL ?? false),
+                FinancePaymentToken = item.ContainsKey("FinancePaymentToken") ? item["FinancePaymentToken"].S : "",
                 LineItems = ParseLineItems(item.ContainsKey("LineItems") ? item["LineItems"].S : ""),
                 ShowLineItems = !item.ContainsKey("ShowLineItems") || (item["ShowLineItems"].BOOL ?? true),
                 AttachedFinanceQuote = ParseFinanceQuote(item.ContainsKey("AttachedFinanceQuote") ? item["AttachedFinanceQuote"].S : ""),
@@ -271,6 +273,7 @@ namespace InsTechClassesV2
                 AddString("Zip", Customer.BillZip);
             }
 
+            AddString("FinancePaymentToken", FinancePaymentToken);
             newItem["IsSignedAndPaid"] = new AttributeValue { BOOL = IsSignedAndPaid };
             newItem["IsSigned"] = new AttributeValue { BOOL = IsSigned };
             newItem["UserFinanced"] = new AttributeValue { BOOL = UserFinanced };

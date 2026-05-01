@@ -491,14 +491,7 @@ export const Policy = forwardRef(
             </div>
             <span style={{ fontSize: 13, color: "#333" }}>Show line items on invoice</span>
           </label>
-          {!isEdit && (
-            <label style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8, marginBottom: 15, cursor: "pointer", userSelect: "none" }}>
-              <div onClick={() => setGenerateQuote(v => !v)} style={{ width: 40, height: 22, borderRadius: 11, background: generateQuote ? "#148dc2" : "#ccc", position: "relative", transition: "background 0.2s", cursor: "pointer", flexShrink: 0 }}>
-                <div style={{ position: "absolute", top: 2, left: generateQuote ? 20 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }} />
-              </div>
-              <span style={{ fontSize: 13, color: "#333" }}>Generate finance quote</span>
-            </label>
-          )}
+         
         </section>
 
      
@@ -533,6 +526,14 @@ export const Policy = forwardRef(
             />
           </>}
         </>}
+         {!isEdit && (
+            <label style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8, marginBottom: 15, cursor: "pointer", userSelect: "none" }}>
+              <div onClick={() => setGenerateQuote(v => !v)} style={{ width: 40, height: 22, borderRadius: 11, background: generateQuote ? "#148dc2" : "#ccc", position: "relative", transition: "background 0.2s", cursor: "pointer", flexShrink: 0 }}>
+                <div style={{ position: "absolute", top: 2, left: generateQuote ? 20 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }} />
+              </div>
+              <span style={{ fontSize: 13, color: "#333" }}>Generate finance quote</span>
+            </label>
+          )}
 
       </>
     );

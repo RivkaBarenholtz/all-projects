@@ -29,7 +29,22 @@ namespace InsTechClassesV2.TransactionRequests
     public class ReceiveVoidRequest
     {
         public string OriginalTransaction { get; set; } = "";
-        public bool IsCheck { get; set; } = true; 
+        public bool IsCheck { get; set; } = true;
+    }
+
+    public class SaveFinancePaymentMethodRequest
+    {
+        public string PolicyId { get; set; }
+        public bool IsCheck { get; set; } = false;
+        // CC fields
+        public string CardToken { get; set; }
+        public string CvvToken { get; set; }
+        public string ExpDate { get; set; }
+        // ACH fields
+        public string CheckToken { get; set; }
+        public string RoutingNumber { get; set; }
+        public string AccountType { get; set; }
+        public string AccountName { get; set; }
     }
 
 }

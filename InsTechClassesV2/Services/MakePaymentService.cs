@@ -153,7 +153,7 @@ namespace InsTechClassesV2.Services
             apiRequest.xSoftwareName = request?.Software ?? "Insure-Tech"; 
 
             var rsp = await apiRequest.SendRequest(vendor);
-            if (rsp.xResult == "A") await ApplyPaymentToPolicy(request.PolicyId, vendor.Id.ToString(), apiRequest.xAmount);
+            if (rsp.xResult == "A") await ApplyPaymentToPolicy(request.PolicyId, vendor.Id.ToString(), apiRequest.xAmount, rsp.xToken);
             if (request.SavePaymentMethod && rsp.xResult != "E")
             {
                 SavedMethods savedMethods = new SavedMethods()
@@ -170,16 +170,19 @@ namespace InsTechClassesV2.Services
             return rsp;
         }
 
-        private static async Task ApplyPaymentToPolicy (string policyId ,string  vendorid, decimal amount )
-        { 
+        private static async Task ApplyPaymentToPolicy(string policyId, string vendorid, decimal amount, string financePaymentToken = null)
+        {
             try
             {
-                if (string.IsNullOrEmpty(policyId)) return; 
+                if (string.IsNullOrEmpty(policyId)) return;
                 var policy = await Policy.GetPolicyByIdAsync(vendorid, policyId);
                 policy.PaidByCustomer += amount;
-                await policy.UpdateDynamoAsync(vendorid); 
+                if (!string.IsNullOrEmpty(financePaymentToken))
+                    policy.FinancePaymentToken = financePaymentToken;
+                await policy.UpdateDynamoAsync(vendorid);
             }
-            catch (Exception ex){
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex);
             }
         }
@@ -284,7 +287,7 @@ namespace InsTechClassesV2.Services
                 apiRequest.xSplitInstruction = GetSplitInstructions(request?.Subtotal ?? 0, vendor, apiRequest.xAmount);
             }
             var rsp = await apiRequest.SendRequest(vendor);
-            if(rsp.xResult == "A") await ApplyPaymentToPolicy(request.PolicyId, vendor.Id.ToString(), apiRequest.xAmount);
+            if (rsp.xResult == "A") await ApplyPaymentToPolicy(request.PolicyId, vendor.Id.ToString(), apiRequest.xAmount, rsp.xToken);
             if (request.SavePaymentMethod && rsp.xResult != "E")
             {
                 SavedMethods savedMethods = new SavedMethods()
@@ -306,6 +309,39 @@ namespace InsTechClassesV2.Services
             return rsp;
 
         }
+        public async static Task<CardknoxResponse> SaveFinancePaymentMethod(string requestBody, Vendor vendor)
+        {
+            var request = JsonConvert.DeserializeObject<SaveFinancePaymentMethodRequest>(requestBody);
+            if (request == null || string.IsNullOrEmpty(request.PolicyId)) throw new Exception("Invalid request");
+
+            CardknoxResponse rsp;
+            if (request.IsCheck)
+            {
+                var apiRequest = new CardknoxSaveCheckInfoApiRequest
+                {
+                    xRouting = request.RoutingNumber,
+                    xAccount = request.CheckToken,
+                    xName = request.AccountName
+                };
+                rsp = await apiRequest.SendRequest(vendor);
+            }
+            else
+            {
+                var apiRequest = new CardknoxSaveCCInfoApiRequest
+                {
+                    xCardNum = request.CardToken,
+                    xExp = request.ExpDate,
+                    xCvv = request.CvvToken
+                };
+                rsp = await apiRequest.SendRequest(vendor);
+            }
+
+            if (rsp.xResult == "A" && !string.IsNullOrEmpty(rsp.xToken))
+                await ApplyPaymentToPolicy(request.PolicyId, vendor.Id.ToString(), 0, rsp.xToken);
+
+            return rsp;
+        }
+
         public async static Task<HttpResponseMessage> VoidTransaction(string requestBody, Vendor vendor)
         {
             ReceiveVoidRequest? request = JsonConvert.DeserializeObject<ReceiveVoidRequest>(requestBody);
