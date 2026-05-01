@@ -1,4 +1,4 @@
-name: Deploy Multiple .NET Lambda Functions
+name: Deploy Multiple .NET Lambda Functions To Test Environment
 
 on:
   workflow_dispatch:
