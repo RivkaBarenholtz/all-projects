@@ -368,7 +368,7 @@ namespace InsTechClassesV2.AppliedEpic
 
                     if (receiptId > 0) receiptObject = await AppliedEpicReceiptService.GetUpdatedReceiptFromApplied(receiptId, vendor);
 
-                    if (receiptId == -1 || receiptObject?.FinalizedReceipt?.ToLower()== "true" )
+                    if (receiptId == -1 || receiptObject?.FinalizedReceipt?.ToLower()== "true" || receiptObject == null )//for whatever reason there is no receipt 
                     {
                         string receiptDescription = $"New Receipt created for batch # {batchReceipt?.BatchId??RefNum}";
                         if (currentCommand == "Wire Funds")
